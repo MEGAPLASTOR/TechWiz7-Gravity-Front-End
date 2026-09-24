@@ -1,122 +1,85 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, useNavigate } from 'react-router-dom';
+import { NotificationProvider } from '@/context/NotificationContext';
+import { AuthProvider } from '@/context/AuthContext';
+import { CartProvider } from '@/context/CartContext';
+import { Navbar } from '@/components/common/Navbar';
+import { Footer } from '@/components/common/Footer';
+import { AppRoutes } from '@/routes/AppRoutes';
+import { PATHS } from '@/routes/paths';
+import { PreOrderDrawer } from '@/components/order/PreOrderDrawer';
+import { AiAssistantModal } from '@/components/ai/AiAssistantModal';
+import { AuthModal } from '@/components/auth/AuthModal';
+import { marketsApi } from '@/api/markets.api';
 
-function App() {
-  const [count, setCount] = useState(0)
+export function MainApp() {
+  const navigate = useNavigate();
+  const [isAiOpen, setIsAiOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [markets, setMarkets] = useState([]);
+
+  // Fetch real markets from backend API
+  useEffect(() => {
+    async function fetchMarkets() {
+      try {
+        const data = await marketsApi.getAllMarkets();
+        setMarkets(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to fetch markets:', err);
+      }
+    }
+    fetchMarkets();
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {/* Top Navigation */}
+      <Navbar
+        onOpenAi={() => setIsAiOpen(true)}
+        onOpenAuth={() => setIsAuthOpen(true)}
+      />
 
-      <div className="ticks"></div>
+      {/* Main Tab Content via Decoupled React Router */}
+      <main style={{ flex: 1 }}>
+        <AppRoutes onOpenAi={() => setIsAiOpen(true)} />
+      </main>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      {/* Slide-over Pre-Order Basket Drawer */}
+      <PreOrderDrawer
+        markets={markets}
+        onOrderCreated={() => {
+          navigate(PATHS.ORDERS);
+        }}
+      />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* AI Assistant Chatbot Modal */}
+      <AiAssistantModal
+        isOpen={isAiOpen}
+        onClose={() => setIsAiOpen(false)}
+      />
+
+      {/* User Login/Register Modal */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+      />
+
+      {/* Site Footer */}
+      <Footer />
+    </div>
+  );
 }
 
-export default App
+export default function App() {
+  return (
+    <NotificationProvider>
+      <AuthProvider>
+        <CartProvider>
+          <BrowserRouter>
+            <MainApp />
+          </BrowserRouter>
+        </CartProvider>
+      </AuthProvider>
+    </NotificationProvider>
+  );
+}
