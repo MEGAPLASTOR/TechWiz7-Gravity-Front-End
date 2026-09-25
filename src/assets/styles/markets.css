@@ -397,6 +397,39 @@
   border-color: #fbbf24;
 }
 
+/* ── Leaflet Dark Custom Popup ──────────────────────────────────────────────── */
+.market-leaflet-popup .leaflet-popup-content-wrapper {
+  background: rgba(17, 23, 34, 0.96) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(52, 211, 153, 0.35) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8), 0 0 20px rgba(16, 185, 129, 0.15) !important;
+  color: #ffffff !important;
+  max-width: calc(100vw - 32px) !important;
+}
+
+.market-leaflet-popup .leaflet-popup-tip {
+  background: rgba(17, 23, 34, 0.96) !important;
+}
+
+.market-leaflet-popup .leaflet-popup-content {
+  margin: 12px 14px !important;
+  line-height: 1.4 !important;
+  max-width: calc(100vw - 64px) !important;
+  box-sizing: border-box !important;
+}
+
+.market-leaflet-popup a.leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  padding: 6px !important;
+  top: 8px !important;
+  right: 8px !important;
+}
+
+.market-leaflet-popup a.leaflet-popup-close-button:hover {
+  color: #ffffff !important;
+}
+
 /* ── Route bar ───────────────────────────────────────────────────────────────── */
 .mkp-route-bar {
   display: flex;
@@ -933,6 +966,11 @@
   /* Map */
   .mkp-map-wrapper {
     border-radius: 14px;
+  }
+
+  /* Leaflet attribution: hide on mobile to free space for controls */
+  .leaflet-control-attribution {
+    display: none !important;
   }
 
   /* Map action buttons on mobile */

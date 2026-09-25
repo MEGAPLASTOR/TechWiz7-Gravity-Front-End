@@ -488,9 +488,18 @@ export const MarketMap = ({
           fetchRouteToMarket(m);
         });
 
-        marker.bindPopup(popupContent, { maxWidth: 280 });
+        marker.bindPopup(popupContent, {
+          maxWidth: Math.min(270, typeof window !== 'undefined' ? window.innerWidth - 48 : 270),
+          minWidth: 220,
+          autoPan: true,
+          autoPanPadding: [20, 20],
+          autoPanPaddingTopLeft: [20, 65],
+          keepInView: true,
+          className: 'market-leaflet-popup',
+        });
         marker.on('click', () => {
           onSelectMarketRef.current?.(m);
+          map.panTo([m.latitude, m.longitude], { animate: true, duration: 0.4 });
         });
 
         markersGroup.addLayer(marker);
@@ -738,40 +747,6 @@ export const MarketMap = ({
         </div>
       )}
 
-      {/* QUICK ROUTE BUTTON (TOP-RIGHT UNDER CONTROLS) */}
-      {selectedMarket && !currentRoute && (
-        <button
-          onClick={() => fetchRouteToMarket(selectedMarket)}
-          disabled={routingLoading}
-          style={{
-            position: 'absolute',
-            top: '12px',
-            right: '54px',
-            zIndex: 400,
-            background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-            color: '#ffffff',
-            border: '1px solid rgba(255, 255, 255, 0.25)',
-            borderRadius: '10px',
-            padding: '7px 12px',
-            fontSize: '0.78rem',
-            fontWeight: 800,
-            cursor: routingLoading ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: '0 4px 14px rgba(14, 165, 233, 0.5)',
-            transition: 'all 0.2s',
-          }}
-          title={`Tìm đường đến ${selectedMarket.name}`}
-        >
-          {routingLoading ? (
-            <RefreshCw size={13} className="animate-spin" />
-          ) : (
-            <Navigation size={13} />
-          )}
-          <span>{routingLoading ? 'Đang dò đường...' : 'Chỉ Đường'}</span>
-        </button>
-      )}
 
       {/* Map Layer Mode Switcher (Google Satellite / Streets / Terrain) */}
       <div
