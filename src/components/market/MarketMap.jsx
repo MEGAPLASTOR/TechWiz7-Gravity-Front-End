@@ -38,6 +38,9 @@ export const MarketMap = ({
   const mapInstanceRef = useRef(null);
   const markersGroupRef = useRef(null);
   const tileLayerRef = useRef(null);
+  const onSelectMarketRef = useRef(onSelectMarket);
+  onSelectMarketRef.current = onSelectMarket;
+
   const [activeLayer, setActiveLayer] = useState('satellite');
 
   // Initialize Map
@@ -74,6 +77,13 @@ export const MarketMap = ({
       markersGroupRef.current = L.featureGroup().addTo(map);
       mapInstanceRef.current = map;
     }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
   }, []);
 
   // Handle Layer switching (Satellite vs Streets vs Terrain)
@@ -238,12 +248,12 @@ export const MarketMap = ({
         `;
 
         popupContent.querySelector(`#btn-select-map-${m.marketId}`)?.addEventListener('click', () => {
-          onSelectMarket(m);
+          onSelectMarketRef.current?.(m);
         });
 
         marker.bindPopup(popupContent, { maxWidth: 280 });
         marker.on('click', () => {
-          onSelectMarket(m);
+          onSelectMarketRef.current?.(m);
         });
 
         markersGroup.addLayer(marker);
@@ -260,7 +270,7 @@ export const MarketMap = ({
         map.setView([selectedMarket.latitude, selectedMarket.longitude], 15, { animate: true });
       }
     }
-  }, [markets, selectedMarket, onSelectMarket]);
+  }, [markets, selectedMarket]);
 
   const handleResetView = () => {
     if (!mapInstanceRef.current) return;

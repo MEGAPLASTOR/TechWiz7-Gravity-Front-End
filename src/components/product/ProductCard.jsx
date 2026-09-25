@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { Heart, ShoppingBag, Store, Check, Star, Zap } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { useCart } from '@/context/CartContext';
-import { use3DTilt } from '@/hooks/use3DTilt';
 import { useNotification } from '@/context/NotificationContext';
 
 export const ProductCard = ({ product, onQuickView }) => {
-  const tiltRef = use3DTilt(10, 1.02);
   const { addToCart } = useCart();
   const { success } = useNotification();
   const [isFav, setIsFav] = useState(false);
@@ -28,9 +26,8 @@ export const ProductCard = ({ product, onQuickView }) => {
 
   return (
     <article
-      ref={tiltRef}
       onClick={() => onQuickView && onQuickView(product)}
-      className="product-card card-3d-interactive preserve-3d"
+      className="product-card"
     >
       {/* Top Row: Subcategory tag & Produce Thumbnail */}
       <div className="product-card-top-row">
