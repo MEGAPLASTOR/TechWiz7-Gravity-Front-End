@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
-  FileCheck2,
   UploadCloud,
   ExternalLink,
   RefreshCw,
   FileText,
 } from 'lucide-react';
-import { farmerApi } from '@/api/farmer.api';
+import { farmerApi } from '@/services';
 import { useNotification } from '@/context/NotificationContext';
 
 export const FarmerKycPage = () => {
@@ -54,7 +53,32 @@ export const FarmerKycPage = () => {
   };
 
   useEffect(() => {
-    loadKyc();
+    let ignore = false;
+    farmerApi.getMyKyc()
+      .then((res) => {
+        if (ignore) return;
+        const data = res?.data || res;
+        if (data) {
+          setKycData({
+            farmerId: data.farmerId || 103,
+            isApproved: Boolean(data.isApproved),
+            kycStatus: data.kycStatus || 'UNVERIFIED',
+            latestRemark: data.latestRemark || '',
+            documents: Array.isArray(data.documents) ? data.documents : [],
+            auditLogs: Array.isArray(data.auditLogs) ? data.auditLogs : [],
+          });
+        }
+      })
+      .catch((e) => {
+        console.error('Error fetching KYC documents:', e);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const handleSubmitDocument = async (e) => {
@@ -79,7 +103,7 @@ export const FarmerKycPage = () => {
 
       await farmerApi.submitKyc(payload);
       success('Đã nộp tài liệu KYC thành công! Hồ sơ chuyển sang trạng thái PENDING để Quản trị viên duyệt.');
-      loadKyc();
+      loadKyc(true);
     } catch (err) {
       error(err.message || 'Lỗi khi gửi tài liệu KYC lên máy chủ');
     } finally {
@@ -100,7 +124,7 @@ export const FarmerKycPage = () => {
             </span>
           </div>
 
-          <button onClick={loadKyc} className="btn btn-secondary">
+          <button onClick={() => loadKyc(true)} className="btn btn-secondary">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             <span>Tải lại</span>
           </button>
@@ -120,7 +144,7 @@ export const FarmerKycPage = () => {
               <div key={idx} className="kyc-doc-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 700, background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '6px' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, background: 'rgba(255, 255, 255, 0.08)', color: 'var(--text-main)', padding: '2px 8px', borderRadius: '6px' }}>
                       {doc.documentType}
                     </span>
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-main)', marginTop: '6px' }}>
@@ -130,8 +154,9 @@ export const FarmerKycPage = () => {
                   <span style={{
                     fontSize: '0.75rem',
                     fontWeight: 700,
-                    color: doc.isVerified ? 'var(--primary)' : '#ea580c',
-                    background: doc.isVerified ? '#dcfce7' : '#ffedd5',
+                    color: doc.isVerified ? '#34d399' : '#fbbf24',
+                    background: doc.isVerified ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                    border: `1px solid ${doc.isVerified ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
                     padding: '2px 8px',
                     borderRadius: '999px',
                   }}>
@@ -154,7 +179,7 @@ export const FarmerKycPage = () => {
                         alignItems: 'center',
                         gap: '6px',
                         fontSize: '0.8rem',
-                        color: '#2563eb',
+                        color: 'var(--primary-light)',
                         textDecoration: 'underline',
                       }}
                     >
@@ -169,14 +194,14 @@ export const FarmerKycPage = () => {
         )}
 
         {kycData.auditLogs?.length > 0 && (
-          <div style={{ marginTop: '24px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '18px' }}>
+          <div style={{ marginTop: '24px', background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '16px', padding: '18px' }}>
             <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '10px' }}>
               Lịch Sử Thẩm Định
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {kycData.auditLogs.map((log, lIdx) => (
-                <div key={lIdx} style={{ fontSize: '0.8rem', padding: '8px 10px', background: '#f8fafc', borderRadius: '8px' }}>
-                  <span style={{ fontWeight: 700, color: log.action === 'APPROVE' ? 'var(--primary)' : '#dc2626' }}>
+                <div key={lIdx} style={{ fontSize: '0.8rem', padding: '8px 10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: 'var(--text-main)' }}>
+                  <span style={{ fontWeight: 700, color: log.action === 'APPROVE' ? '#34d399' : '#f87171' }}>
                     [{log.action}]
                   </span>{' '}
                   - {log.remark || 'Không có ghi chú'} ({log.createdAt || 'Mới đây'})

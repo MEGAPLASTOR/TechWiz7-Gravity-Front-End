@@ -1,28 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, useNavigate } from 'react-router-dom';
-import { NotificationProvider } from '@/context/NotificationContext';
-import { AuthProvider } from '@/context/AuthContext';
-import { CartProvider } from '@/context/CartContext';
-import { Navbar } from '@/components/common/Navbar';
-import { Footer } from '@/components/common/Footer';
-import { AppRoutes } from '@/routes/AppRoutes';
-import { PATHS } from '@/routes/paths';
-import { PreOrderDrawer } from '@/components/order/PreOrderDrawer';
-import { AiAssistantModal } from '@/components/ai/AiAssistantModal';
-import { AuthModal } from '@/components/auth/AuthModal';
-import { marketsApi } from '@/api/markets.api';
+import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
+import { NotificationProvider, AuthProvider, CartProvider } from '@/context';
+import { Navbar, Footer } from '@/layout';
+import { AppRoutes, PATHS } from '@/routes';
+import { PreOrderDrawer, AiAssistantModal, AuthModal } from '@/components';
+import { marketsService } from '@/services';
 
 export function MainApp() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [markets, setMarkets] = useState([]);
+
+  // Automatically open auth modal if redirected with needAuth
+  useEffect(() => {
+    if (location.state?.needAuth) {
+      setIsAuthOpen(true);
+    }
+  }, [location.state]);
 
   // Fetch real markets from backend API
   useEffect(() => {
     async function fetchMarkets() {
       try {
-        const data = await marketsApi.getAllMarkets();
+        const data = await marketsService.getAllMarkets();
         setMarkets(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Failed to fetch markets:', err);

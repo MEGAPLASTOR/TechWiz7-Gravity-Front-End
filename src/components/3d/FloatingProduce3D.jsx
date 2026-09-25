@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const FloatingFruit = ({ type = 'tomato', size = 48, style = {} }) => {
+export const FloatingFruit = ({ type = 'tomato', size = 48, style = {}, className = '' }) => {
   const getFruitSvg = () => {
     switch (type) {
       case 'tomato':
@@ -75,6 +75,7 @@ export const FloatingFruit = ({ type = 'tomato', size = 48, style = {} }) => {
 
   return (
     <div
+      className={`floating-fruit-item ${className}`}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -87,3 +88,6 @@ export const FloatingFruit = ({ type = 'tomato', size = 48, style = {} }) => {
     </div>
   );
 };
+
+export const FloatingProduce3D = FloatingFruit;
+export default FloatingFruit;

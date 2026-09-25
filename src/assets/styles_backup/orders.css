@@ -1,0 +1,136 @@
+.orders-container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.order-card {
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+  padding: 24px;
+  overflow: hidden;
+}
+
+.order-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.order-pickup-box {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 16px;
+  margin: 16px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.order-cancel-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.order-cancel-btn:hover {
+  background: #fee2e2;
+}
+
+.order-review-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+/* Tracker Styles */
+.tracker-cancelled-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  color: #dc2626;
+}
+
+.tracker-wrapper {
+  padding: 16px 0;
+}
+
+.tracker-track-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.tracker-track-bg {
+  position: absolute;
+  top: 20px;
+  left: 30px;
+  right: 30px;
+  height: 4px;
+  background: #e2e8f0;
+  z-index: 0;
+}
+
+.tracker-track-fill {
+  position: absolute;
+  top: 20px;
+  left: 30px;
+  height: 4px;
+  background: linear-gradient(to right, #15803d, #22c55e);
+  z-index: 1;
+  transition: width 0.4s ease;
+}
+
+.tracker-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  position: relative;
+}
+
+.tracker-step-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-normal);
+}
+
+.tracker-step-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.tracker-step-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+

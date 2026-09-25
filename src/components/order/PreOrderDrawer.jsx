@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { X, ShoppingBag, Trash2, Calendar, Clock, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context';
 import { useNotification } from '@/context/NotificationContext';
 import { formatCurrency } from '@/utils/formatters';
-import { ordersApi } from '@/api/orders.api';
-import { marketsApi } from '@/api/markets.api';
+import { ordersApi, marketsApi } from '@/services';
 
 export const PreOrderDrawer = ({ markets = [], onOrderCreated }) => {
+  const { isAuthenticated } = useAuth();
   const {
     cartItems,
     totalItems,
@@ -33,35 +34,52 @@ export const PreOrderDrawer = ({ markets = [], onOrderCreated }) => {
   const [loadingSlots, setLoadingSlots] = useState(false);
 
   useEffect(() => {
-    if (!selectedMarket?.marketId) {
-      setLiveSlots([]);
-      return;
-    }
+    let isCancelled = false;
 
     async function fetchSlots() {
+      if (!selectedMarket?.marketId) {
+        setLiveSlots([]);
+        return;
+      }
+
       setLoadingSlots(true);
       try {
         const res = await marketsApi.getMarketPickupSlots(selectedMarket.marketId);
         const slots = Array.isArray(res) ? res : res?.data || [];
-        setLiveSlots(slots);
-        if (slots.length > 0) {
-          setSelectedSlot(slots[0]);
-        } else {
-          setSelectedSlot(null);
+        if (!isCancelled) {
+          setLiveSlots(slots);
+          if (slots.length > 0) {
+            setSelectedSlot(slots[0]);
+          } else {
+            setSelectedSlot(null);
+          }
         }
       } catch (err) {
         console.error('Error fetching live pickup slots:', err);
-        setLiveSlots([]);
+        if (!isCancelled) {
+          setLiveSlots([]);
+        }
       } finally {
-        setLoadingSlots(false);
+        if (!isCancelled) {
+          setLoadingSlots(false);
+        }
       }
     }
+
     fetchSlots();
-  }, [selectedMarket]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedMarket, setSelectedSlot]);
 
   if (!isDrawerOpen) return null;
 
   const handleCheckout = async () => {
+    if (!isAuthenticated) {
+      error('Vui lòng đăng nhập tài khoản trước khi hoàn tất đặt trước nông sản!');
+      return;
+    }
     if (cartItems.length === 0) {
       error('Giỏ hàng đặt trước của bạn đang trống!');
       return;

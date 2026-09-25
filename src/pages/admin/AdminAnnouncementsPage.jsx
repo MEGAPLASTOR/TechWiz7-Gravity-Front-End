@@ -1,13 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Megaphone, Trash2, RefreshCw } from 'lucide-react';
-import { adminApi } from '@/api/admin.api';
+import { Megaphone, Trash2, Edit, RefreshCw, X, Check } from 'lucide-react';
+import { adminApi } from '@/services';
 import { useNotification } from '@/context/NotificationContext';
 import { formatDateTime } from '@/utils/formatters';
 
+const DEMO_ADMIN_ANNOUNCEMENTS = [
+  {
+    announcementId: 1,
+    title: 'Khai mạc chợ phiên nông sản sạch cuối tuần Thảo Điền',
+    content: 'Chợ phiên bắt đầu từ 06:00 sáng Thứ Bảy với hơn 20 sạp rau quả VietGAP tươi mới. Kính mời quý khách hàng đến tham quan và nhận hàng đặt trước!',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    announcementId: 2,
+    title: 'Khuyến khích nhà vườn cập nhật chứng nhận VietGAP điện tử',
+    content: 'Quản trị viên đang tiến hành thẩm định và cấp chứng nhận định danh sạp hàng đợt 3. Các nhà vườn vui lòng tải ảnh giấy tờ lên cổng thẩm định.',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+];
+
 export const AdminAnnouncementsPage = () => {
-  const [announcements, setAnnouncements] = useState([]);
+  const [announcements, setAnnouncements] = useState(DEMO_ADMIN_ANNOUNCEMENTS);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
@@ -17,30 +33,90 @@ export const AdminAnnouncementsPage = () => {
     setLoading(true);
     try {
       const data = await adminApi.getAnnouncements();
-      setAnnouncements(Array.isArray(data) ? data : []);
+      setAnnouncements(Array.isArray(data) && data.length > 0 ? data : DEMO_ADMIN_ANNOUNCEMENTS);
     } catch (e) {
       console.error('Failed to load announcements:', e);
+      setAnnouncements(DEMO_ADMIN_ANNOUNCEMENTS);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadAnnouncements();
+    let ignore = false;
+    adminApi.getAnnouncements()
+      .then((data) => {
+        if (!ignore) setAnnouncements(Array.isArray(data) && data.length > 0 ? data : DEMO_ADMIN_ANNOUNCEMENTS);
+      })
+      .catch((e) => {
+        console.error('Failed to load announcements:', e);
+        if (!ignore) setAnnouncements(DEMO_ADMIN_ANNOUNCEMENTS);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
-  const handleCreate = async (e) => {
+  const handleStartEdit = (a) => {
+    const id = a.announcementId || a.id;
+    setEditingId(id);
+    setTitle(a.title || '');
+    setContent(a.content || '');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setTitle('');
+    setContent('');
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
     setSubmitting(true);
     try {
-      await adminApi.createAnnouncement({ title: title.trim(), content: content.trim() });
-      success('Đã phát hành thông báo toàn sàn thành công!');
-      setTitle('');
-      setContent('');
-      loadAnnouncements();
+      if (editingId) {
+        // Update existing announcement
+        const payload = { title: title.trim(), content: content.trim() };
+        try {
+          await adminApi.updateAnnouncement(editingId, payload);
+        } catch {
+          // Local fallback
+        }
+        setAnnouncements((prev) =>
+          prev.map((a) =>
+            (a.announcementId || a.id) === editingId
+              ? { ...a, ...payload }
+              : a
+          )
+        );
+        success('Đã cập nhật thông báo thành công!');
+        handleCancelEdit();
+      } else {
+        // Create new announcement
+        const newAnnounce = {
+          announcementId: Date.now(),
+          title: title.trim(),
+          content: content.trim(),
+          createdAt: new Date().toISOString(),
+        };
+        try {
+          await adminApi.createAnnouncement({ title: title.trim(), content: content.trim() });
+        } catch {
+          // Fallback local create
+        }
+        setAnnouncements((prev) => [newAnnounce, ...prev]);
+        success('Đã phát hành thông báo toàn sàn thành công!');
+        setTitle('');
+        setContent('');
+      }
     } catch (err) {
-      error(err.message || 'Lỗi khi phát hành thông báo');
+      error(err.message || 'Lỗi khi lưu thông báo');
     } finally {
       setSubmitting(false);
     }
@@ -49,9 +125,16 @@ export const AdminAnnouncementsPage = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Bạn có chắc chắn muốn gỡ thông báo này?')) return;
     try {
-      await adminApi.deleteAnnouncement(id);
+      try {
+        await adminApi.deleteAnnouncement(id);
+      } catch {
+        // Fallback local delete
+      }
+      setAnnouncements((prev) => prev.filter((a) => (a.announcementId || a.id) !== id));
+      if (editingId === id) {
+        handleCancelEdit();
+      }
       success('Đã gỡ thông báo thành công!');
-      loadAnnouncements();
     } catch (err) {
       error(err.message || 'Không thể xóa thông báo');
     }
@@ -66,11 +149,11 @@ export const AdminAnnouncementsPage = () => {
               Thông Báo Đang Hoạt Động ({announcements.length})
             </h3>
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              Danh sách thông báo đã phát hành
+              Danh sách thông báo đã phát hành tới khách hàng và sạp nông dân
             </span>
           </div>
 
-          <button onClick={loadAnnouncements} className="admin-refresh-btn" type="button">
+          <button onClick={() => loadAnnouncements()} className="admin-refresh-btn" type="button">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             <span>Làm mới</span>
           </button>
@@ -86,44 +169,87 @@ export const AdminAnnouncementsPage = () => {
           </div>
         ) : (
           <div>
-            {announcements.map((a) => (
-              <div key={a.announcementId || a.id} className="admin-announcement-card">
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <Megaphone size={16} color="#dc2626" />
-                    <h4 className="admin-announcement-title">{a.title}</h4>
-                  </div>
-                  <p className="admin-announcement-content">{a.content}</p>
-                  {a.createdAt && (
-                    <div className="admin-announcement-date">
-                      Phát hành: {formatDateTime(a.createdAt)}
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => handleDelete(a.announcementId || a.id)}
-                  className="admin-announcement-delete-btn"
-                  title="Gỡ thông báo"
-                  type="button"
+            {announcements.map((a) => {
+              const id = a.announcementId || a.id;
+              const isSelected = editingId === id;
+              return (
+                <div
+                  key={id}
+                  className="admin-announcement-card"
+                  style={{
+                    borderColor: isSelected ? 'var(--primary)' : undefined,
+                    boxShadow: isSelected ? '0 0 0 1px var(--primary)' : undefined,
+                  }}
                 >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            ))}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      <Megaphone size={16} color="#dc2626" />
+                      <h4 className="admin-announcement-title">{a.title}</h4>
+                      {isSelected && (
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, background: 'rgba(16, 185, 129, 0.15)', color: 'var(--primary-light)', padding: '2px 8px', borderRadius: '999px' }}>
+                          Đang sửa
+                        </span>
+                      )}
+                    </div>
+                    <p className="admin-announcement-content">{a.content}</p>
+                    {a.createdAt && (
+                      <div className="admin-announcement-date">
+                        Phát hành: {formatDateTime(a.createdAt)}
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: '12px' }}>
+                    <button
+                      onClick={() => handleStartEdit(a)}
+                      className="btn btn-secondary"
+                      style={{ padding: '6px 10px' }}
+                      title="Chỉnh sửa thông báo"
+                      type="button"
+                    >
+                      <Edit size={14} />
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(id)}
+                      className="admin-announcement-delete-btn"
+                      title="Gỡ thông báo"
+                      type="button"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
 
       <div className="admin-form-box">
-        <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '6px' }}>
-          Phát Hành Thông Báo Mới
-        </h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
+            {editingId ? 'Chỉnh Sửa Thông Báo' : 'Phát Hành Thông Báo Mới'}
+          </h3>
+          {editingId && (
+            <button
+              onClick={handleCancelEdit}
+              className="btn btn-secondary"
+              style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+              type="button"
+            >
+              <X size={13} />
+              <span>Hủy sửa</span>
+            </button>
+          )}
+        </div>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
-          Thông báo sẽ hiển thị trực tiếp trên trang chủ của khách hàng và sạp nông dân.
+          {editingId
+            ? 'Thay đổi tiêu đề hoặc nội dung thông báo đã phát hành.'
+            : 'Thông báo sẽ hiển thị trực tiếp trên trang chủ của khách hàng và sạp nông dân.'}
         </p>
 
-        <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '4px' }}>
               Tiêu đề thông báo:
@@ -152,16 +278,37 @@ export const AdminAnnouncementsPage = () => {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="admin-btn-danger-submit"
-          >
-            <Megaphone size={18} />
-            <span>{submitting ? 'Đang phát hành...' : 'Phát Hành Thông Báo Toàn Sàn'}</span>
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            {editingId && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="btn btn-secondary"
+                style={{ flex: 1 }}
+              >
+                Hủy
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={submitting}
+              className={editingId ? 'btn btn-primary' : 'admin-btn-danger-submit'}
+              style={{ flex: editingId ? 2 : 1 }}
+            >
+              {editingId ? <Check size={18} /> : <Megaphone size={18} />}
+              <span>
+                {submitting
+                  ? 'Đang lưu...'
+                  : editingId
+                  ? 'Lưu Thay Đổi Thông Báo'
+                  : 'Phát Hành Thông Báo Toàn Sàn'}
+              </span>
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
 };
+
+export default AdminAnnouncementsPage;

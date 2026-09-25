@@ -1,4 +1,6 @@
-/* KYC Verification & Security Workflow Styles */
+/* ==========================================================================
+   MARKETLINK - KYC VERIFICATION & SECURITY (DARK SLATE & ECO-GREEN THEME)
+   ========================================================================== */
 
 .kyc-banner {
   border-radius: var(--radius-lg);
@@ -7,32 +9,32 @@
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--duration-normal) var(--ease-smooth);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s ease;
 }
 
 .kyc-banner-unverified {
-  background: #fffbeb;
-  border: 1.5px solid #fde68a;
-  color: #92400e;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
 }
 
 .kyc-banner-pending {
-  background: #eff6ff;
-  border: 1.5px solid #bfdbfe;
-  color: #1e40af;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #93c5fd;
 }
 
 .kyc-banner-verified {
-  background: #f0fdf4;
-  border: 1.5px solid #bbf7d0;
-  color: #166534;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: var(--primary-light);
 }
 
 .kyc-banner-rejected {
-  background: #fef2f2;
-  border: 1.5px solid #fecaca;
-  color: #991b1b;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
 }
 
 .kyc-badge {
@@ -47,73 +49,84 @@
 }
 
 .kyc-badge-unverified {
-  background: #fef3c7;
-  color: #b45309;
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .kyc-badge-pending {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.18);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .kyc-badge-verified {
-  background: #dcfce7;
-  color: #15803d;
+  background: rgba(16, 185, 129, 0.18);
+  color: var(--primary-light);
+  border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
 .kyc-badge-rejected {
-  background: #fee2e2;
-  color: #dc2626;
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .kyc-rule-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   margin-top: 12px;
-  background: #ffffff;
-  border-radius: var(--radius-md);
+  background: #111722;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-light);
 }
 
 .kyc-rule-table th {
-  background: #f8fafc;
-  padding: 10px 14px;
+  background: #0f141d;
+  padding: 12px 16px;
   text-align: left;
   font-weight: 700;
-  color: #475569;
-  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-light);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
 }
 
 .kyc-rule-table td {
-  padding: 10px 14px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #0f172a;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+}
+
+.kyc-rule-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .kyc-doc-card {
-  background: #ffffff;
-  border: 1px solid var(--border-color);
+  background: linear-gradient(160deg, #151d2a 0%, #111722 100%);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  transition: all var(--duration-normal) var(--ease-smooth);
+  gap: 12px;
+  transition: all 0.25s ease;
 }
 
 .kyc-doc-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary-light);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  border-color: var(--primary);
 }
 
 .kyc-modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(15, 23, 42, 0.65);
+  background: rgba(11, 15, 21, 0.85);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -123,12 +136,14 @@
 
 .kyc-modal-content {
   width: 100%;
-  max-width: 640px;
+  max-width: 660px;
   max-height: 90vh;
   overflow-y: auto;
-  background: #ffffff;
-  border-radius: 24px;
-  box-shadow: var(--shadow-xl);
-  border: 1px solid var(--border-color);
-  animation: fadeInScale 0.25s var(--ease-smooth);
+  background: linear-gradient(160deg, #151d2a 0%, #0f1622 100%);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.15);
+  border: 1px solid var(--border-light);
+  border-top: 1px solid rgba(52, 211, 153, 0.35);
+  animation: fadeInScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #ffffff;
 }

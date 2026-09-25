@@ -4,6 +4,7 @@ export const ORDER_STATUS = {
   READY_FOR_PICKUP: 'READY_FOR_PICKUP',
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED',
+  DECLINED: 'DECLINED',
 };
 
 export const ORDER_STATUS_LABELS = {
@@ -12,6 +13,7 @@ export const ORDER_STATUS_LABELS = {
   READY_FOR_PICKUP: 'Sẵn sàng nhận hàng',
   COMPLETED: 'Đã hoàn thành',
   CANCELLED: 'Đã hủy',
+  DECLINED: 'Nông dân từ chối',
 };
 
 export const ORDER_STATUS_DESCRIPTIONS = {
@@ -19,5 +21,7 @@ export const ORDER_STATUS_DESCRIPTIONS = {
   ACCEPTED: 'Nông dân đã xác nhận tồn kho và chuẩn bị đóng gói.',
   READY_FOR_PICKUP: 'Nông sản đã sẵn sàng tại quầy chợ, quý khách vui lòng đến nhận theo khung giờ.',
   COMPLETED: 'Đơn hàng đã được thanh toán trực tiếp và nhận hàng thành công.',
-  CANCELLED: 'Đơn đặt trước đã bị hủy.',
+  CANCELLED: 'Đơn đặt trước đã bị hủy bởi khách hàng.',
+  DECLINED: 'Nông dân từ chối đơn hàng do hết nông sản tươi hoặc sự cố. Tồn kho đã được hoàn lại.',
 };
+

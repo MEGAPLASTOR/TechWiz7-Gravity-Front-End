@@ -1,11 +1,13 @@
-/* Auth Modal Styles */
+/* ==========================================================================
+   MARKETLINK - AUTH MODAL (DARK SLATE OBSIDIAN & ECO-GREEN THEME)
+   ========================================================================== */
 
 .auth-modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(8px);
+  background: rgba(11, 15, 21, 0.85);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,19 +16,21 @@
 
 .auth-modal-card {
   width: 100%;
-  max-width: 460px;
-  background: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-width: 480px;
+  background: linear-gradient(160deg, #151d2a 0%, #0f1622 100%);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.15);
   overflow: hidden;
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  animation: fadeInScale 0.25s var(--ease-smooth);
+  border: 1px solid var(--border-light);
+  border-top: 1px solid rgba(52, 211, 153, 0.35);
+  animation: fadeInScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #ffffff;
 }
 
 .auth-modal-header {
   padding: 20px 24px;
-  background: linear-gradient(135deg, #f0fdf4, #ffffff);
-  border-bottom: 1px solid var(--border-color);
+  background: #111722;
+  border-bottom: 1px solid var(--border-light);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -35,30 +39,31 @@
 .auth-modal-title {
   font-size: 1.25rem;
   font-weight: 800;
-  color: var(--text-main);
+  color: #ffffff;
 }
 
 .auth-modal-subtitle {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .auth-modal-close {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--text-muted);
   cursor: pointer;
   padding: 6px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--duration-fast);
+  transition: all 0.2s ease;
 }
 
 .auth-modal-close:hover {
-  background: #f1f5f9;
-  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
 .auth-modal-body {
@@ -69,14 +74,15 @@
   display: flex;
   gap: 8px;
   margin-bottom: 20px;
-  background: #f1f5f9;
+  background: #0b0f15;
   padding: 4px;
   border-radius: 12px;
+  border: 1px solid var(--border-light);
 }
 
 .auth-role-tab {
   flex: 1;
-  padding: 8px 12px;
+  padding: 9px 12px;
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 700;
@@ -85,22 +91,23 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--duration-fast);
+  transition: all 0.2s ease;
 }
 
 .auth-role-tab.active {
-  background: #ffffff;
-  color: var(--primary);
-  box-shadow: var(--shadow-sm);
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--primary-light);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
 }
 
 .auth-input-group {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .auth-label {
   display: block;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 700;
   color: var(--text-main);
   margin-bottom: 6px;
@@ -115,51 +122,159 @@
 .auth-input-icon {
   position: absolute;
   left: 14px;
-  color: #94a3b8;
+  color: var(--text-muted);
   pointer-events: none;
 }
 
 .auth-text-input {
   width: 100%;
-  padding: 10px 14px 10px 40px;
-  border: 1.5px solid var(--border-color);
-  border-radius: 12px;
-  font-size: 0.9rem;
+  padding: 11px 14px 11px 42px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-size: 0.92rem;
   outline: none;
-  transition: all var(--duration-fast);
+  transition: all 0.2s ease;
 }
 
 .auth-text-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.1);
+  background-color: var(--bg-input-focus);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
 }
 
 .auth-submit-btn {
   width: 100%;
-  background: var(--primary);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #ffffff;
-  padding: 12px;
-  border-radius: 12px;
-  font-weight: 700;
+  padding: 13px;
+  border-radius: var(--radius-md);
+  font-weight: 800;
   font-size: 0.95rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: none;
+  border: 1px solid rgba(52, 211, 153, 0.4);
   cursor: pointer;
-  margin-top: 10px;
-  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.25);
-  transition: all var(--duration-fast);
+  margin-top: 14px;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+  transition: all 0.2s ease;
 }
 
 .auth-submit-btn:hover:not(:disabled) {
-  background: var(--primary-dark);
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(16, 185, 129, 0.5);
 }
 
 .auth-submit-btn:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Eye Toggle Button */
+.auth-eye-btn {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.auth-eye-btn:hover {
+  color: var(--primary-light);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Error Banner & Inline Errors */
+.auth-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 12px;
+  color: #f87171;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  line-height: 1.4;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.auth-field-error {
+  font-size: 0.78rem;
+  color: #f87171;
+  margin-top: 5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Options Row (Remember Me & Forgot Password) */
+.auth-options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  margin-bottom: 16px;
+}
+
+.auth-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  color: #cbd5e1;
+}
+
+.auth-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.auth-forgot-link {
+  color: var(--primary-light);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.auth-forgot-link:hover {
+  text-decoration: underline;
+  color: #6ee7b7;
+}
+
+/* Spinner Animation */
+.auth-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .auth-footer-toggle {
@@ -172,8 +287,62 @@
 .auth-toggle-btn {
   background: transparent;
   border: none;
-  color: var(--primary);
+  color: var(--primary-light);
   font-weight: 700;
   cursor: pointer;
   margin-left: 4px;
+}
+
+.auth-toggle-btn:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   AUTH MODAL RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .auth-modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .auth-modal-card {
+    max-width: 100%;
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 94vh;
+    overflow-y: auto;
+    animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideUpFade {
+    from {
+      transform: translateY(40px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .auth-modal-header {
+    padding: 16px 18px;
+  }
+
+  .auth-modal-title {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-modal-card {
+    max-height: 97vh;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .auth-modal-header {
+    padding: 14px 16px;
+  }
 }

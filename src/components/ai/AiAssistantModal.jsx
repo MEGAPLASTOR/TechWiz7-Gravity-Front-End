@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, X, User } from 'lucide-react';
-import { aiApi } from '@/api/ai.api';
+import { aiApi } from '@/services';
 
 export const AiAssistantModal = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState([
@@ -27,41 +27,72 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
     }
   }, [messages, isOpen]);
 
-  if (!isOpen) return null;
+  const idRef = useRef(1);
 
   const handleSend = async (textToSend = input) => {
     const text = textToSend.trim();
     if (!text || isTyping) return;
 
-    const userMsg = { id: Date.now(), sender: 'user', text };
+    idRef.current += 1;
+    const userMsg = { id: idRef.current, sender: 'user', text };
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setIsTyping(true);
 
+    idRef.current += 1;
+    const aiMsgId = idRef.current;
+    // Khởi tạo bong bóng tin nhắn của AI để nhận stream
+    setMessages((prev) => [...prev, { id: aiMsgId, sender: 'ai', text: '' }]);
+
+    let accumulatedText = '';
     try {
-      const res = await aiApi.chat(text);
-      const aiReply = res?.reply || res?.data?.reply || (typeof res === 'string' ? res : 'Cảm ơn bạn đã liên hệ với trợ lý ảo MarketLink!');
-      const timingNotes = res?.timingNotes || res?.data?.timingNotes;
-
-      let finalText = aiReply;
-      if (timingNotes) {
-        finalText += `\n\n📌 ${timingNotes}`;
-      }
-
-      setMessages((prev) => [...prev, { id: Date.now() + 1, sender: 'ai', text: finalText }]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now() + 1,
-          sender: 'ai',
-          text: 'Hiện tại hệ thống AI đang bận kết nối đến máy chủ chợ. Bạn có thể xem danh sách chợ phiên trên trang chủ hoặc thử lại sau ít phút nhé!',
+      await aiApi.streamChat(text, {
+        onChunk: (_chunk, fullTextSoFar) => {
+          accumulatedText = fullTextSoFar;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === aiMsgId ? { ...m, text: fullTextSoFar } : m))
+          );
         },
-      ]);
+        onComplete: (finalText) => {
+          const finalResult = finalText || accumulatedText || 'Cảm ơn bạn đã liên hệ với trợ lý ảo MarketLink!';
+          setMessages((prev) =>
+            prev.map((m) => (m.id === aiMsgId ? { ...m, text: finalResult } : m))
+          );
+        },
+        onError: () => {
+          if (!accumulatedText) {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === aiMsgId
+                  ? {
+                      ...m,
+                      text: 'Hiện tại hệ thống AI đang bận kết nối đến máy chủ chợ. Bạn có thể xem danh sách chợ phiên trên trang chủ hoặc thử lại sau ít phút nhé!',
+                    }
+                  : m
+              )
+            );
+          }
+        },
+      });
+    } catch {
+      if (!accumulatedText) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === aiMsgId
+              ? {
+                  ...m,
+                  text: 'Hiện tại hệ thống AI đang bận kết nối đến máy chủ chợ. Bạn có thể xem danh sách chợ phiên trên trang chủ hoặc thử lại sau ít phút nhé!',
+                }
+              : m
+          )
+        );
+      }
     } finally {
       setIsTyping(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="ai-modal-backdrop" onClick={onClose}>

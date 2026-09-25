@@ -26,6 +26,7 @@ export const PATHS = {
     DASHBOARD: '/admin/dashboard',
     KYC: '/admin/kyc',
     USERS: '/admin/users',
+    CATEGORIES: '/admin/categories',
     MARKETS: '/admin/markets',
     ANNOUNCEMENTS: '/admin/announcements',
   },

@@ -8,8 +8,7 @@ import {
   Database,
   ArrowRight,
 } from 'lucide-react';
-import { adminApi } from '@/api/admin.api';
-import { marketsApi } from '@/api/markets.api';
+import { adminApi, marketsApi } from '@/services';
 import { PATHS } from '@/routes/paths';
 
 export const AdminDashboardPage = () => {

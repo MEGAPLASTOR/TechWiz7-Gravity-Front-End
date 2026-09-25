@@ -238,3 +238,28 @@
   justify-content: center;
   height: 100%;
 }
+
+@media (max-width: 640px) {
+  .drawer-panel {
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .drawer-header {
+    padding: 14px 16px;
+  }
+
+  .drawer-body {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .drawer-slots-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .drawer-footer {
+    padding: 14px;
+  }
+}
+

@@ -1,9 +1,13 @@
+/* ==========================================================================
+   MARKETLINK - 3D ANIMATIONS & MICRO-INTERACTIONS
+   ========================================================================== */
+
 @keyframes float-slow {
   0%, 100% {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
-    transform: translateY(-10px) rotate(2deg);
+    transform: translateY(-12px) rotate(3deg);
   }
 }
 
@@ -12,14 +16,32 @@
     transform: translateY(0px) rotate(0deg);
   }
   50% {
-    transform: translateY(8px) rotate(-2deg);
+    transform: translateY(10px) rotate(-3deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(16, 185, 129, 0.65);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
   }
 }
 
 @keyframes fadeInScale {
   from {
     opacity: 0;
-    transform: scale(0.96) translateY(8px);
+    transform: scale(0.96) translateY(10px);
   }
   to {
     opacity: 1;
@@ -30,7 +52,7 @@
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(18px);
   }
   to {
     opacity: 1;
@@ -46,10 +68,28 @@
   animation: float-reverse 7s ease-in-out infinite;
 }
 
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
 .animate-fade-in {
-  animation: fadeInScale 0.25s var(--ease-smooth) forwards;
+  animation: fadeInScale 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-slide-up {
-  animation: slideUp 0.3s var(--ease-smooth) forwards;
+  animation: slideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 3D Interactive Card Classes */
+.card-3d-interactive {
+  transform-style: preserve-3d;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.card-3d-interactive:hover {
+  transform: translateY(-6px) perspective(900px) rotateX(2deg) rotateY(-1.5deg);
+  box-shadow: 
+    0 22px 40px -10px rgba(0, 0, 0, 0.85),
+    0 0 25px rgba(16, 185, 129, 0.35),
+    0 0 0 1px rgba(16, 185, 129, 0.55);
 }

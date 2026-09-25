@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, ShoppingBag, Trash2, ArrowRight, RefreshCw } from 'lucide-react';
-import { customerApi } from '@/api/customer.api';
+import { customerApi } from '@/services';
 import { useCart } from '@/context/CartContext';
 import { useNotification } from '@/context/NotificationContext';
 import { formatCurrency } from '@/utils/formatters';
@@ -11,10 +11,10 @@ export const CustomerFavoritesPage = () => {
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { addToCart, setIsDrawerOpen } = useCart();
+  const { addToCart } = useCart();
   const { success, error } = useNotification();
 
-  const loadFavorites = async () => {
+  const refreshFavorites = async () => {
     setLoading(true);
     try {
       const data = await customerApi.getFavorites();
@@ -27,15 +27,29 @@ export const CustomerFavoritesPage = () => {
   };
 
   useEffect(() => {
-    loadFavorites();
+    let ignore = false;
+    customerApi.getFavorites()
+      .then((data) => {
+        if (!ignore) setFavorites(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error('Failed to load favorites:', err);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const handleRemoveFavorite = async (fav) => {
     try {
       await customerApi.toggleFavorite(fav.targetType || 'PRODUCT', fav.targetId || fav.productId);
       success('Đã xóa khỏi danh sách yêu thích!');
-      loadFavorites();
-    } catch (err) {
+      refreshFavorites();
+    } catch {
       error('Không thể cập nhật danh sách yêu thích');
     }
   };
@@ -65,7 +79,7 @@ export const CustomerFavoritesPage = () => {
           </p>
         </div>
 
-        <button onClick={loadFavorites} className="btn btn-secondary">
+        <button onClick={() => refreshFavorites()} className="btn btn-secondary">
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           <span>Làm mới</span>
         </button>

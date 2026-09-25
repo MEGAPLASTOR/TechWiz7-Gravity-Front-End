@@ -1,4 +1,6 @@
-/* Admin Module Styles */
+/* ==========================================================================
+   MARKETLINK - ADMIN PORTAL STYLES (DARK SLATE & SECURITY ARCHITECTURE)
+   ========================================================================== */
 
 .admin-container {
   padding: 32px 20px 80px;
@@ -17,47 +19,54 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #dc2626;
+  color: #f87171;
   font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
+  background: rgba(239, 68, 68, 0.12);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .admin-swagger-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #fee2e2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
   padding: 8px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-weight: 700;
   font-size: 0.85rem;
   text-decoration: none;
-  transition: all var(--duration-fast);
+  transition: all 0.2s ease;
 }
 
 .admin-swagger-link:hover {
-  background: #fecaca;
+  background: rgba(239, 68, 68, 0.25);
+  color: #ffffff;
 }
 
 .admin-title {
   font-size: 2.2rem;
   font-weight: 800;
-  color: var(--text-main);
-  margin: 4px 0 6px;
+  color: #ffffff;
+  margin: 6px 0;
+  letter-spacing: -0.02em;
 }
 
 .admin-desc {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 0.95rem;
 }
 
+/* Sub-nav Tabs */
 .admin-subnav {
   display: flex;
   gap: 8px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-light);
   margin-bottom: 28px;
   overflow-x: auto;
   padding-bottom: 2px;
@@ -75,18 +84,22 @@
   background: transparent;
   text-decoration: none;
   white-space: nowrap;
-  transition: all var(--duration-fast) var(--ease-smooth);
+  transition: all 0.2s ease;
 }
 
 .admin-subnav-link:hover {
-  color: #dc2626;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
 
 .admin-subnav-link.active {
-  color: #dc2626;
-  border-bottom-color: #dc2626;
+  color: #f87171;
+  border-bottom-color: #ef4444;
+  text-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
 }
 
+/* Stats 3D Cards */
 .admin-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -95,161 +108,221 @@
 }
 
 .admin-stat-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: linear-gradient(160deg, #151d2a 0%, #101622 100%);
+  border: 1px solid var(--border-light);
+  border-top: 1px solid rgba(239, 68, 68, 0.35);
   border-radius: var(--radius-lg);
   padding: 22px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  transition: all 0.25s ease;
 }
 
-.admin-card-box {
-  background: var(--bg-card);
+.admin-stat-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.75), 0 0 20px rgba(239, 68, 68, 0.25);
+}
+
+.admin-stat-val {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 4px 0;
+}
+
+.admin-stat-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Admin CRUD Table Styling */
+.admin-table-container {
+  background: #111722;
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-xl);
-  border: 1px solid var(--border-color);
-  padding: 24px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.88rem;
+}
+
+.admin-table th {
+  background: #0f141d;
+  color: var(--text-secondary);
+  font-weight: 700;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-light);
+  text-transform: uppercase;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+}
+
+.admin-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+}
+
+.admin-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-table-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Admin Markets Grid & 3D Cards */
 .admin-markets-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 22px;
 }
 
 .admin-market-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 20px;
+  background: linear-gradient(160deg, #151d2a 0%, #111722 100%);
+  border: 1px solid var(--border-light);
+  border-top: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: var(--radius-xl);
+  padding: 22px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--duration-normal);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  transition: all 0.25s ease;
 }
 
 .admin-market-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary-light);
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(16, 185, 129, 0.25);
 }
 
-.admin-announcements-layout {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
-}
-
-.admin-announcement-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 14px;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--duration-fast);
-}
-
-.admin-announcement-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: #fecaca;
-}
-
-.admin-announcement-title {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-.admin-announcement-content {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  line-height: 1.5;
-  margin-top: 4px;
-}
-
-.admin-announcement-date {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  margin-top: 8px;
-}
-
-.admin-announcement-delete-btn {
-  background: #fee2e2;
-  color: #dc2626;
-  border: none;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background var(--duration-fast);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.admin-announcement-delete-btn:hover {
-  background: #fecaca;
-}
-
-.admin-empty-state {
-  background: #ffffff;
-  border: 1px dashed #cbd5e1;
-  border-radius: var(--radius-lg);
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.admin-form-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+.admin-card-box {
+  background: #111722;
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-xl);
   padding: 24px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transition: all 0.25s ease;
 }
 
-.admin-btn-danger-submit {
-  margin-top: 10px;
-  background: #dc2626;
-  color: #ffffff;
-  padding: 12px 18px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  border: none;
-  transition: all var(--duration-fast);
+.admin-card-box:hover {
+  border-color: rgba(239, 68, 68, 0.5);
+  transform: translateY(-2px);
 }
 
-.admin-btn-danger-submit:hover:not(:disabled) {
-  background: #b91c1c;
+/* ==========================================================================
+   ADMIN PORTAL RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 16px 12px 70px;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .admin-title {
+    font-size: 1.6rem;
+  }
+
+  .admin-subnav {
+    gap: 0;
+    margin-bottom: 18px;
+  }
+
+  .admin-subnav-link {
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    gap: 5px;
+  }
+
+  /* Stats: 2-col on mobile */
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .admin-stat-card {
+    padding: 16px;
+  }
+
+  .admin-stat-val {
+    font-size: 1.45rem;
+  }
+
+  /* Table: horizontal scroll on mobile */
+  .admin-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-table {
+    min-width: 580px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 11px 14px;
+    font-size: 0.82rem;
+  }
+
+  /* Markets grid: single col */
+  .admin-markets-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .admin-market-card,
+  .admin-card-box {
+    padding: 16px;
+  }
 }
 
-.admin-btn-danger-submit:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
+@media (max-width: 480px) {
+  .admin-container {
+    padding: 12px 10px 60px;
+  }
 
-.admin-refresh-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #ffffff;
-  border: 1px solid var(--border-color);
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #dc2626;
-  cursor: pointer;
-  transition: background var(--duration-fast);
-}
+  .admin-title {
+    font-size: 1.3rem;
+  }
 
-.admin-refresh-btn:hover {
-  background: #f8fafc;
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .admin-stat-card {
+    padding: 12px;
+  }
+
+  .admin-stat-val {
+    font-size: 1.2rem;
+  }
+
+  .admin-subnav-link svg {
+    display: none;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 12px;
+    font-size: 0.78rem;
+  }
 }

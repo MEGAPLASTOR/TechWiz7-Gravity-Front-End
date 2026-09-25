@@ -17,7 +17,21 @@ export const OrderStatusTracker = ({ currentStatus = 'PLACED' }) => {
         <div>
           <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>Đơn hàng đã hủy</div>
           <div style={{ fontSize: '0.8rem', color: '#b91c1c' }}>
-            Đơn đặt trước đã bị hủy bỏ trước giờ chốt đơn.
+            Đơn đặt trước đã bị khách hàng hủy bỏ trước giờ chốt đơn.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentStatus === ORDER_STATUS.DECLINED) {
+    return (
+      <div className="tracker-cancelled-box" style={{ background: '#fef2f2', borderColor: '#fca5a5' }}>
+        <XCircle size={24} color="#dc2626" />
+        <div>
+          <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#b91c1c' }}>Nông dân đã từ chối đơn</div>
+          <div style={{ fontSize: '0.8rem', color: '#b91c1c' }}>
+            Sạp tạm thời hết nông sản hoặc sự cố thu hoạch. Tồn kho đã được hoàn lại.
           </div>
         </div>
       </div>
@@ -37,26 +51,20 @@ export const OrderStatusTracker = ({ currentStatus = 'PLACED' }) => {
         />
 
         {steps.map((step, idx) => {
-          const isDone = idx <= activeIndex;
+          const isDone = idx < activeIndex;
           const isCurrent = idx === activeIndex;
           const Icon = step.icon;
 
           return (
             <div key={step.key} className="tracker-step-item">
               <div
-                className="tracker-step-icon-box"
-                style={{
-                  background: isDone ? 'var(--primary)' : '#ffffff',
-                  color: isDone ? '#ffffff' : '#94a3b8',
-                  border: `2.5px solid ${isDone ? 'var(--primary)' : '#e2e8f0'}`,
-                  boxShadow: isCurrent ? '0 0 0 4px rgba(21, 128, 61, 0.2)' : 'none',
-                }}
+                className={`tracker-step-icon-box ${isCurrent ? 'active' : isDone ? 'done' : ''}`}
               >
                 <Icon size={18} />
               </div>
               <div
                 className="tracker-step-label"
-                style={{ color: isDone ? 'var(--text-main)' : 'var(--text-muted)' }}
+                style={{ color: isCurrent ? 'var(--primary-light)' : isDone ? '#ffffff' : 'var(--text-muted)' }}
               >
                 {step.label}
               </div>

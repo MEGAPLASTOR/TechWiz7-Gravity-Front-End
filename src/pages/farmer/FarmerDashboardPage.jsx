@@ -7,8 +7,7 @@ import {
   FileCheck2,
   ArrowRight,
 } from 'lucide-react';
-import { farmerApi } from '@/api/farmer.api';
-import { ordersApi } from '@/api/orders.api';
+import { farmerApi, ordersApi } from '@/services';
 import { formatCurrency } from '@/utils/formatters';
 import { PATHS } from '@/routes/paths';
 

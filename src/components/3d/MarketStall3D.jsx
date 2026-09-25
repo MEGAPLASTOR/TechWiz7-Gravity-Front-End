@@ -18,7 +18,7 @@ export const MarketStall3D = ({ width = 280, height = 240, interactive = true })
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     container.appendChild(renderer.domElement);
 
     // 2. Lighting
@@ -171,11 +171,11 @@ export const MarketStall3D = ({ width = 280, height = 240, interactive = true })
     }
 
     let animId;
-    let clock = new THREE.Clock();
+    const startTime = performance.now();
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
-      const elapsedTime = clock.getElapsedTime();
+      const elapsedTime = (performance.now() - startTime) * 0.001;
 
       // Gentle floating / idle motion
       stallGroup.position.y = Math.sin(elapsedTime * 1.5) * 0.04;
