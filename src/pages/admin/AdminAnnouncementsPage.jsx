@@ -4,23 +4,8 @@ import { adminApi } from '@/services';
 import { useNotification } from '@/context/NotificationContext';
 import { formatDateTime } from '@/utils/formatters';
 
-const DEMO_ADMIN_ANNOUNCEMENTS = [
-  {
-    announcementId: 1,
-    title: 'Khai mạc chợ phiên nông sản sạch cuối tuần Thảo Điền',
-    content: 'Chợ phiên bắt đầu từ 06:00 sáng Thứ Bảy với hơn 20 sạp rau quả VietGAP tươi mới. Kính mời quý khách hàng đến tham quan và nhận hàng đặt trước!',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    announcementId: 2,
-    title: 'Khuyến khích nhà vườn cập nhật chứng nhận VietGAP điện tử',
-    content: 'Quản trị viên đang tiến hành thẩm định và cấp chứng nhận định danh sạp hàng đợt 3. Các nhà vườn vui lòng tải ảnh giấy tờ lên cổng thẩm định.',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-];
-
 export const AdminAnnouncementsPage = () => {
-  const [announcements, setAnnouncements] = useState(DEMO_ADMIN_ANNOUNCEMENTS);
+  const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -33,32 +18,17 @@ export const AdminAnnouncementsPage = () => {
     setLoading(true);
     try {
       const data = await adminApi.getAnnouncements();
-      setAnnouncements(Array.isArray(data) && data.length > 0 ? data : DEMO_ADMIN_ANNOUNCEMENTS);
+      setAnnouncements(Array.isArray(data) ? data : (data?.content || data?.data || []));
     } catch (e) {
       console.error('Failed to load announcements:', e);
-      setAnnouncements(DEMO_ADMIN_ANNOUNCEMENTS);
+      setAnnouncements([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let ignore = false;
-    adminApi.getAnnouncements()
-      .then((data) => {
-        if (!ignore) setAnnouncements(Array.isArray(data) && data.length > 0 ? data : DEMO_ADMIN_ANNOUNCEMENTS);
-      })
-      .catch((e) => {
-        console.error('Failed to load announcements:', e);
-        if (!ignore) setAnnouncements(DEMO_ADMIN_ANNOUNCEMENTS);
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
+    loadAnnouncements();
   }, []);
 
   const handleStartEdit = (a) => {
@@ -80,41 +50,18 @@ export const AdminAnnouncementsPage = () => {
     if (!title.trim() || !content.trim()) return;
     setSubmitting(true);
     try {
+      const payload = { title: title.trim(), content: content.trim() };
       if (editingId) {
-        // Update existing announcement
-        const payload = { title: title.trim(), content: content.trim() };
-        try {
-          await adminApi.updateAnnouncement(editingId, payload);
-        } catch {
-          // Local fallback
-        }
-        setAnnouncements((prev) =>
-          prev.map((a) =>
-            (a.announcementId || a.id) === editingId
-              ? { ...a, ...payload }
-              : a
-          )
-        );
+        await adminApi.updateAnnouncement(editingId, payload);
         success('Đã cập nhật thông báo thành công!');
         handleCancelEdit();
       } else {
-        // Create new announcement
-        const newAnnounce = {
-          announcementId: Date.now(),
-          title: title.trim(),
-          content: content.trim(),
-          createdAt: new Date().toISOString(),
-        };
-        try {
-          await adminApi.createAnnouncement({ title: title.trim(), content: content.trim() });
-        } catch {
-          // Fallback local create
-        }
-        setAnnouncements((prev) => [newAnnounce, ...prev]);
+        await adminApi.createAnnouncement(payload);
         success('Đã phát hành thông báo toàn sàn thành công!');
         setTitle('');
         setContent('');
       }
+      await loadAnnouncements();
     } catch (err) {
       error(err.message || 'Lỗi khi lưu thông báo');
     } finally {
@@ -125,16 +72,12 @@ export const AdminAnnouncementsPage = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Bạn có chắc chắn muốn gỡ thông báo này?')) return;
     try {
-      try {
-        await adminApi.deleteAnnouncement(id);
-      } catch {
-        // Fallback local delete
-      }
-      setAnnouncements((prev) => prev.filter((a) => (a.announcementId || a.id) !== id));
+      await adminApi.deleteAnnouncement(id);
       if (editingId === id) {
         handleCancelEdit();
       }
       success('Đã gỡ thông báo thành công!');
+      await loadAnnouncements();
     } catch (err) {
       error(err.message || 'Không thể xóa thông báo');
     }

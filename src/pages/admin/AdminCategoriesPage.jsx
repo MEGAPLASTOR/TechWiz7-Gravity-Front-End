@@ -14,61 +14,8 @@ import {
 import { adminApi, productsApi } from '@/services';
 import { useNotification } from '@/context/NotificationContext';
 
-const DEMO_CATEGORIES = [
-  {
-    categoryId: 1,
-    name: 'Rau Củ Tươi Hữu Cơ',
-    code: 'rau-cu-tuoi',
-    icon: '🥬',
-    description: 'Các loại rau ăn lá non, củ quả thu hoạch sớm 4h sáng đạt chuẩn VietGAP & Hữu cơ.',
-    displayOrder: 1,
-    productCount: 18,
-    status: 'ACTIVE',
-  },
-  {
-    categoryId: 2,
-    name: 'Trái Cây Vườn Miền Nam',
-    code: 'trai-cay-vuon',
-    icon: '🍊',
-    description: 'Bưởi da xanh Bến Tre, cam sành Tiền Giang, xoài cát Hòa Lộc hái chín tại cây.',
-    displayOrder: 2,
-    productCount: 12,
-    status: 'ACTIVE',
-  },
-  {
-    categoryId: 3,
-    name: 'Nấm & Thảo Mộc Tươi',
-    code: 'nam-thao-moc',
-    icon: '🍄',
-    description: 'Nấm bào ngư xám, nấm linh chi đỏ, rau gia vị thảo mộc canh tác thủy canh.',
-    displayOrder: 3,
-    productCount: 9,
-    status: 'ACTIVE',
-  },
-  {
-    categoryId: 4,
-    name: 'Gạo & Nông Sản Khô Đặc Sản',
-    code: 'gao-nong-san-kho',
-    icon: '🌾',
-    description: 'Gạo ST25 chuẩn thơm ngon nhất thế giới, đậu đen xanh lòng, hạt điều rang củi.',
-    displayOrder: 4,
-    productCount: 15,
-    status: 'ACTIVE',
-  },
-  {
-    categoryId: 5,
-    name: 'Mật Ong & Dược Liệu Tự Nhiên',
-    code: 'mat-ong-duoc-lieu',
-    icon: '🍯',
-    description: 'Mật ong rừng nguyên chất hoa nhãn, trà thảo mộc Tây Bắc sấy lạnh công nghệ cao.',
-    displayOrder: 5,
-    productCount: 7,
-    status: 'ACTIVE',
-  },
-];
-
 export const AdminCategoriesPage = () => {
-  const [categories, setCategories] = useState(DEMO_CATEGORIES);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -90,32 +37,17 @@ export const AdminCategoriesPage = () => {
     setLoading(true);
     try {
       const data = await productsApi.getCategories();
-      setCategories(Array.isArray(data) && data.length > 0 ? data : DEMO_CATEGORIES);
+      setCategories(Array.isArray(data) ? data : (data?.content || data?.data || []));
     } catch (e) {
       console.error('Failed to load categories:', e);
-      setCategories(DEMO_CATEGORIES);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let ignore = false;
-    productsApi.getCategories()
-      .then((data) => {
-        if (!ignore) setCategories(Array.isArray(data) && data.length > 0 ? data : DEMO_CATEGORIES);
-      })
-      .catch((e) => {
-        console.error('Failed to load categories:', e);
-        if (!ignore) setCategories(DEMO_CATEGORIES);
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
+    loadCategories();
   }, []);
 
   const handleOpenAdd = () => {
@@ -158,32 +90,14 @@ export const AdminCategoriesPage = () => {
       };
 
       if (editingCategory) {
-        try {
-          await adminApi.updateCategory(editingCategory.categoryId, payload);
-        } catch {
-          // Local fallback
-        }
-        setCategories((prev) =>
-          prev.map((c) =>
-            c.categoryId === editingCategory.categoryId ? { ...c, ...payload } : c
-          )
-        );
+        await adminApi.updateCategory(editingCategory.categoryId, payload);
         success(`Đã cập nhật danh mục "${form.name}" thành công!`);
       } else {
-        const newCat = {
-          ...payload,
-          categoryId: Date.now(),
-          productCount: 0,
-        };
-        try {
-          await adminApi.createCategory(payload);
-        } catch {
-          // Local fallback
-        }
-        setCategories((prev) => [...prev, newCat]);
+        await adminApi.createCategory(payload);
         success(`Đã tạo mới danh mục "${form.name}" thành công!`);
       }
       setShowModal(false);
+      await loadCategories();
     } catch (err) {
       error(err.message || 'Lỗi khi lưu danh mục');
     } finally {
@@ -194,13 +108,9 @@ export const AdminCategoriesPage = () => {
   const handleDeleteCategory = async (id, name) => {
     if (!window.confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"? Các nông sản thuộc danh mục này sẽ chuyển về chưa phân loại.`)) return;
     try {
-      try {
-        await adminApi.deleteCategory(id);
-      } catch {
-        // Local fallback
-      }
-      setCategories((prev) => prev.filter((c) => c.categoryId !== id));
+      await adminApi.deleteCategory(id);
       success(`Đã xóa danh mục "${name}" thành công!`);
+      await loadCategories();
     } catch (err) {
       error(err.message || 'Không thể xóa danh mục');
     }
@@ -209,15 +119,9 @@ export const AdminCategoriesPage = () => {
   const handleToggleStatus = async (cat) => {
     const nextStatus = cat.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     try {
-      try {
-        await adminApi.updateCategory(cat.categoryId, { ...cat, status: nextStatus });
-      } catch {
-        // Local fallback
-      }
-      setCategories((prev) =>
-        prev.map((c) => (c.categoryId === cat.categoryId ? { ...c, status: nextStatus } : c))
-      );
+      await adminApi.updateCategory(cat.categoryId, { ...cat, status: nextStatus });
       success(`Đã chuyển trạng thái danh mục sang ${nextStatus === 'ACTIVE' ? 'Đang hiển thị' : 'Đã ẩn'}!`);
+      await loadCategories();
     } catch (err) {
       error(err.message || 'Không thể thay đổi trạng thái danh mục');
     }

@@ -3,38 +3,8 @@ import { Clock, Plus, Edit, Trash2, RefreshCw, Lock, X } from 'lucide-react';
 import { farmerApi } from '@/services';
 import { useNotification } from '@/context/NotificationContext';
 
-const DEMO_PICKUP_SLOTS = [
-  {
-    slotId: 1,
-    slotDate: '2026-09-27',
-    startTime: '06:30:00',
-    endTime: '08:00:00',
-    maxCapacity: 20,
-    currentOrders: 6,
-    status: 'ACTIVE',
-  },
-  {
-    slotId: 2,
-    slotDate: '2026-09-27',
-    startTime: '08:00:00',
-    endTime: '09:30:00',
-    maxCapacity: 25,
-    currentOrders: 14,
-    status: 'ACTIVE',
-  },
-  {
-    slotId: 3,
-    slotDate: '2026-09-28',
-    startTime: '07:00:00',
-    endTime: '09:00:00',
-    maxCapacity: 18,
-    currentOrders: 3,
-    status: 'ACTIVE',
-  },
-];
-
 export const FarmerSlotsPage = () => {
-  const [pickupSlots, setPickupSlots] = useState(DEMO_PICKUP_SLOTS);
+  const [pickupSlots, setPickupSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isApproved, setIsApproved] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -42,7 +12,7 @@ export const FarmerSlotsPage = () => {
   const [submittingSlot, setSubmittingSlot] = useState(false);
 
   const [slotForm, setSlotForm] = useState({
-    slotDate: '2026-09-27',
+    slotDate: new Date().toISOString().split('T')[0],
     startTime: '07:00:00',
     endTime: '09:00:00',
     maxCapacity: 20,
@@ -62,10 +32,10 @@ export const FarmerSlotsPage = () => {
       ]);
 
       if (slotsRes.status === 'fulfilled') {
-        const sList = Array.isArray(slotsRes.value) ? slotsRes.value : slotsRes.value?.data || [];
-        setPickupSlots(sList.length > 0 ? sList : DEMO_PICKUP_SLOTS);
+        const sList = Array.isArray(slotsRes.value) ? slotsRes.value : (slotsRes.value?.content || slotsRes.value?.data || []);
+        setPickupSlots(sList);
       } else {
-        setPickupSlots(DEMO_PICKUP_SLOTS);
+        setPickupSlots([]);
       }
       if (kycRes.status === 'fulfilled' && kycRes.value) {
         const kData = kycRes.value?.data || kycRes.value;
@@ -75,41 +45,14 @@ export const FarmerSlotsPage = () => {
       }
     } catch (e) {
       console.error('Error loading slots data:', e);
-      setPickupSlots(DEMO_PICKUP_SLOTS);
+      setPickupSlots([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let ignore = false;
-    Promise.allSettled([farmerApi.getPickupSlots(), farmerApi.getMyKyc()])
-      .then(([slotsRes, kycRes]) => {
-        if (ignore) return;
-        if (slotsRes.status === 'fulfilled') {
-          const sList = Array.isArray(slotsRes.value) ? slotsRes.value : slotsRes.value?.data || [];
-          setPickupSlots(sList.length > 0 ? sList : DEMO_PICKUP_SLOTS);
-        } else {
-          setPickupSlots(DEMO_PICKUP_SLOTS);
-        }
-        if (kycRes.status === 'fulfilled' && kycRes.value) {
-          const kData = kycRes.value?.data || kycRes.value;
-          if (typeof kData?.isApproved === 'boolean') {
-            setIsApproved(kData.isApproved);
-          }
-        }
-      })
-      .catch((e) => {
-        console.error('Error loading slots data:', e);
-        if (!ignore) setPickupSlots(DEMO_PICKUP_SLOTS);
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
+    loadData();
   }, []);
 
   const handleOpenAddSlot = () => {
@@ -149,30 +92,14 @@ export const FarmerSlotsPage = () => {
     try {
       if (editingSlot) {
         const slotId = editingSlot.slotId || editingSlot.id;
-        try {
-          await farmerApi.updatePickupSlot(slotId, slotForm);
-        } catch {
-          // Local fallback
-        }
-        setPickupSlots((prev) =>
-          prev.map((s) => ((s.slotId || s.id) === slotId ? { ...s, ...slotForm } : s))
-        );
+        await farmerApi.updatePickupSlot(slotId, slotForm);
         success('Đã cập nhật khung giờ nhận hàng thành công!');
       } else {
-        const newSlot = {
-          ...slotForm,
-          slotId: Date.now(),
-          currentOrders: 0,
-        };
-        try {
-          await farmerApi.createPickupSlot(slotForm);
-        } catch {
-          // Local fallback
-        }
-        setPickupSlots((prev) => [...prev, newSlot]);
+        await farmerApi.createPickupSlot(slotForm);
         success('Đã tạo khung giờ đón khách mới thành công!');
       }
       setShowModal(false);
+      await loadData();
     } catch (err) {
       error(err.message || 'Lỗi khi lưu khung giờ');
     } finally {
@@ -183,13 +110,9 @@ export const FarmerSlotsPage = () => {
   const handleDeleteSlot = async (slotId) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa khung giờ nhận hàng này?')) return;
     try {
-      try {
-        await farmerApi.deletePickupSlot(slotId);
-      } catch {
-        // Local fallback
-      }
-      setPickupSlots((prev) => prev.filter((s) => (s.slotId || s.id) !== slotId));
+      await farmerApi.deletePickupSlot(slotId);
       success('Đã xóa khung giờ nhận hàng thành công!');
+      await loadData();
     } catch (err) {
       error(err.message || 'Không thể xóa khung giờ');
     }

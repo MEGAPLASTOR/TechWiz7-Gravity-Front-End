@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient, getBaseUrl } from './client';
 
 export const aiService = {
   /**
@@ -30,9 +30,7 @@ export const aiService = {
    * Real-time Server-Sent Events (SSE) streaming chat with Gemini AI
    */
   streamChat: async (prompt, { onChunk, onComplete, onError, signal } = {}) => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL 
-      ? `${import.meta.env.VITE_API_BASE_URL}/api`
-      : '/api';
+    const baseUrl = getBaseUrl();
     const token = localStorage.getItem('marketlink_token');
     const url = `${baseUrl}/ai/chat/stream?prompt=${encodeURIComponent(prompt)}`;
 

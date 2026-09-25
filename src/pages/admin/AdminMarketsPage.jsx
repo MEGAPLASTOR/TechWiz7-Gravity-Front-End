@@ -3,41 +3,8 @@ import { Plus, Edit, Trash2, MapPin, Calendar, RefreshCw, X } from 'lucide-react
 import { marketsApi, adminApi } from '@/services';
 import { useNotification } from '@/context/NotificationContext';
 
-const DEMO_ADMIN_MARKETS = [
-  {
-    marketId: 1,
-    name: 'Chợ Phiên Nông Sản Thảo Điền (Quận 2)',
-    address: 'Công viên Thảo Điền, P. Thảo Điền, TP. Thủ Đức, TP.HCM',
-    operatingDays: 'Thứ Bảy & Chủ Nhật hàng tuần',
-    operatingHours: '06:00 - 12:00',
-    description: 'Quy tụ hơn 15 sạp rau sạch Ba Vì, bưởi Bến Tre, hoa quả miền Tây tươi ngon đạt chuẩn VietGAP.',
-    latitude: 10.8037,
-    longitude: 106.7327,
-  },
-  {
-    marketId: 2,
-    name: 'Chợ Nông Sản Sạch Phú Mỹ Hưng (Quận 7)',
-    address: 'Khuôn viên Hồ Bán Nguyệt, P. Tân Phú, Quận 7, TP.HCM',
-    operatingDays: 'Chủ Nhật hàng tuần',
-    operatingHours: '06:30 - 11:30',
-    description: 'Chợ phiên phục vụ cư dân Nam Sài Gòn, chuyên nông sản hữu cơ công nghệ cao thu hoạch sáng sớm.',
-    latitude: 10.7291,
-    longitude: 106.7218,
-  },
-  {
-    marketId: 3,
-    name: 'Chợ Xanh Cuối Tuần Vinhomes Central Park',
-    address: 'Công viên ven sông Vinhomes Central Park, Q. Bình Thạnh, TP.HCM',
-    operatingDays: 'Thứ Bảy hàng tuần',
-    operatingHours: '06:00 - 11:00',
-    description: 'Điểm giao nhận rau củ quả tươi sạch trực tiếp từ nông dân các tỉnh miền Tây và Tây Nguyên.',
-    latitude: 10.7933,
-    longitude: 106.7225,
-  },
-];
-
 export const AdminMarketsPage = () => {
-  const [markets, setMarkets] = useState(DEMO_ADMIN_MARKETS);
+  const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingMarket, setEditingMarket] = useState(null);
@@ -59,32 +26,17 @@ export const AdminMarketsPage = () => {
     setLoading(true);
     try {
       const data = await marketsApi.getAllMarkets();
-      setMarkets(Array.isArray(data) && data.length > 0 ? data : DEMO_ADMIN_MARKETS);
+      setMarkets(Array.isArray(data) ? data : (data?.content || data?.data || []));
     } catch (e) {
       console.error('Failed to load markets:', e);
-      setMarkets(DEMO_ADMIN_MARKETS);
+      setMarkets([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let ignore = false;
-    marketsApi.getAllMarkets()
-      .then((data) => {
-        if (!ignore) setMarkets(Array.isArray(data) && data.length > 0 ? data : DEMO_ADMIN_MARKETS);
-      })
-      .catch((e) => {
-        console.error('Failed to load markets:', e);
-        if (!ignore) setMarkets(DEMO_ADMIN_MARKETS);
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
+    loadMarkets();
   }, []);
 
   const handleOpenAdd = () => {
@@ -120,26 +72,14 @@ export const AdminMarketsPage = () => {
     setSubmitting(true);
     try {
       if (editingMarket) {
-        try {
-          await adminApi.updateMarket(editingMarket.marketId, form);
-        } catch {
-          // Fallback local update
-        }
-        setMarkets((prev) =>
-          prev.map((m) => (m.marketId === editingMarket.marketId ? { ...m, ...form } : m))
-        );
+        await adminApi.updateMarket(editingMarket.marketId, form);
         success(`Đã cập nhật điểm chợ "${form.name}" thành công!`);
       } else {
-        const newM = { ...form, marketId: Date.now() };
-        try {
-          await adminApi.createMarket(form);
-        } catch {
-          // Fallback local create
-        }
-        setMarkets((prev) => [newM, ...prev]);
+        await adminApi.createMarket(form);
         success(`Đã thêm điểm chợ mới "${form.name}" lên hệ thống!`);
       }
       setShowModal(false);
+      await loadMarkets();
     } catch (err) {
       error(err.message || 'Lỗi khi lưu điểm chợ');
     } finally {
@@ -150,13 +90,9 @@ export const AdminMarketsPage = () => {
   const handleDeleteMarket = async (id, name) => {
     if (!window.confirm(`Bạn có chắc chắn muốn xóa điểm chợ "${name}"?`)) return;
     try {
-      try {
-        await adminApi.deleteMarket(id);
-      } catch {
-        // Fallback local delete
-      }
-      setMarkets((prev) => prev.filter((m) => m.marketId !== id));
+      await adminApi.deleteMarket(id);
       success(`Đã xóa điểm chợ "${name}" thành công!`);
+      await loadMarkets();
     } catch (err) {
       error(err.message || 'Không thể xóa điểm chợ');
     }

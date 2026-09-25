@@ -16,29 +16,12 @@ import { useAuth } from '@/context/AuthContext';
 import { customerApi } from '@/services';
 import { useNotification } from '@/context/NotificationContext';
 
-const DEMO_FAMILY_MEMBERS = [
-  {
-    id: 1,
-    fullName: 'Trần Minh Hoàng',
-    phoneNumber: '0988 123 456',
-    relationship: 'Vợ/Chồng',
-    status: 'ACTIVE',
-  },
-  {
-    id: 2,
-    fullName: 'Lê Thu Trang',
-    phoneNumber: '0977 654 321',
-    relationship: 'Con cái',
-    status: 'ACTIVE',
-  },
-];
-
 export const CustomerProfilePage = () => {
   const { user, login } = useAuth();
   const { success, error } = useNotification();
 
   const [summary, setSummary] = useState(null);
-  const [familyMembers, setFamilyMembers] = useState(DEMO_FAMILY_MEMBERS);
+  const [familyMembers, setFamilyMembers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Profile Edit Modal State
@@ -71,11 +54,11 @@ export const CustomerProfilePage = () => {
       if (sumRes.status === 'fulfilled') setSummary(sumRes.value?.data || sumRes.value);
       if (famRes.status === 'fulfilled') {
         const famList = Array.isArray(famRes.value) ? famRes.value : famRes.value?.data || [];
-        setFamilyMembers(famList.length > 0 ? famList : DEMO_FAMILY_MEMBERS);
+        setFamilyMembers(famList);
       }
     } catch (err) {
       console.error('Error loading customer profile summary:', err);
-      setFamilyMembers(DEMO_FAMILY_MEMBERS);
+      setFamilyMembers([]);
     } finally {
       setLoading(false);
     }
@@ -87,10 +70,10 @@ export const CustomerProfilePage = () => {
 
   const handleOpenEditProfile = () => {
     setProfileForm({
-      fullName: user?.fullName || 'Khách Hàng Thân Thiết',
-      phoneNumber: user?.phoneNumber || '0912 345 678',
-      email: user?.email || 'customer@marketlink.com',
-      address: user?.address || 'Cầu Giấy, Hà Nội & Quận 2, TP.HCM',
+      fullName: user?.fullName || '',
+      phoneNumber: user?.phoneNumber || '',
+      email: user?.email || '',
+      address: user?.address || '',
     });
     setShowProfileModal(true);
   };
@@ -99,18 +82,14 @@ export const CustomerProfilePage = () => {
     e.preventDefault();
     setSubmittingProfile(true);
     try {
-      try {
-        await customerApi.updateProfile(profileForm);
-      } catch {
-        // Local fallback
-      }
-      // Update local auth context if login exists
+      await customerApi.updateProfile(profileForm);
       if (user) {
         const updated = { ...user, ...profileForm };
         localStorage.setItem('marketlink_user', JSON.stringify(updated));
       }
       success('Đã cập nhật thông tin tài khoản thành công!');
       setShowProfileModal(false);
+      await loadProfile();
     } catch (err) {
       error(err.message || 'Lỗi khi cập nhật hồ sơ');
     } finally {
@@ -132,22 +111,10 @@ export const CustomerProfilePage = () => {
     e.preventDefault();
     setSubmittingFamily(true);
     try {
-      const newMember = {
-        id: Date.now(),
-        fullName: familyForm.fullName.trim(),
-        phoneNumber: familyForm.phoneNumber.trim(),
-        email: familyForm.email.trim(),
-        relationship: familyForm.relationship,
-        status: 'ACTIVE',
-      };
-      try {
-        await customerApi.addFamilyMember(familyForm);
-      } catch {
-        // Local fallback
-      }
-      setFamilyMembers((prev) => [...prev, newMember]);
+      await customerApi.addFamilyMember(familyForm);
       success(`Đã thêm "${familyForm.fullName}" vào nhóm gia đình!`);
       setShowFamilyModal(false);
+      await loadProfile();
     } catch (err) {
       error(err.message || 'Lỗi khi thêm thành viên gia đình');
     } finally {
@@ -158,13 +125,9 @@ export const CustomerProfilePage = () => {
   const handleRemoveFamilyMember = async (memberId, memberName) => {
     if (!window.confirm(`Bạn có chắc chắn muốn xóa "${memberName}" khỏi nhóm gia đình?`)) return;
     try {
-      try {
-        await customerApi.removeFamilyMember(memberId);
-      } catch {
-        // Local fallback
-      }
-      setFamilyMembers((prev) => prev.filter((m) => (m.id || m.memberId) !== memberId));
+      await customerApi.removeFamilyMember(memberId);
       success(`Đã xóa "${memberName}" khỏi nhóm gia đình!`);
+      await loadProfile();
     } catch (err) {
       error(err.message || 'Không thể xóa thành viên');
     }

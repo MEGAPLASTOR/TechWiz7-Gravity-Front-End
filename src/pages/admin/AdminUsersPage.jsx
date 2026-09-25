@@ -16,56 +16,8 @@ import {
 import { adminApi } from '@/services';
 import { useNotification } from '@/context/NotificationContext';
 
-const DEMO_ADMIN_USERS = [
-  {
-    userId: 1,
-    fullName: 'Quản Trị Viên Hệ Thống',
-    email: 'admin@marketlink.vn',
-    phoneNumber: '0901 000 999',
-    roles: ['ROLE_ADMIN'],
-    kycStatus: 'VERIFIED',
-    status: 'ACTIVE',
-  },
-  {
-    userId: 2,
-    fullName: 'Nông Dân Ba Vì (Lê Văn Phát)',
-    email: 'farmer@marketlink.vn',
-    phoneNumber: '0912 345 678',
-    roles: ['ROLE_FARMER'],
-    kycStatus: 'VERIFIED',
-    status: 'ACTIVE',
-  },
-  {
-    userId: 3,
-    fullName: 'Nông Dân Đà Lạt (Hoàng Yến)',
-    email: 'farmer.dalat@marketlink.vn',
-    phoneNumber: '0988 223 344',
-    roles: ['ROLE_FARMER'],
-    kycStatus: 'PENDING',
-    status: 'ACTIVE',
-  },
-  {
-    userId: 4,
-    fullName: 'Khách Hàng Thân Thiết (Trần Anh)',
-    email: 'customer@marketlink.vn',
-    phoneNumber: '0909 888 777',
-    roles: ['ROLE_CUSTOMER'],
-    kycStatus: 'VERIFIED',
-    status: 'ACTIVE',
-  },
-  {
-    userId: 5,
-    fullName: 'Nguyễn Bích Thủy (Nông Dân Cần Thơ)',
-    email: 'thuy.farmer@marketlink.vn',
-    phoneNumber: '0933 555 444',
-    roles: ['ROLE_FARMER'],
-    kycStatus: 'PENDING',
-    status: 'ACTIVE',
-  },
-];
-
 export const AdminUsersPage = () => {
-  const [users, setUsers] = useState(DEMO_ADMIN_USERS);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
@@ -91,32 +43,17 @@ export const AdminUsersPage = () => {
     setLoading(true);
     try {
       const data = await adminApi.getUsers();
-      setUsers(Array.isArray(data) && data.length > 0 ? data : DEMO_ADMIN_USERS);
+      setUsers(Array.isArray(data) ? data : (data?.content || data?.data || []));
     } catch (err) {
       console.error('Failed to load users:', err);
-      setUsers(DEMO_ADMIN_USERS);
+      setUsers([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let ignore = false;
-    adminApi.getUsers()
-      .then((data) => {
-        if (!ignore) setUsers(Array.isArray(data) && data.length > 0 ? data : DEMO_ADMIN_USERS);
-      })
-      .catch((err) => {
-        console.error('Failed to load users:', err);
-        if (!ignore) setUsers(DEMO_ADMIN_USERS);
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
+    refreshUsers();
   }, []);
 
   const handleOpenAdd = () => {
@@ -166,29 +103,14 @@ export const AdminUsersPage = () => {
       }
 
       if (editingUser) {
-        try {
-          await adminApi.updateUser(editingUser.userId, payload);
-        } catch {
-          // Local fallback
-        }
-        setUsers((prev) =>
-          prev.map((u) => (u.userId === editingUser.userId ? { ...u, ...payload } : u))
-        );
+        await adminApi.updateUser(editingUser.userId, payload);
         success(`Đã cập nhật thông tin tài khoản "${form.fullName}" thành công!`);
       } else {
-        const newUser = {
-          ...payload,
-          userId: Date.now(),
-        };
-        try {
-          await adminApi.createUser(payload);
-        } catch {
-          // Local fallback
-        }
-        setUsers((prev) => [newUser, ...prev]);
+        await adminApi.createUser(payload);
         success(`Đã tạo mới tài khoản "${form.fullName}" thành công!`);
       }
       setShowModal(false);
+      await refreshUsers();
     } catch (err) {
       error(err.message || 'Lỗi khi lưu thông tin người dùng');
     } finally {
@@ -199,13 +121,9 @@ export const AdminUsersPage = () => {
   const handleDeleteUser = async (userId, userName) => {
     if (!window.confirm(`Bạn có chắc chắn muốn xóa tài khoản "${userName}"?`)) return;
     try {
-      try {
-        await adminApi.deleteUser(userId);
-      } catch {
-        // Local fallback
-      }
-      setUsers((prev) => prev.filter((u) => u.userId !== userId));
+      await adminApi.deleteUser(userId);
       success(`Đã xóa tài khoản "${userName}" khỏi hệ thống!`);
+      await refreshUsers();
     } catch (err) {
       error(err.message || 'Không thể xóa tài khoản');
     }
@@ -214,15 +132,9 @@ export const AdminUsersPage = () => {
   const handleToggleStatus = async (user) => {
     const nextStatus = user.status === 'ACTIVE' ? 'LOCKED' : 'ACTIVE';
     try {
-      try {
-        await adminApi.updateUserStatus(user.userId, nextStatus, 'Thay đổi bởi Quản trị viên');
-      } catch {
-        // Fallback local state update
-      }
-      setUsers((prev) =>
-        prev.map((u) => (u.userId === user.userId ? { ...u, status: nextStatus } : u))
-      );
+      await adminApi.updateUserStatus(user.userId, nextStatus, 'Thay đổi bởi Quản trị viên');
       success(`Đã chuyển trạng thái tài khoản "${user.fullName}" sang ${nextStatus === 'ACTIVE' ? 'Hoạt động' : 'Bị khóa'}!`);
+      await refreshUsers();
     } catch (err) {
       error(err.message || 'Không thể thay đổi trạng thái tài khoản');
     }

@@ -8,52 +8,8 @@ import { useNotification } from '@/context/NotificationContext';
 import { formatCurrency } from '@/utils/formatters';
 import { OrderStatusTracker } from '@/components/order/OrderStatusTracker';
 
-const DEMO_FARMER_ORDERS = [
-  {
-    orderId: 301,
-    orderCode: 'ORD-55421',
-    orderStatus: 'PLACED',
-    customerName: 'Trần Minh Anh',
-    customerPhone: '0912 345 678',
-    pickupDate: 'Thứ Bảy, 08:30',
-    slotTimeRange: '08:00 - 09:30',
-    totalAmount: 110000,
-    items: [
-      { name: 'Rau Muống Nước Ba Vì Hữu Cơ', quantity: 3, unit: 'bó' },
-      { name: 'Bưởi Da Xanh Bến Tre', quantity: 1, unit: 'trái' },
-    ],
-  },
-  {
-    orderId: 302,
-    orderCode: 'ORD-88190',
-    orderStatus: 'ACCEPTED',
-    customerName: 'Nguyễn Văn Hùng',
-    customerPhone: '0988 776 554',
-    pickupDate: 'Chủ Nhật, 07:00',
-    slotTimeRange: '07:00 - 08:30',
-    totalAmount: 195000,
-    items: [
-      { name: 'Cà Chua Bi Hữu Cơ Đà Lạt', quantity: 2, unit: 'hộp' },
-      { name: 'Cải Thìa Thủy Canh Rau Sạch', quantity: 2, unit: 'kg' },
-    ],
-  },
-  {
-    orderId: 303,
-    orderCode: 'ORD-33211',
-    orderStatus: 'READY_FOR_PICKUP',
-    customerName: 'Lê Thu Hương',
-    customerPhone: '0903 112 233',
-    pickupDate: 'Hôm nay, 09:00',
-    slotTimeRange: '09:00 - 10:30',
-    totalAmount: 85000,
-    items: [
-      { name: 'Bưởi Da Xanh Ruột Đỏ', quantity: 1, unit: 'trái' },
-    ],
-  },
-];
-
 export const FarmerOrdersPage = () => {
-  const [orders, setOrders] = useState(DEMO_FARMER_ORDERS);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL');
 
@@ -63,45 +19,24 @@ export const FarmerOrdersPage = () => {
     setLoading(true);
     try {
       const data = await ordersApi.getFarmerOrders();
-      setOrders(Array.isArray(data) && data.length > 0 ? data : DEMO_FARMER_ORDERS);
+      setOrders(Array.isArray(data) ? data : (data?.content || data?.data || []));
     } catch (e) {
       console.error('Failed to load farmer orders:', e);
-      setOrders(DEMO_FARMER_ORDERS);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let ignore = false;
-    ordersApi.getFarmerOrders()
-      .then((data) => {
-        if (!ignore) setOrders(Array.isArray(data) && data.length > 0 ? data : DEMO_FARMER_ORDERS);
-      })
-      .catch((e) => {
-        console.error('Failed to load farmer orders:', e);
-        if (!ignore) setOrders(DEMO_FARMER_ORDERS);
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
+    loadOrders();
   }, []);
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
-      try {
-        await ordersApi.updateFarmerOrderStatus(orderId, newStatus);
-      } catch {
-        // Fallback local update
-      }
-      setOrders((prev) =>
-        prev.map((o) => (o.orderId === orderId ? { ...o, orderStatus: newStatus } : o))
-      );
+      await ordersApi.updateFarmerOrderStatus(orderId, newStatus);
       success(`Đã cập nhật đơn hàng thành trạng thái: ${newStatus}!`);
+      await loadOrders();
     } catch (err) {
       error(err.message || 'Không thể cập nhật trạng thái đơn');
     }

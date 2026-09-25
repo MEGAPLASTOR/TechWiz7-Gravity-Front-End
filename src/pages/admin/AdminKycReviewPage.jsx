@@ -11,29 +11,8 @@ import {
 import { adminApi } from '@/services';
 import { useNotification } from '@/context/NotificationContext';
 
-const DEMO_PENDING_KYC = [
-  {
-    farmerId: 12,
-    fullName: 'Hoàng Thị Mai (Hợp tác xã Rau Sạch Đà Lạt)',
-    stallName: 'Sạp Nông Sản Tươi Đà Lạt',
-    phoneNumber: '0988 223 344',
-    address: 'Xã Trạm Hành, TP. Đà Lạt, Tỉnh Lâm Đồng',
-    kycStatus: 'PENDING',
-    submittedAt: 'Hôm nay, 07:30',
-  },
-  {
-    farmerId: 15,
-    fullName: 'Nguyễn Văn Định (Vườn Bưởi Chợ Lách)',
-    stallName: 'Bưởi Da Xanh & Cam Sành Bến Tre',
-    phoneNumber: '0913 888 222',
-    address: 'Huyện Chợ Lách, Tỉnh Bến Tre',
-    kycStatus: 'PENDING',
-    submittedAt: 'Hôm qua, 16:45',
-  },
-];
-
 export const AdminKycReviewPage = () => {
-  const [pendingKyc, setPendingKyc] = useState(DEMO_PENDING_KYC);
+  const [pendingKyc, setPendingKyc] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [inspectFarmer, setInspectFarmer] = useState(null);
@@ -48,32 +27,17 @@ export const AdminKycReviewPage = () => {
     setLoading(true);
     try {
       const data = await adminApi.getPendingKyc();
-      setPendingKyc(Array.isArray(data) && data.length > 0 ? data : DEMO_PENDING_KYC);
+      setPendingKyc(Array.isArray(data) ? data : (data?.content || data?.data || []));
     } catch (err) {
       console.error('Failed to load pending KYC list:', err);
-      setPendingKyc(DEMO_PENDING_KYC);
+      setPendingKyc([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let ignore = false;
-    adminApi.getPendingKyc()
-      .then((data) => {
-        if (!ignore) setPendingKyc(Array.isArray(data) && data.length > 0 ? data : DEMO_PENDING_KYC);
-      })
-      .catch((err) => {
-        console.error('Failed to load pending KYC list:', err);
-        if (!ignore) setPendingKyc(DEMO_PENDING_KYC);
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
+    loadPending();
   }, []);
 
   const handleOpenInspect = async (farmer) => {
@@ -83,28 +47,9 @@ export const AdminKycReviewPage = () => {
     try {
       const res = await adminApi.getFarmerKycDetail(farmer.farmerId);
       setFarmerDetail(res?.data || res);
-    } catch {
-      setFarmerDetail({
-        farmerId: farmer.farmerId,
-        kycStatus: farmer.kycStatus || 'PENDING',
-        isApproved: false,
-        documents: [
-          {
-            docType: 'VIETGAP_CERT',
-            documentNumber: 'VG-2026-88192',
-            issuer: 'Sở NN&PTNT Lâm Đồng',
-            issuedDate: '15/01/2026',
-            fileUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500',
-          },
-          {
-            docType: 'CCCD',
-            documentNumber: '038099012345',
-            issuer: 'Cục Cảnh sát QLHC về TTXH',
-            issuedDate: '10/05/2023',
-            fileUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=500',
-          },
-        ],
-      });
+    } catch (err) {
+      error(err.message || 'Không thể tải chi tiết hồ sơ KYC');
+      setFarmerDetail(null);
     } finally {
       setLoadingDetail(false);
     }
@@ -114,16 +59,10 @@ export const AdminKycReviewPage = () => {
     if (!inspectFarmer) return;
     setSubmittingReview(true);
     try {
-      try {
-        await adminApi.reviewKyc(inspectFarmer.farmerId, {
-          action,
-          reason: reviewReason,
-        });
-      } catch {
-        // Fallback local update
-      }
-
-      setPendingKyc((prev) => prev.filter((k) => k.farmerId !== inspectFarmer.farmerId));
+      await adminApi.reviewKyc(inspectFarmer.farmerId, {
+        action,
+        reason: reviewReason,
+      });
 
       if (action === 'APPROVE') {
         success(
@@ -138,6 +77,7 @@ export const AdminKycReviewPage = () => {
 
       setInspectFarmer(null);
       setFarmerDetail(null);
+      await loadPending();
     } catch (err) {
       error(err.message || 'Lỗi khi xử lý thẩm định KYC');
     } finally {

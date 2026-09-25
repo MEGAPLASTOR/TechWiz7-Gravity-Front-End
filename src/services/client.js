@@ -1,14 +1,30 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL 
-  ? `${import.meta.env.VITE_API_BASE_URL}/api`
-  : '/api';
+export function getBaseUrl() {
+  const envUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+  // When running on HTTPS (such as Vercel https://*.vercel.app):
+  // Calling an insecure http:// endpoint directly causes modern browsers to block all requests (Mixed Content error).
+  // In that case, we MUST use the relative '/api' route so Vercel's rewrites proxy requests server-to-server over HTTP.
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    if (!envUrl || envUrl.startsWith('http://') || envUrl === '/api') {
+      return '/api';
+    }
+  }
+  if (envUrl) {
+    if (envUrl === '/api' || envUrl.endsWith('/api')) return envUrl;
+    return `${envUrl.replace(/\/+$/, '')}/api`;
+  }
+  return '/api';
+}
+
+export const BASE_URL = getBaseUrl();
 
 /**
  * Universal API Client with automatic token injection and error handling.
  */
 export async function apiClient(endpoint, options = {}) {
-  const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint}`;
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${cleanEndpoint}`;
   
-  const token = localStorage.getItem('marketlink_token');
+  const token = localStorage.getItem('accessToken') || localStorage.getItem('marketlink_token');
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -28,6 +44,7 @@ export async function apiClient(endpoint, options = {}) {
     const res = await fetch(url, config);
     
     if (res.status === 401) {
+      localStorage.removeItem('accessToken');
       localStorage.removeItem('marketlink_token');
       localStorage.removeItem('marketlink_user');
     }

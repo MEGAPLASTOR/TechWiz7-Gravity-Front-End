@@ -18,159 +18,14 @@ const QUICK_TAG_PILLS = [
   { id: 'top', label: '🏆 Nông Trại 5 Sao', icon: '🏆' },
 ];
 
-// Fallback farm products matching eco-green Eldorado marketplace layout
-const FALLBACK_FARM_PRODUCTS = [
-  {
-    productId: 'prod-1',
-    name: 'Rau Muống Sông Đáy Hái Sớm',
-    categoryId: 1,
-    categoryName: 'Rau Củ Tươi',
-    price: 35000,
-    unit: 'bó (1kg)',
-    currentStock: 65,
-    farmerStallName: 'HTX Rau Sạch Sông Đáy',
-    farmerId: 'farmer-1',
-    rating: 4.95,
-    reviewCount: 1420,
-    cert: 'VietGAP',
-    imageUrl: '/images/rau_muong.jpg',
-    description: 'Rau muống non xanh ngắt, cọng giòn ngọt được tưới nước tự nhiên ven sông Đáy, cắt vào 4h sáng.',
-  },
-  {
-    productId: 'prod-2',
-    name: 'Bưởi Da Xanh Bến Tre Hữu Cơ',
-    categoryId: 2,
-    categoryName: 'Trái Cây Vườn',
-    price: 85000,
-    unit: 'quả (~1.5kg)',
-    currentStock: 40,
-    farmerStallName: 'Vườn Bưởi Chú Bảy Bến Tre',
-    farmerId: 'farmer-2',
-    rating: 5.0,
-    reviewCount: 2628,
-    cert: 'GlobalGAP',
-    imageUrl: '/images/buoi_da_xanh.jpg',
-    description: 'Bưởi da xanh ruột hồng đậm, múi mọng nước vị ngọt thanh mát, không hạt chuẩn GlobalGAP.',
-  },
-  {
-    productId: 'prod-3',
-    name: 'Cà Chua Bi Hữu Cơ Đà Lạt',
-    categoryId: 1,
-    categoryName: 'Rau Củ Tươi',
-    price: 45000,
-    unit: 'hộp 500g',
-    currentStock: 80,
-    farmerStallName: 'Nông Trại Mây Đà Lạt',
-    farmerId: 'farmer-3',
-    rating: 4.9,
-    reviewCount: 815,
-    cert: 'Hữu Cơ',
-    imageUrl: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500&auto=format&fit=crop',
-    description: 'Cà chua bi đỏ mọng giòn ngọt trồng trong nhà màng hữu cơ, giàu vitamin, ăn sống cực ngon.',
-  },
-  {
-    productId: 'prod-4',
-    name: 'Gạo ST25 Sóc Trăng Thượng Hạng',
-    categoryId: 3,
-    categoryName: 'Gạo & Ngũ Cốc',
-    price: 195000,
-    unit: 'túi 5kg',
-    currentStock: 120,
-    farmerStallName: 'Vựa Gạo Sóc Trăng',
-    farmerId: 'farmer-4',
-    rating: 5.0,
-    reviewCount: 3410,
-    cert: 'Hữu Cơ',
-    imageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&auto=format&fit=crop',
-    description: 'Gạo ngon nhất thế giới ST25, hạt dài trắng trong, khi nấu chín dẻo mềm thơm mùi lá dứa tự nhiên.',
-  },
-  {
-    productId: 'prod-5',
-    name: 'Cá Lóc Đồng Tươi Tự Nhiên',
-    categoryId: 4,
-    categoryName: 'Thủy Hải Sản',
-    price: 160000,
-    unit: 'kg',
-    currentStock: 25,
-    farmerStallName: 'Thủy Sản Miền Tây',
-    farmerId: 'farmer-5',
-    rating: 4.88,
-    reviewCount: 620,
-    cert: 'Tự Nhiên',
-    imageUrl: 'https://images.unsplash.com/photo-1534948216015-843149f72be3?w=500&auto=format&fit=crop',
-    description: 'Cá lóc đồng đánh bắt tự nhiên kênh rạch, thịt chắc thơm ngọt, làm sạch sẵn đóng túi giữ lạnh.',
-  },
-  {
-    productId: 'prod-6',
-    name: 'Mật Ong Hoa Rừng Tây Nguyên',
-    categoryId: 5,
-    categoryName: 'Gia Vị Quê',
-    price: 220000,
-    unit: 'chai 500ml',
-    currentStock: 50,
-    farmerStallName: 'Trại Ong Gia Lai',
-    farmerId: 'farmer-6',
-    rating: 4.98,
-    reviewCount: 1120,
-    cert: 'OCOP 4 Sao',
-    imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=500&auto=format&fit=crop',
-    description: 'Mật ong hoa rừng nguyên chất 100%, màu vàng óng ánh sóng sánh, hương thơm ngát tự nhiên.',
-  },
-  {
-    productId: 'prod-7',
-    name: 'Trứng Gà Ta Thả Vườn Đồi',
-    categoryId: 1,
-    categoryName: 'Rau Củ Tươi',
-    price: 55000,
-    unit: 'vỉ 10 quả',
-    currentStock: 90,
-    farmerStallName: 'Trang Trại Ba Vì',
-    farmerId: 'farmer-7',
-    rating: 4.92,
-    reviewCount: 890,
-    cert: 'VietGAP',
-    imageUrl: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=500&auto=format&fit=crop',
-    description: 'Trứng gà ta thả vườn đồi ăn thóc bắp, lòng đỏ to màu cam đậm, thơm béo bổ dưỡng.',
-  },
-  {
-    productId: 'prod-8',
-    name: 'Nấm Đùi Gà Hữu Cơ Kim Bôi',
-    categoryId: 1,
-    categoryName: 'Rau Củ Tươi',
-    price: 62000,
-    unit: 'khay 400g',
-    currentStock: 45,
-    farmerStallName: 'HTX Nấm Sạch Kim Bôi',
-    farmerId: 'farmer-8',
-    rating: 4.9,
-    reviewCount: 430,
-    cert: 'VietGAP',
-    imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop',
-    description: 'Nấm đùi gà thân mập mạp trắng nõn, vị giòn ngọt sần sật, chế biến món xào hoặc lẩu.',
-  }
-];
-
-const FALLBACK_CATEGORIES = [
-  { categoryId: 1, name: 'Rau Củ Tươi Sạch' },
-  { categoryId: 2, name: 'Trái Cây Vườn' },
-  { categoryId: 3, name: 'Gạo & Ngũ Cốc' },
-  { categoryId: 4, name: 'Thủy Hải Sản' },
-  { categoryId: 5, name: 'Gia Vị Quê' },
-];
-
-const FALLBACK_MARKETS = [
-  { marketId: 1, name: 'Chợ Nông Sản Sạch Cầu Giấy', address: 'Số 1 Dịch Vọng Hậu, Cầu Giấy, Hà Nội', lat: 21.0333, lng: 105.7833 },
-  { marketId: 2, name: 'Phiên Chợ Hữu Cơ Thảo Điền EcoMarket', address: '28 Thảo Điền, Quận 2, TP.HCM', lat: 10.8034, lng: 106.7381 },
-];
-
 export const HomePage = ({
   onSelectMarket = () => {},
 }) => {
-  const [markets, setMarkets] = useState(FALLBACK_MARKETS);
-  const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
-  const [products, setProducts] = useState(FALLBACK_FARM_PRODUCTS);
+  const [markets, setMarkets] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Filters & State (Eldorado style)
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -186,6 +41,7 @@ export const HomePage = ({
 
   useEffect(() => {
     async function loadData() {
+      setLoading(true);
       try {
         const [mkList, catList, prodList, annList] = await Promise.allSettled([
           marketsApi.getAllMarkets(),
@@ -194,20 +50,26 @@ export const HomePage = ({
           adminApi.getAnnouncements(),
         ]);
 
-        if (mkList.status === 'fulfilled' && Array.isArray(mkList.value) && mkList.value.length > 0) {
-          setMarkets(mkList.value);
+        if (mkList.status === 'fulfilled') {
+          const mData = Array.isArray(mkList.value) ? mkList.value : (mkList.value?.content || mkList.value?.data || []);
+          setMarkets(mData);
         }
-        if (catList.status === 'fulfilled' && Array.isArray(catList.value) && catList.value.length > 0) {
-          setCategories(catList.value);
+        if (catList.status === 'fulfilled') {
+          const cData = Array.isArray(catList.value) ? catList.value : (catList.value?.content || catList.value?.data || []);
+          setCategories(cData);
         }
-        if (prodList.status === 'fulfilled' && Array.isArray(prodList.value) && prodList.value.length > 0) {
-          setProducts(prodList.value);
+        if (prodList.status === 'fulfilled') {
+          const pData = Array.isArray(prodList.value) ? prodList.value : (prodList.value?.content || prodList.value?.products || prodList.value?.data || []);
+          setProducts(pData);
         }
         if (annList.status === 'fulfilled') {
-          setAnnouncements(Array.isArray(annList.value) ? annList.value : []);
+          const aData = Array.isArray(annList.value) ? annList.value : (annList.value?.content || annList.value?.data || []);
+          setAnnouncements(aData);
         }
       } catch (e) {
-        console.warn('Error fetching initial data from backend, using fallback:', e);
+        console.error('Error fetching data from backend:', e);
+      } finally {
+        setLoading(false);
       }
     }
     loadData();

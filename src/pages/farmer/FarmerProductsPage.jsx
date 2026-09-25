@@ -15,96 +15,10 @@ import { farmerApi } from '@/services';
 import { useNotification } from '@/context/NotificationContext';
 import { formatCurrency } from '@/utils/formatters';
 
-const DEMO_FARMER_PRODUCTS = [
-  {
-    productId: 501,
-    name: 'Rau Muống Nước Ba Vì Hữu Cơ',
-    categoryId: 1,
-    unit: 'bó',
-    price: 18000,
-    currentStock: 45,
-    status: 'AVAILABLE',
-    description: 'Hái sớm 4h sáng, tiêu chuẩn VietGAP, tươi nguyên cuống lá non.',
-    imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400',
-  },
-  {
-    productId: 502,
-    name: 'Bưởi Da Xanh Ruột Đỏ Bến Tre',
-    categoryId: 2,
-    unit: 'trái',
-    price: 85000,
-    currentStock: 28,
-    status: 'AVAILABLE',
-    description: 'Bưởi ngọt thanh, mọng nước, tép giòn không hạt.',
-    imageUrl: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=400',
-  },
-  {
-    productId: 503,
-    name: 'Cà Chua Bi Hữu Cơ Đà Lạt',
-    categoryId: 1,
-    unit: 'hộp',
-    price: 45000,
-    currentStock: 30,
-    status: 'AVAILABLE',
-    description: 'Trồng nhà màng công nghệ cao, vị chua ngọt thanh mát.',
-    imageUrl: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400',
-  },
-  {
-    productId: 504,
-    name: 'Cải Thìa Thủy Canh Rau Sạch',
-    categoryId: 1,
-    unit: 'kg',
-    price: 32000,
-    currentStock: 60,
-    status: 'AVAILABLE',
-    description: 'Rau sạch không dùng thuốc bảo vệ thực vật hóa học.',
-    imageUrl: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400',
-  },
-];
-
-const DEMO_STOCK_TEMPLATES = [
-  {
-    templateId: 1,
-    productId: 501,
-    productName: 'Rau Muống Nước Ba Vì Hữu Cơ',
-    unit: 'bó',
-    dayOfWeek: 'Thứ Bảy & Chủ Nhật',
-    defaultStock: 50,
-    notes: 'Định mức cắt sớm 4h sáng mỗi cuối tuần',
-  },
-  {
-    templateId: 2,
-    productId: 502,
-    productName: 'Bưởi Da Xanh Ruột Đỏ Bến Tre',
-    unit: 'trái',
-    dayOfWeek: 'Thứ Bảy',
-    defaultStock: 35,
-    notes: 'Thu hoạch cây 5 năm tuổi, ngọt thanh',
-  },
-  {
-    templateId: 3,
-    productId: 503,
-    productName: 'Cà Chua Bi Hữu Cơ Đà Lạt',
-    unit: 'hộp',
-    dayOfWeek: 'Chủ Nhật',
-    defaultStock: 40,
-    notes: 'Đóng hộp tiêu chuẩn 500g',
-  },
-  {
-    templateId: 4,
-    productId: 504,
-    productName: 'Cải Thìa Thủy Canh Rau Sạch',
-    unit: 'kg',
-    dayOfWeek: 'Thứ Bảy & Chủ Nhật',
-    defaultStock: 65,
-    notes: 'Thu hoạch sáng phiên chợ',
-  },
-];
-
 export const FarmerProductsPage = () => {
   const [activeTab, setActiveTab] = useState('PRODUCTS'); // 'PRODUCTS' | 'TEMPLATES'
-  const [products, setProducts] = useState(DEMO_FARMER_PRODUCTS);
-  const [templates, setTemplates] = useState(DEMO_STOCK_TEMPLATES);
+  const [products, setProducts] = useState([]);
+  const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isApproved, setIsApproved] = useState(true);
 
@@ -130,7 +44,7 @@ export const FarmerProductsPage = () => {
   const [applyingTemplates, setApplyingTemplates] = useState(false);
 
   const [templateForm, setTemplateForm] = useState({
-    productId: 501,
+    productId: '',
     dayOfWeek: 'Thứ Bảy & Chủ Nhật',
     defaultStock: 50,
     notes: '',
@@ -148,10 +62,10 @@ export const FarmerProductsPage = () => {
       ]);
 
       if (prodRes.status === 'fulfilled') {
-        const pList = Array.isArray(prodRes.value) ? prodRes.value : prodRes.value?.data || [];
-        setProducts(pList.length > 0 ? pList : DEMO_FARMER_PRODUCTS);
+        const pList = Array.isArray(prodRes.value) ? prodRes.value : (prodRes.value?.content || prodRes.value?.data || []);
+        setProducts(pList);
       } else {
-        setProducts(DEMO_FARMER_PRODUCTS);
+        setProducts([]);
       }
       if (kycRes.status === 'fulfilled' && kycRes.value) {
         const kData = kycRes.value?.data || kycRes.value;
@@ -160,58 +74,22 @@ export const FarmerProductsPage = () => {
         }
       }
       if (tmplRes.status === 'fulfilled') {
-        const tList = Array.isArray(tmplRes.value) ? tmplRes.value : tmplRes.value?.data || [];
-        setTemplates(tList.length > 0 ? tList : DEMO_STOCK_TEMPLATES);
+        const tList = Array.isArray(tmplRes.value) ? tmplRes.value : (tmplRes.value?.content || tmplRes.value?.data || []);
+        setTemplates(tList);
       } else {
-        setTemplates(DEMO_STOCK_TEMPLATES);
+        setTemplates([]);
       }
     } catch (e) {
       console.error('Error loading products & templates:', e);
-      setProducts(DEMO_FARMER_PRODUCTS);
-      setTemplates(DEMO_STOCK_TEMPLATES);
+      setProducts([]);
+      setTemplates([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let ignore = false;
-    Promise.allSettled([farmerApi.getProducts(), farmerApi.getMyKyc(), farmerApi.getStockTemplates()])
-      .then(([prodRes, kycRes, tmplRes]) => {
-        if (ignore) return;
-        if (prodRes.status === 'fulfilled') {
-          const pList = Array.isArray(prodRes.value) ? prodRes.value : prodRes.value?.data || [];
-          setProducts(pList.length > 0 ? pList : DEMO_FARMER_PRODUCTS);
-        } else {
-          setProducts(DEMO_FARMER_PRODUCTS);
-        }
-        if (kycRes.status === 'fulfilled' && kycRes.value) {
-          const kData = kycRes.value?.data || kycRes.value;
-          if (typeof kData?.isApproved === 'boolean') {
-            setIsApproved(kData.isApproved);
-          }
-        }
-        if (tmplRes.status === 'fulfilled') {
-          const tList = Array.isArray(tmplRes.value) ? tmplRes.value : tmplRes.value?.data || [];
-          setTemplates(tList.length > 0 ? tList : DEMO_STOCK_TEMPLATES);
-        } else {
-          setTemplates(DEMO_STOCK_TEMPLATES);
-        }
-      })
-      .catch((e) => {
-        console.error('Error loading data:', e);
-        if (!ignore) {
-          setProducts(DEMO_FARMER_PRODUCTS);
-          setTemplates(DEMO_STOCK_TEMPLATES);
-        }
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
+    loadData();
   }, []);
 
   // --- Product Handlers ---
@@ -257,34 +135,14 @@ export const FarmerProductsPage = () => {
     setSubmitting(true);
     try {
       if (editingProduct) {
-        try {
-          await farmerApi.updateProduct(editingProduct.productId || editingProduct.id, productForm);
-        } catch {
-          // Local fallback
-        }
-        setProducts((prev) =>
-          prev.map((p) =>
-            (p.productId || p.id) === (editingProduct.productId || editingProduct.id)
-              ? { ...p, ...productForm }
-              : p
-          )
-        );
+        await farmerApi.updateProduct(editingProduct.productId || editingProduct.id, productForm);
         success(`Đã cập nhật sản phẩm "${productForm.name}" thành công!`);
       } else {
-        const newProd = {
-          ...productForm,
-          productId: Date.now(),
-          status: 'AVAILABLE',
-        };
-        try {
-          await farmerApi.createProduct(productForm);
-        } catch {
-          // Local fallback
-        }
-        setProducts((prev) => [newProd, ...prev]);
+        await farmerApi.createProduct(productForm);
         success(`Đã thêm sản phẩm "${productForm.name}" lên gian hàng thành công!`);
       }
       setShowAddModal(false);
+      await loadData();
     } catch (err) {
       error(err.message || 'Lỗi khi lưu thông tin sản phẩm');
     } finally {
@@ -295,13 +153,9 @@ export const FarmerProductsPage = () => {
   const handleDeleteProduct = async (id, name) => {
     if (!window.confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${name}"?`)) return;
     try {
-      try {
-        await farmerApi.deleteProduct(id);
-      } catch {
-        // Local fallback
-      }
-      setProducts((prev) => prev.filter((p) => (p.productId || p.id) !== id));
+      await farmerApi.deleteProduct(id);
       success(`Đã xóa sản phẩm "${name}" khỏi quầy bán!`);
+      await loadData();
     } catch (err) {
       error(err.message || 'Không thể xóa sản phẩm');
     }
@@ -310,15 +164,9 @@ export const FarmerProductsPage = () => {
   const handleToggleStatus = async (id, currentStatus) => {
     const nextStatus = currentStatus === 'AVAILABLE' ? 'UNAVAILABLE' : 'AVAILABLE';
     try {
-      try {
-        await farmerApi.updateProductStatus(id, nextStatus);
-      } catch {
-        // Local fallback
-      }
-      setProducts((prev) =>
-        prev.map((p) => ((p.productId || p.id) === id ? { ...p, status: nextStatus } : p))
-      );
+      await farmerApi.updateProductStatus(id, nextStatus);
       success(`Đã chuyển trạng thái sản phẩm sang ${nextStatus === 'AVAILABLE' ? 'Đang mở bán' : 'Tạm ngừng'}!`);
+      await loadData();
     } catch (err) {
       error(err.message || 'Không thể thay đổi trạng thái bán');
     }
@@ -329,7 +177,7 @@ export const FarmerProductsPage = () => {
     setEditingTemplate(null);
     const firstProd = products[0];
     setTemplateForm({
-      productId: firstProd?.productId || firstProd?.id || 501,
+      productId: firstProd?.productId || firstProd?.id || '',
       dayOfWeek: 'Thứ Bảy & Chủ Nhật',
       defaultStock: 50,
       notes: '',
@@ -365,31 +213,17 @@ export const FarmerProductsPage = () => {
       };
 
       if (editingTemplate) {
-        try {
-          await farmerApi.saveStockTemplate({
-            ...payload,
-            templateId: editingTemplate.templateId,
-          });
-        } catch {
-          // Local fallback
-        }
-        setTemplates((prev) =>
-          prev.map((t) =>
-            t.templateId === editingTemplate.templateId ? { ...t, ...payload } : t
-          )
-        );
+        await farmerApi.saveStockTemplate({
+          ...payload,
+          templateId: editingTemplate.templateId,
+        });
         success('Đã cập nhật định mức tuần thành công!');
       } else {
-        const newTmpl = { ...payload, templateId: Date.now() };
-        try {
-          await farmerApi.saveStockTemplate(payload);
-        } catch {
-          // Local fallback
-        }
-        setTemplates((prev) => [newTmpl, ...prev]);
+        await farmerApi.saveStockTemplate(payload);
         success('Đã tạo quy tắc định mức tuần mới!');
       }
       setShowTemplateModal(false);
+      await loadData();
     } catch (err) {
       error(err.message || 'Lỗi khi lưu định mức');
     } finally {
@@ -400,13 +234,9 @@ export const FarmerProductsPage = () => {
   const handleDeleteTemplate = async (id) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa quy tắc định mức này?')) return;
     try {
-      try {
-        await farmerApi.deleteStockTemplate(id);
-      } catch {
-        // Local fallback
-      }
-      setTemplates((prev) => prev.filter((t) => t.templateId !== id));
+      await farmerApi.deleteStockTemplate(id);
       success('Đã xóa định mức thành công!');
+      await loadData();
     } catch (err) {
       error(err.message || 'Không thể xóa định mức');
     }
@@ -415,24 +245,9 @@ export const FarmerProductsPage = () => {
   const handleApplyTemplates = async () => {
     setApplyingTemplates(true);
     try {
-      try {
-        await farmerApi.applyStockTemplates();
-      } catch {
-        // Local fallback batch apply
-      }
-      // Apply template stock to matching products
-      setProducts((prev) =>
-        prev.map((p) => {
-          const matchTmpl = templates.find(
-            (t) => t.productId === (p.productId || p.id)
-          );
-          if (matchTmpl) {
-            return { ...p, currentStock: matchTmpl.defaultStock };
-          }
-          return p;
-        })
-      );
+      await farmerApi.applyStockTemplates();
       success('Đã đồng bộ và nạp lại tồn kho theo mẫu định kỳ cho tất cả sản phẩm!');
+      await loadData();
     } catch (err) {
       error(err.message || 'Lỗi khi áp dụng định mức tồn kho');
     } finally {

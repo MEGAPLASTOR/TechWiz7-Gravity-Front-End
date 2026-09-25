@@ -1,8 +1,6 @@
-import { apiClient } from './client';
+import { apiClient, getBaseUrl } from './client';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL
-  ? `${import.meta.env.VITE_API_BASE_URL}/api`
-  : '/api';
+const BASE_URL = getBaseUrl();
 
 export const uploadService = {
   /**

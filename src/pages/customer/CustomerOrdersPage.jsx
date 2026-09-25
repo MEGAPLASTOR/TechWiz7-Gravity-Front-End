@@ -34,70 +34,21 @@ export const CustomerOrdersPage = () => {
 
   const { success, error } = useNotification();
 
-const DEMO_CUSTOMER_ORDERS = [
-  {
-    orderId: 101,
-    orderCode: 'ORD-98214',
-    orderStatus: 'READY_FOR_PICKUP',
-    createdAt: new Date().toISOString(),
-    totalAmount: 185000,
-    marketName: 'Chợ Phiên Nông Sản Thảo Điền (Quận 2)',
-    pickupDate: 'Thứ Bảy, 08:30',
-    slotTimeRange: '08:00 - 09:30',
-    items: [
-      { name: 'Rau Muống Hữu Cơ Ba Vì', quantity: 2, unit: 'bó', unitPrice: 25000 },
-      { name: 'Bưởi Da Xanh Bến Tre', quantity: 1, unit: 'trái', unitPrice: 85000 },
-      { name: 'Cà Chua Cherry Hữu Cơ Đà Lạt', quantity: 1, unit: 'hộp', unitPrice: 50000 },
-    ],
-  },
-  {
-    orderId: 102,
-    orderCode: 'ORD-77123',
-    orderStatus: 'PLACED',
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-    totalAmount: 120000,
-    marketName: 'Chợ Nông Sản Sạch Phú Mỹ Hưng (Quận 7)',
-    pickupDate: 'Chủ Nhật, 07:15',
-    slotTimeRange: '07:00 - 08:30',
-    items: [
-      { name: 'Xà Lách Mỡ Thủy Canh Đà Lạt', quantity: 2, unit: 'túi', unitPrice: 35000 },
-      { name: 'Cam Sành Mọng Nước Tiền Giang', quantity: 1, unit: 'kg', unitPrice: 50000 },
-    ],
-  },
-];
-
   const loadOrders = async () => {
     setLoading(true);
     try {
       const data = await customerApi.getOrders();
-      setOrders(Array.isArray(data) && data.length > 0 ? data : DEMO_CUSTOMER_ORDERS);
+      setOrders(Array.isArray(data) ? data : (data?.content || data?.data || []));
     } catch (err) {
       console.error('Failed to load customer orders:', err);
-      setOrders(DEMO_CUSTOMER_ORDERS);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let ignore = false;
-    customerApi.getOrders()
-      .then((data) => {
-        if (!ignore) {
-          setOrders(Array.isArray(data) && data.length > 0 ? data : DEMO_CUSTOMER_ORDERS);
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to load customer orders:', err);
-        if (!ignore) setOrders(DEMO_CUSTOMER_ORDERS);
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
+    loadOrders();
   }, []);
 
   const handleCancelOrder = async () => {
