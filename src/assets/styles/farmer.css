@@ -241,6 +241,19 @@
     font-size: 1.45rem;
   }
 
+  .farmer-header > div:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .farmer-header > div:last-child .btn {
+    flex: 1;
+    min-width: 130px;
+    justify-content: center;
+  }
+
   /* Products: single column on mobile */
   .farmer-products-grid {
     grid-template-columns: 1fr;
@@ -252,7 +265,23 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 14px;
-    gap: 10px;
+    gap: 12px;
+  }
+
+  .farmer-order-card > div:last-child {
+    width: 100%;
+    align-items: stretch !important;
+  }
+
+  .farmer-order-card > div:last-child > div {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .farmer-order-card > div:last-child .btn {
+    flex: 1;
+    justify-content: center;
   }
 
   /* Slots: single column */
@@ -264,6 +293,17 @@
   .farmer-card-box {
     padding: 16px;
     border-radius: 16px;
+  }
+}
+
+@media (max-width: 560px) {
+  .kyc-modal-content {
+    padding: 18px 14px !important;
+  }
+
+  .kyc-modal-content form [style*="grid-template-columns"],
+  .farmer-card-box form [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
   }
 }
 
@@ -291,5 +331,10 @@
 
   .farmer-subnav-link svg {
     display: none;
+  }
+
+  .farmer-header > div:last-child .btn {
+    width: 100%;
+    flex: unset;
   }
 }

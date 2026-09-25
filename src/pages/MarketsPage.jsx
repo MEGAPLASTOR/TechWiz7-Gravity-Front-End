@@ -138,8 +138,9 @@ export const MarketsPage = ({ onSelectMarketForShop = () => {} }) => {
   }, []);
 
   /* ── Get user GPS & find route ──────────────────────────────────────────── */
-  const handleGetRoute = () => {
-    if (!selectedMarket) return;
+  const handleGetRoute = (targetMarket = null) => {
+    const market = targetMarket || selectedMarket;
+    if (!market) return;
     setRouteLoading(true);
     navigator.geolocation?.getCurrentPosition(
       async (pos) => {
@@ -148,7 +149,7 @@ export const MarketsPage = ({ onSelectMarketForShop = () => {} }) => {
         try {
           const route = await marketsApi.getNearestRoute({
             latitude, longitude,
-            marketId: selectedMarket.marketId,
+            marketId: market.marketId,
           });
           setRouteInfo(route?.data || route);
         } catch (err) {
@@ -159,8 +160,9 @@ export const MarketsPage = ({ onSelectMarketForShop = () => {} }) => {
       },
       () => {
         setRouteLoading(false);
-        alert('Không thể lấy vị trí GPS của bạn. Vui lòng cho phép truy cập vị trí.');
-      }
+        alert('Không thể lấy vị trí GPS của bạn. Vui lòng cho phép truy cập vị trí trên trình duyệt.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
     );
   };
 
@@ -333,21 +335,25 @@ export const MarketsPage = ({ onSelectMarketForShop = () => {} }) => {
               markets={filtered.length ? filtered : markets}
               selectedMarket={selectedMarket}
               onSelectMarket={selectMarket}
-              height={typeof window !== 'undefined' && window.innerWidth <= 768 ? '280px' : '420px'}
+              height={typeof window !== 'undefined' && window.innerWidth <= 768 ? '300px' : '440px'}
+              routeInfo={routeInfo}
+              userLocation={userLocation}
+              onGetRoute={handleGetRoute}
+              onClearRoute={() => setRouteInfo(null)}
             />
 
             {/* GPS action buttons overlay */}
             <div className="mkp-map-actions">
               <button
                 className="mkp-map-btn"
-                onClick={handleGetRoute}
+                onClick={() => handleGetRoute()}
                 disabled={!selectedMarket || routeLoading}
                 title="Tìm đường đến chợ này"
               >
                 {routeLoading
                   ? <span className="mkp-spinning"><RefreshCw size={14} /></span>
                   : <Navigation size={14} />}
-                <span>Tìm Đường</span>
+                <span>{routeLoading ? 'Đang dò...' : 'Tìm Đường'}</span>
               </button>
               <button
                 className="mkp-map-btn mkp-map-btn-geo"
@@ -362,16 +368,75 @@ export const MarketsPage = ({ onSelectMarketForShop = () => {} }) => {
           </div>
 
           {/* Route info */}
-          {routeInfo && (
-            <div className="mkp-route-bar">
-              <Navigation size={15} color="#34d399" />
-              <span className="mkp-route-label">{routeInfo.marketName}</span>
-              <div className="mkp-route-stats">
-                <span>📍 {routeInfo.distanceKm?.toFixed(1) || '—'} km</span>
-                <span>⏱ {routeInfo.durationMinutes ? `${Math.ceil(routeInfo.durationMinutes)} phút` : '—'}</span>
+          {routeInfo && (() => {
+            const dist = routeInfo.distanceKilometers ?? routeInfo.distanceKm;
+            const dur = routeInfo.estimatedMinutes ?? routeInfo.durationMinutes;
+            const destLat = routeInfo.marketLatitude ?? selectedMarket?.latitude;
+            const destLng = routeInfo.marketLongitude ?? selectedMarket?.longitude;
+            const userLat = userLocation?.latitude;
+            const userLng = userLocation?.longitude;
+            const gNavUrl = destLat && destLng
+              ? userLat && userLng
+                ? `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${destLat},${destLng}&travelmode=driving`
+                : `https://www.google.com/maps/dir/?api=1&destination=${destLat},${destLng}`
+              : '#';
+
+            return (
+              <div className="mkp-route-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Navigation size={16} color="#38bdf8" />
+                  <div>
+                    <span className="mkp-route-label" style={{ color: '#38bdf8' }}>
+                      {routeInfo.marketName || selectedMarket?.name}
+                    </span>
+                    <div className="mkp-route-stats" style={{ display: 'flex', gap: '12px', marginTop: '2px', fontSize: '0.82rem' }}>
+                      {dist != null && <span>📍 {Number(dist).toFixed(1)} km</span>}
+                      {dur != null && <span>⏱ ~{Math.ceil(Number(dur))} phút</span>}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <a
+                    href={gNavUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                      color: '#ffffff',
+                      textDecoration: 'none',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: '0 2px 8px rgba(14, 165, 233, 0.4)',
+                    }}
+                  >
+                    <Globe size={13} />
+                    <span>Dẫn Đường Google Maps</span>
+                  </a>
+                  <button
+                    onClick={() => setRouteInfo(null)}
+                    style={{
+                      background: 'rgba(255,255,255,0.08)',
+                      border: 'none',
+                      color: '#94a3b8',
+                      cursor: 'pointer',
+                      padding: '6px 8px',
+                      borderRadius: '6px',
+                      fontSize: '0.75rem',
+                    }}
+                    title="Đóng chỉ đường"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Geofence result */}
           {geofenceResult && (
