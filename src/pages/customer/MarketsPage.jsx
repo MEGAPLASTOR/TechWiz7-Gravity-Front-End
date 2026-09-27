@@ -20,7 +20,8 @@ export default function MarketsPage({
   const [viewMode, setViewMode] = useState("grid");
   const [scheduleMapMarket, setScheduleMapMarket] = useState(null);
   const [stallProductsMarket, setStallProductsMarket] = useState(null);
-  const [marketsData, setMarketsData] = useState([
+  const [marketsData, setMarketsData] = useState([]);
+  /*
     {
       id: 101,
       name: "Phiên Chợ Xanh Nông Sản Ba Đình",
@@ -85,7 +86,7 @@ export default function MarketsPage({
       description:
         "Chợ phiên sinh thái phục vụ cư dân đô thị với nguồn rau quả hái tươi trong ngày.",
     },
-  ]);
+  ]); */
   useEffect(() => {
     let isMounted = true;
     const timer = setTimeout(async () => {

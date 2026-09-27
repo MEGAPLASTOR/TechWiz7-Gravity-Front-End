@@ -195,8 +195,8 @@
 
 .ml-inv-card.out-of-stock {
   opacity: 0.8;
-  background-color: #fafaf7;
-  border-color: #e5e7eb;
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
 }
 
 .ml-inv-card-body {
@@ -576,4 +576,63 @@
   justify-content: flex-end;
   gap: var(--space-3);
   margin-top: var(--space-2);
+}
+
+.ml-inv-stall-select {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-primary);
+  background-color: var(--color-primary-surface);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ml-inv-stall-select:hover {
+  border-color: var(--color-primary-hover);
+}
+
+html[data-theme="dark"] .ml-inv-stall-select {
+  background-color: var(--color-bg-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary-light);
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] .ml-inv-search {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-inv-chip,
+html[data-theme="dark"] .ml-inv-pill {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+  color: var(--color-text-body);
+}
+
+html[data-theme="dark"] .ml-inv-chip:hover,
+html[data-theme="dark"] .ml-inv-pill:hover {
+  background-color: var(--color-primary-surface);
+  color: var(--color-primary);
+}
+
+html[data-theme="dark"] .ml-inv-chip.active,
+html[data-theme="dark"] .ml-inv-pill.active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #111c15;
+}
+
+html[data-theme="dark"] .ml-inv-modal {
+  background-color: var(--color-bg-surface);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-inv-card.out-of-stock {
+  background-color: rgba(17, 28, 21, 0.6);
+  border-color: var(--color-border);
 }

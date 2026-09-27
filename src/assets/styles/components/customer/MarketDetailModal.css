@@ -122,12 +122,12 @@
 }
 
 .ml-cutoff-notice {
-  background: #ffffff;
+  background: var(--color-bg-surface);
   border: 1px dashed #f59e0b;
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 12px;
-  color: #78350f;
+  color: var(--color-accent);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -391,13 +391,13 @@
 }
 
 .ml-sim-btn {
-  background-color: #ffffff;
-  border: 1px solid var(--color-border-light, #e2e8f0);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 11.5px;
   font-weight: 500;
-  color: var(--color-text-body, #334155);
+  color: var(--color-text-body);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -471,7 +471,7 @@
   border-radius: 8px;
   border: 1px solid #0284c7;
   color: #0284c7;
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
@@ -491,4 +491,19 @@
   .ml-route-stats-container {
     grid-template-columns: 1fr;
   }
+}
+
+html[data-theme="dark"] .ml-detail-body {
+  background-color: var(--color-bg-surface);
+}
+
+html[data-theme="dark"] .ml-gps-simulate-section {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-farmer-alert-preview {
+  background-color: var(--status-pending-bg);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: var(--color-accent-light);
 }

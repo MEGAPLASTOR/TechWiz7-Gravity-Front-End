@@ -88,7 +88,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #ffffff;
+  background: var(--color-bg-surface);
   border: 1px solid rgba(46, 125, 50, 0.25);
   box-shadow: 0 2px 8px rgba(46, 125, 50, 0.08);
   padding: 6px 14px;
@@ -172,7 +172,7 @@
 }
 
 .ml-hero-searchbox {
-  background: #ffffff;
+  background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   border-radius: 16px;
   box-shadow:
@@ -466,7 +466,7 @@
   }
 }
 .ml-trust-strip {
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   border-top: 1px solid var(--color-border-light);
   border-bottom: 1px solid var(--color-border-light);
   padding: 22px 0;
@@ -602,7 +602,7 @@
 }
 
 .ml-step-card {
-  background: #ffffff;
+  background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   border-radius: 18px;
   padding: 32px 24px 28px;
@@ -702,7 +702,7 @@
 }
 
 .ml-filter-tab {
-  background: #ffffff;
+  background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   padding: 7px 16px;
   border-radius: 9999px;
@@ -743,7 +743,7 @@
 }
 .ml-products-section {
   padding: 72px 0;
-  background: #ffffff;
+  background: var(--color-bg-base);
   border-bottom: 1px solid var(--color-border-light);
 }
 .ml-category-chips-wrap {
@@ -838,7 +838,7 @@
 
 .ml-home-search-input:focus {
   border-color: var(--color-primary);
-  background: #ffffff;
+  background: var(--color-bg-surface);
   box-shadow: 0 4px 14px rgba(46, 125, 50, 0.15);
 }
 
@@ -996,7 +996,7 @@
 }
 
 .ml-empty-chip-btn {
-  background: #ffffff;
+  background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   padding: 6px 14px;
   border-radius: 9999px;
@@ -1223,4 +1223,15 @@
       transparent 40%
     );
   }
+}
+
+html[data-theme="dark"] .ml-hero-stats {
+  background: rgba(26, 44, 33, 0.75);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-hero-floating-badge {
+  background: rgba(26, 44, 33, 0.94);
+  border-color: var(--color-border);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
 }

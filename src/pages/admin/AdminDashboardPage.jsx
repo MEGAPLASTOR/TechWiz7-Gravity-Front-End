@@ -5,14 +5,15 @@ import Badge from "../../components/common/Badge";
 import adminService from "../../services/adminService";
 export default function AdminDashboardPage({ onNavigate }) {
   const [metrics, setMetrics] = useState({
-    totalFarmers: 9,
-    totalCustomers: 7,
-    totalMarkets: 5,
-    totalOrders: 9,
-    totalRevenue: 478000,
-    pendingKycCount: 2,
+    totalFarmers: 0,
+    totalCustomers: 0,
+    totalMarkets: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+    pendingKycCount: 0,
   });
-  const [pendingApprovals, setPendingApprovals] = useState([
+  const [pendingApprovals, setPendingApprovals] = useState([]);
+  /*
     {
       id: 119,
       farmerName: "Nông Trại Ba Vì",
@@ -33,8 +34,9 @@ export default function AdminDashboardPage({ onNavigate }) {
       appliedAt: "Hôm nay, 09:15",
       status: "PENDING",
     },
-  ]);
-  const [marketReports, setMarketReports] = useState([
+  ]); */
+  const [marketReports, setMarketReports] = useState([]);
+  /*
     {
       marketName: "Phiên Chợ Xanh Nông Sản Ba Đình (Hà Nội)",
       totalRevenue: 180000,
@@ -59,8 +61,9 @@ export default function AdminDashboardPage({ onNavigate }) {
       totalOrders: 1,
       activeFarmers: 2,
     },
-  ]);
-  const [topProduce, setTopProduce] = useState([
+  ]); */
+  const [topProduce, setTopProduce] = useState([]);
+  /*
     {
       name: "Cải Bó Xôi Hữu Cơ Ba Vì",
       farmer: "Bác Ba Ba Vì",
@@ -89,7 +92,7 @@ export default function AdminDashboardPage({ onNavigate }) {
       market: "Ba Đình",
       tag: "Củ quả",
     },
-  ]);
+  ]); */
   const formatCurrency = (val) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",

@@ -246,10 +246,10 @@ export default function StallsPage({
       productsCount: 11,
     },
   ];
-  const [stalls, setStalls] = useState(defaultStalls);
+  const [stalls, setStalls] = useState([]);
   const [marketsList, setMarketsList] = useState([]);
   const [viewMode, setViewMode] = useState("list");
-  const [selectedStall, setSelectedStall] = useState(defaultStalls[0]);
+  const [selectedStall, setSelectedStall] = useState(null);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedMarketId, setSelectedMarketId] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
@@ -332,7 +332,7 @@ export default function StallsPage({
           !searchKeyword.trim() &&
           selectedMarketId === "all"
         ) {
-          setStalls(defaultStalls);
+          setStalls([]);
         } else if (isMounted) {
           setStalls([]);
         }

@@ -151,8 +151,8 @@
   min-width: 44px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #f1f5f9;
-  border: 1.5px solid var(--color-border-light, #e2e8f0);
+  background-color: var(--color-bg-base);
+  border: 1.5px solid var(--color-border-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -267,4 +267,25 @@
   font-size: 11px;
   color: var(--color-text-muted);
   margin-top: 4px;
+}
+
+html[data-theme="dark"] .ml-rev-feed-card {
+  background-color: var(--color-bg-surface);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-rev-uavatar-wrap {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-farmer-reply-box {
+  background-color: var(--color-primary-surface);
+  border-color: var(--color-primary-subtle);
+}
+
+html[data-theme="dark"] .ml-reply-input {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+  color: var(--color-text-main);
 }

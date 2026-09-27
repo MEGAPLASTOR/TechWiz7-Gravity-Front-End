@@ -410,3 +410,66 @@
 .ml-notif-sound-btn:hover {
   color: #0f172a;
 }
+
+html[data-theme="dark"] .ml-notif-bell-btn {
+  background: var(--color-bg-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-body);
+}
+
+html[data-theme="dark"] .ml-notif-bell-btn:hover,
+html[data-theme="dark"] .ml-notif-bell-btn.active {
+  background: var(--color-bg-surface-hover);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+html[data-theme="dark"] .ml-notif-dropdown {
+  background: var(--color-bg-surface);
+  border-color: var(--color-border);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+}
+
+html[data-theme="dark"] .ml-notif-header {
+  background: var(--color-bg-base);
+  border-bottom-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-notif-header-title {
+  color: var(--color-text-main);
+}
+
+html[data-theme="dark"] .ml-notif-tab {
+  color: var(--color-text-muted);
+}
+
+html[data-theme="dark"] .ml-notif-tab.active {
+  background: var(--color-bg-surface);
+  color: var(--color-primary);
+}
+
+html[data-theme="dark"] .ml-notif-item {
+  border-bottom-color: var(--color-border-light);
+}
+
+html[data-theme="dark"] .ml-notif-item:hover {
+  background-color: var(--color-bg-surface-hover);
+}
+
+html[data-theme="dark"] .ml-notif-item.unread {
+  background-color: rgba(74, 222, 128, 0.08);
+}
+
+html[data-theme="dark"] .ml-notif-item-title {
+  color: var(--color-text-main);
+}
+
+html[data-theme="dark"] .ml-notif-item-desc {
+  color: var(--color-text-muted);
+}
+
+html[data-theme="dark"] .ml-notif-footer {
+  background: var(--color-bg-base);
+  border-top-color: var(--color-border);
+  color: var(--color-text-muted);
+}

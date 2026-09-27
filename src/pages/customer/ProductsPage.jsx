@@ -24,7 +24,8 @@ export default function ProductsPage({
       setSelectedMarket(initialMarket);
     }
   }, [initialMarket]);
-  const [categories, setCategories] = useState([
+  const [categories, setCategories] = useState([]);
+  /*
     {
       categoryId: 1,
       name: "Rau Lá Hữu Cơ",
@@ -49,8 +50,9 @@ export default function ProductsPage({
       slug: "nam-thao-duoc",
       icon: "🍄",
     },
-  ]);
-  const [markets, setMarkets] = useState([
+  ]); */
+  const [markets, setMarkets] = useState([]);
+  /*
     {
       id: 101,
       name: "Phiên Chợ Xanh Nông Sản Ba Đình",
@@ -67,8 +69,9 @@ export default function ProductsPage({
       id: 105,
       name: "Chợ Phiên Nông Nghiệp Xanh Ecopark",
     },
-  ]);
-  const [products, setProducts] = useState([
+  ]); */
+  const [products, setProducts] = useState([]);
+  /*
     {
       id: 101,
       name: "Cải Bó Xôi Hữu Cơ Ba Vì",
@@ -177,7 +180,7 @@ export default function ProductsPage({
       description:
         "Cùi dày hạt tiêu mọng nước, ngọt sắc hương thơm đặc trưng vùng Thanh Hà.",
     },
-  ]);
+  ]); */
   useEffect(() => {
     let isMounted = true;
     async function loadMetadata() {

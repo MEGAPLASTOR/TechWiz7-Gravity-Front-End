@@ -123,7 +123,7 @@
 
 .ml-products-search-input:focus {
   border-color: var(--color-primary);
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   box-shadow: 0 0 0 3px var(--color-primary-focus);
 }
 
@@ -302,7 +302,7 @@
 .ml-filter-select:focus,
 .ml-form-select:focus {
   border-color: var(--color-primary);
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   box-shadow: 0 0 0 3px var(--color-primary-focus);
 }
 .ml-slider-header,
@@ -508,7 +508,7 @@
 }
 
 .ml-empty-chip-btn {
-  background: #ffffff;
+  background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   padding: 6px 14px;
   border-radius: var(--radius-full);

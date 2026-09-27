@@ -4,7 +4,11 @@
   min-height: calc(100vh - 72px);
 }
 .ml-farmer-orders-banner {
-  background: linear-gradient(180deg, #f5f1e8 0%, var(--color-bg-base) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--color-bg-muted) 0%,
+    var(--color-bg-base) 100%
+  );
   padding: var(--space-8) 0 var(--space-5);
   border-bottom: 1px solid var(--color-border-light);
   margin-bottom: var(--space-6);
@@ -280,7 +284,7 @@
 
 .ml-customer-avatar {
   font-size: 24px;
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   width: 40px;
   height: 40px;
   border-radius: var(--radius-full);
@@ -315,7 +319,7 @@
   font-size: 11.5px;
   font-weight: var(--font-weight-bold);
   color: var(--color-primary-dark);
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   border: 1px solid var(--color-primary-subtle);
   padding: 4px 10px;
   border-radius: var(--radius-full);
@@ -511,4 +515,91 @@
   color: var(--color-text-muted);
   line-height: 1.5;
   margin: 0;
+}
+
+html[data-theme="dark"] .ml-farmer-orders-banner {
+  background: linear-gradient(
+    180deg,
+    rgba(26, 44, 33, 0.7) 0%,
+    var(--color-bg-base) 100%
+  );
+  border-bottom-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-farmer-customer-box,
+html[data-theme="dark"] .ml-fo-customer-info {
+  background: rgba(22, 56, 38, 0.35);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-customer-avatar {
+  background-color: var(--color-bg-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-main);
+}
+
+html[data-theme="dark"] .ml-session-tag,
+html[data-theme="dark"] .ml-fo-session-strip {
+  background-color: var(--color-bg-surface);
+  color: var(--color-primary-light);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-farmer-items-list {
+  background-color: rgba(17, 28, 21, 0.7);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-farmer-order-note,
+html[data-theme="dark"] .ml-fo-note {
+  background-color: var(--status-pending-bg);
+  border-color: rgba(245, 158, 11, 0.3);
+  border-left: 3px solid var(--color-accent);
+  color: var(--color-accent-light);
+}
+
+html[data-theme="dark"] .ml-fo-code {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+  color: var(--color-text-main);
+}
+
+html[data-theme="dark"] .ml-date-input {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+  color: var(--color-text-main);
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] .ml-farmer-tab,
+html[data-theme="dark"] .ml-fo-tab {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+  color: var(--color-text-body);
+}
+
+html[data-theme="dark"] .ml-farmer-tab:hover,
+html[data-theme="dark"] .ml-fo-tab:hover {
+  background-color: var(--color-primary-surface);
+  color: var(--color-primary);
+}
+
+html[data-theme="dark"] .ml-farmer-tab.active,
+html[data-theme="dark"] .ml-fo-tab.active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #111c15;
+}
+
+html[data-theme="dark"] .ml-done-label,
+html[data-theme="dark"] .ml-order-done-text {
+  background-color: var(--color-primary-surface);
+  color: var(--color-primary);
+  border-color: var(--color-primary-subtle);
+}
+
+html[data-theme="dark"] .ml-cancelled-label {
+  background-color: var(--status-cancelled-bg);
+  color: var(--status-cancelled);
+  border-color: rgba(248, 113, 113, 0.3);
 }

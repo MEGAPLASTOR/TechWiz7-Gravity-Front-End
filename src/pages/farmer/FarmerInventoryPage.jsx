@@ -359,17 +359,6 @@ export default function FarmerInventoryPage({ onNavigate }) {
                     className="ml-inv-stall-select"
                     value={selectedStallFilter}
                     onChange={(e) => setSelectedStallFilter(e.target.value)}
-                    style={{
-                      padding: "6px 14px",
-                      borderRadius: "20px",
-                      border: "1.5px solid #16a34a",
-                      backgroundColor: "#f0fdf4",
-                      color: "#15803d",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                      outline: "none",
-                      cursor: "pointer",
-                    }}
                   >
                     <option value="all">
                       🏪 Tất cả sạp & chợ ({products.length})

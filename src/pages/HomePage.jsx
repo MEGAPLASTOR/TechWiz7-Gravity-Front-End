@@ -24,7 +24,9 @@ export default function HomePage({
   const [marketCityFilter, setMarketCityFilter] = useState("all");
   const [scheduleMapMarket, setScheduleMapMarket] = useState(null);
   const [stallProductsMarket, setStallProductsMarket] = useState(null);
-  const [markets, setMarkets] = useState([
+  const [markets, setMarkets] = useState([]);
+  /* Live markets are loaded from the backend; no demo records are rendered. */
+  /*
     {
       id: 101,
       name: "Phiên Chợ Xanh Nông Sản Ba Đình",
@@ -73,8 +75,10 @@ export default function HomePage({
       description:
         "Giao lưu nông sản đặc sản vùng cao Tây Bắc, mật ong rừng, gạo nương và hoa quả tươi.",
     },
-  ]);
-  const [products, setProducts] = useState([
+  ]); */
+  const [products, setProducts] = useState([]);
+  /* Live products are loaded from the backend; no demo records are rendered. */
+  /*
     {
       id: 101,
       name: "Cải Bó Xôi Hữu Cơ Ba Vì",
@@ -171,7 +175,7 @@ export default function HomePage({
         "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=600&q=80",
       organicCertified: true,
     },
-  ]);
+  ]); */
   useEffect(() => {
     let isMounted = true;
     const timer = setTimeout(async () => {

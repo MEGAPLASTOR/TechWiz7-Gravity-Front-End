@@ -440,6 +440,11 @@ html[data-theme="dark"] .ml-benefit-item {
 }
 @media (min-width: 1024px) {
   .ml-header-inner {
+    width: 100% !important;
+    max-width: none !important;
+    padding-inline: clamp(24px, 3.2vw, 64px) !important;
+  }
+  .ml-header-inner {
     display: flex;
     justify-content: space-between;
     gap: 16px;
@@ -449,13 +454,19 @@ html[data-theme="dark"] .ml-benefit-item {
   }
   .ml-nav-desktop {
     flex: 1 1 auto;
-    justify-content: flex-start;
-    padding-left: 14px;
-    border-left: 1px solid var(--color-border-light);
+    justify-content: stretch;
+    padding: 0 18px;
+    border-inline: 1px solid var(--color-border-light);
   }
   .ml-nav-inner {
+    width: 100%;
     margin: 0;
-    justify-content: flex-start;
+    justify-content: space-between;
+    gap: clamp(8px, 1.5vw, 24px);
+  }
+  .ml-nav-link {
+    flex: 1 1 auto;
+    text-align: center;
   }
   .ml-header-right {
     margin-left: auto;
@@ -810,7 +821,7 @@ img {
 
 .input-control:focus {
   border-color: var(--color-primary);
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   box-shadow: 0 0 0 2px var(--color-primary-focus);
 }
 
@@ -1065,4 +1076,157 @@ img {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+/* Refined market styling: warmer rhythm, clearer hierarchy and tactile panels. */
+.ml-container {
+  max-width: 1240px !important;
+}
+.ml-section-header {
+  position: relative;
+  padding-bottom: 14px;
+}
+.ml-section-header::after {
+  content: "";
+  display: block;
+  width: 76px;
+  height: 4px;
+  margin-top: 14px;
+  border-radius: 99px;
+  background: var(--market-clay);
+}
+.ml-section-title {
+  line-height: 1.08 !important;
+}
+.ml-home-search-input-wrap {
+  border-radius: 7px !important;
+  box-shadow:
+    0 7px 0 rgba(42, 72, 45, 0.12),
+    0 18px 35px rgba(42, 72, 45, 0.11) !important;
+}
+.ml-home-search-input {
+  background: #fffaf0 !important;
+  border: 2px solid #a9c39e !important;
+  color: #315b3f !important;
+}
+.ml-home-search-input:focus {
+  border-color: var(--market-clay) !important;
+  box-shadow: 0 0 0 4px rgba(217, 99, 61, 0.16) !important;
+}
+.ml-products-grid,
+.ml-markets-grid {
+  align-items: stretch;
+}
+.ml-product-card,
+.ml-market-card {
+  overflow: hidden;
+}
+.ml-product-body,
+.ml-market-card-body {
+  padding: 20px !important;
+}
+.ml-product-footer {
+  margin-top: 18px !important;
+  padding-top: 16px !important;
+}
+.ml-product-price {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+.ml-farmer-cta-inner {
+  position: relative;
+  overflow: hidden;
+}
+.ml-farmer-cta-inner::before {
+  content: "✳";
+  position: absolute;
+  right: 38%;
+  top: 18px;
+  color: rgba(241, 185, 74, 0.32);
+  font-size: 8rem;
+  line-height: 1;
+  transform: rotate(14deg);
+  pointer-events: none;
+}
+.ml-footer {
+  position: relative;
+  overflow: hidden;
+}
+.ml-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  background: repeating-linear-gradient(
+    135deg,
+    transparent 0 18px,
+    #f1b94a 19px 20px
+  );
+}
+.ml-footer-main,
+.ml-footer-bottom {
+  position: relative;
+  z-index: 1;
+}
+.ml-fallback-recommended-section {
+  display: none !important;
+}
+@media (max-width: 767px) {
+  .ml-section-title {
+    font-size: 2rem !important;
+  }
+  .ml-product-body,
+  .ml-market-card-body {
+    padding: 16px !important;
+  }
+  .ml-farmer-cta-inner::before {
+    right: 4%;
+    font-size: 5rem;
+  }
+}
+
+html[data-theme="dark"] .ml-home-search-input {
+  background: var(--color-bg-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-main) !important;
+}
+
+html[data-theme="dark"] .ml-home-search-input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 4px var(--color-primary-focus) !important;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .ml-card {
+  background-color: var(--color-bg-surface);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .table-head,
+html[data-theme="dark"] .ml-table-head {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .table-row,
+html[data-theme="dark"] .ml-table-row {
+  border-color: var(--color-border-light);
+}
+
+html[data-theme="dark"] .table-row:hover,
+html[data-theme="dark"] .ml-table-row:hover {
+  background-color: var(--color-bg-surface-hover);
+}
+
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .ml-modal-content {
+  background-color: var(--color-bg-surface);
+  border-color: var(--color-border);
 }

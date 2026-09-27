@@ -149,7 +149,7 @@ export default function MarketStallsModal({
       ];
     }
   }, [marketId, marketName]);
-  const [stalls, setStalls] = useState(defaultStalls);
+  const [stalls, setStalls] = useState([]);
   const defaultProducts = useMemo(() => {
     return [
       {
@@ -262,7 +262,7 @@ export default function MarketStallsModal({
       },
     ];
   }, [marketName]);
-  const [products, setProducts] = useState(defaultProducts);
+  const [products, setProducts] = useState([]);
   useEffect(() => {
     let isMounted = true;
     async function loadStalls() {
