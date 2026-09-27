@@ -1,16 +1,8 @@
-/* ========================================================
-   MARKETS PAGE STYLES - MARKETLINK
-   Giao diện danh sách các phiên chợ & bản đồ định vị
-   Trực quan, phân tầng rõ ràng giữa chế độ lưới sạp và bản đồ lộ trình
-   ======================================================== */
-
 .ml-markets-page {
   padding-bottom: var(--space-16);
   background-color: var(--color-bg-base);
   min-height: calc(100vh - 72px);
 }
-
-/* ================= BANNER ĐẦU TRANG ================= */
 .ml-markets-banner {
   background: linear-gradient(180deg, #f5f1e8 0%, var(--color-bg-base) 100%);
   padding: var(--space-8) 0;
@@ -53,8 +45,6 @@
   line-height: 1.5;
   margin: 0;
 }
-
-/* View Mode Toggle: Grid vs Map */
 .ml-view-toggle {
   display: inline-flex;
   background-color: var(--color-bg-surface);
@@ -89,8 +79,6 @@
   color: #ffffff;
   box-shadow: 0 2px 6px rgba(46, 125, 50, 0.3);
 }
-
-/* ================= CONTROLS & FILTER BAR ================= */
 .ml-markets-content {
   display: flex;
   flex-direction: column;
@@ -252,8 +240,6 @@
   font-weight: var(--font-weight-bold);
   box-shadow: 0 2px 6px rgba(46, 125, 50, 0.25);
 }
-
-/* ================= MARKETS CARDS GRID ================= */
 .ml-markets-grid-wrap {
   width: 100%;
 }
@@ -275,8 +261,6 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
-
-/* Empty State */
 .ml-markets-empty {
   padding: var(--space-12) var(--space-6);
   text-align: center;
@@ -387,8 +371,6 @@
   font-size: 13.5px;
   color: var(--color-text-muted);
 }
-
-/* ================= MAP VIEW CONTAINER ================= */
 .ml-markets-map-view,
 .ml-map-view-box {
   background-color: var(--color-bg-surface);

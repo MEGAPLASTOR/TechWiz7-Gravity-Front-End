@@ -1,17 +1,9 @@
-/* ========================================================
-   HOMEPAGE STYLES - MARKETLINK
-   Thiết kế giao diện hiện đại, trực quan, tinh tế
-   Bố cục lưới vững chắc, không chồng chéo phần tử
-   Hiệu ứng cuộn và micro-interactions mượt mà
-   ======================================================== */
-
-/* ========================================================
-   0. SCROLL REVEAL ANIMATIONS
-   ======================================================== */
 .ml-reveal {
   opacity: 0;
   transform: translateY(28px);
-  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 }
 
@@ -20,10 +12,18 @@
   transform: translateY(0);
 }
 
-.ml-stagger-1 { transition-delay: 80ms; }
-.ml-stagger-2 { transition-delay: 160ms; }
-.ml-stagger-3 { transition-delay: 240ms; }
-.ml-stagger-4 { transition-delay: 320ms; }
+.ml-stagger-1 {
+  transition-delay: 80ms;
+}
+.ml-stagger-2 {
+  transition-delay: 160ms;
+}
+.ml-stagger-3 {
+  transition-delay: 240ms;
+}
+.ml-stagger-4 {
+  transition-delay: 320ms;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .ml-reveal {
@@ -32,27 +32,31 @@
     transition: none !important;
   }
 }
-
-/* ========================================================
-   1. HERO SECTION
-   ======================================================== */
 .ml-hero {
   position: relative;
-  background: linear-gradient(180deg, #f7f3ea 0%, #faf8f2 50%, var(--color-bg-base) 100%);
+  background: linear-gradient(
+    180deg,
+    #f7f3ea 0%,
+    #faf8f2 50%,
+    var(--color-bg-base) 100%
+  );
   padding: 48px 0 64px;
   overflow: hidden;
   border-bottom: 1px solid var(--color-border-light);
 }
-
-/* Background Subtle Ambient Glow */
 .ml-hero::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -120px;
   right: -80px;
   width: 550px;
   height: 550px;
-  background: radial-gradient(circle, rgba(46, 125, 50, 0.08) 0%, rgba(217, 119, 6, 0.04) 50%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(46, 125, 50, 0.08) 0%,
+    rgba(217, 119, 6, 0.04) 50%,
+    transparent 70%
+  );
   border-radius: 50%;
   pointer-events: none;
   z-index: 0;
@@ -75,15 +79,11 @@
     padding-bottom: 12px;
   }
 }
-
-/* Hero Content */
 .ml-hero-content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
-
-/* Hero Badge */
 .ml-hero-badge {
   display: inline-flex;
   align-items: center;
@@ -110,12 +110,19 @@
 }
 
 @keyframes ml-pulse-dot {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.4); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(46, 125, 50, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.4);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(46, 125, 50, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(46, 125, 50, 0);
+  }
 }
-
-/* Hero Heading */
 .ml-hero-title {
   font-size: 2.25rem;
   font-weight: 800;
@@ -152,8 +159,6 @@
   margin-bottom: 28px;
   max-width: 580px;
 }
-
-/* Hero CTA Action Buttons */
 .ml-hero-actions {
   display: flex;
   align-items: center;
@@ -161,8 +166,6 @@
   flex-wrap: wrap;
   margin-bottom: 32px;
 }
-
-/* Search Box Container */
 .ml-hero-searchbox-wrap {
   width: 100%;
   margin-bottom: 28px;
@@ -172,17 +175,23 @@
   background: #ffffff;
   border: 1px solid var(--color-border);
   border-radius: 16px;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
+  box-shadow:
+    0 10px 30px -5px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.03);
   padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .ml-hero-searchbox:focus-within {
   border-color: var(--color-primary-light);
-  box-shadow: 0 12px 35px -5px rgba(46, 125, 50, 0.14), 0 4px 12px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 12px 35px -5px rgba(46, 125, 50, 0.14),
+    0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 @media (min-width: 840px) {
@@ -265,8 +274,6 @@
     width: auto;
   }
 }
-
-/* Suggestion tags under searchbox */
 .ml-hero-suggestions {
   display: flex;
   align-items: center;
@@ -293,8 +300,6 @@
   border-color: var(--color-primary-subtle);
   color: var(--color-primary-dark);
 }
-
-/* Hero Stats Bar */
 .ml-hero-stats {
   display: flex;
   align-items: center;
@@ -332,8 +337,6 @@
   height: 32px;
   background-color: var(--color-border);
 }
-
-/* Hero Visual Column (Zero overlap guarantee) */
 .ml-hero-visual {
   position: relative;
   width: 100%;
@@ -346,7 +349,9 @@
   width: 100%;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 20px 45px -12px rgba(27, 94, 32, 0.22), 0 8px 16px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 20px 45px -12px rgba(27, 94, 32, 0.22),
+    0 8px 16px rgba(0, 0, 0, 0.06);
   border: 4px solid #ffffff;
   aspect-ratio: 4 / 3.3;
   background-color: #e2e8f0;
@@ -363,8 +368,6 @@
 .ml-hero-img-frame:hover .ml-hero-main-img {
   transform: scale(1.03);
 }
-
-/* Floating Badges on Desktop */
 .ml-hero-floating-badge {
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
@@ -377,7 +380,9 @@
   align-items: center;
   gap: 12px;
   z-index: 2;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .ml-hero-floating-badge:hover {
@@ -416,8 +421,6 @@
   color: var(--color-text-muted);
   line-height: 1.2;
 }
-
-/* Positioning of Floating Badges */
 @media (min-width: 768px) {
   .ml-hero-floating-badge.top {
     position: absolute;
@@ -433,8 +436,6 @@
     max-width: 260px;
   }
 }
-
-/* Mobile Badge Alignment: Neatly placed under the photo, NEVER overlapping */
 @media (max-width: 767px) {
   .ml-hero-mobile-badges {
     display: grid;
@@ -464,10 +465,6 @@
     font-size: 16px;
   }
 }
-
-/* ========================================================
-   2. TRUST & VALUE STRIP
-   ======================================================== */
 .ml-trust-strip {
   background-color: #ffffff;
   border-top: 1px solid var(--color-border-light);
@@ -527,10 +524,6 @@
   color: var(--color-text-muted);
   line-height: 1.35;
 }
-
-/* ========================================================
-   3. HOW IT WORKS (3 BƯỚC ĐẶT TRƯỚC)
-   ======================================================== */
 .ml-how-it-works {
   padding: 72px 0;
   background: var(--color-bg-muted);
@@ -618,7 +611,10 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
+  transition:
+    transform var(--transition-normal),
+    box-shadow var(--transition-normal),
+    border-color var(--transition-normal);
 }
 
 .ml-step-card:hover {
@@ -682,17 +678,11 @@
   color: var(--color-text-body);
   line-height: 1.6;
 }
-
-/* ========================================================
-   4. FEATURED MARKETS SECTION
-   ======================================================== */
 .ml-markets-section {
   padding: 72px 0;
   background-color: var(--color-bg-base);
   border-bottom: 1px solid var(--color-border-light);
 }
-
-/* Area Quick Selector */
 .ml-markets-filter-bar {
   display: flex;
   align-items: center;
@@ -734,8 +724,6 @@
   color: #ffffff;
   box-shadow: 0 4px 10px rgba(46, 125, 50, 0.25);
 }
-
-/* Markets Grid (Clean responsive 1/2/3 cols, zero clipping) */
 .ml-markets-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -753,17 +741,11 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
-
-/* ========================================================
-   5. SEASONAL PRODUCTS SECTION
-   ======================================================== */
 .ml-products-section {
   padding: 72px 0;
   background: #ffffff;
   border-bottom: 1px solid var(--color-border-light);
 }
-
-/* Category Filter Pills */
 .ml-category-chips-wrap {
   display: flex;
   align-items: center;
@@ -818,8 +800,6 @@
   background: rgba(255, 255, 255, 0.25);
   color: #ffffff;
 }
-
-/* Home Search Panel */
 .ml-home-search-panel {
   display: flex;
   flex-direction: column;
@@ -913,8 +893,6 @@
   border-color: var(--color-primary);
   color: #ffffff;
 }
-
-/* Search Status Bar */
 .ml-search-status-bar {
   display: flex;
   align-items: center;
@@ -937,8 +915,6 @@
   font-size: 13px;
   text-decoration: underline;
 }
-
-/* Products Grid (No overflow, equal card heights) */
 .ml-products-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -962,8 +938,6 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
-
-/* Empty State */
 .ml-empty-state-card {
   grid-column: 1 / -1;
   background: var(--color-bg-base);
@@ -1072,10 +1046,6 @@
   font-size: 14px;
   color: var(--color-text-muted);
 }
-
-/* ========================================================
-   6. FARMER CTA SECTION (KÊU GỌI NHÀ VƯỜN)
-   ======================================================== */
 .ml-farmer-cta {
   padding: 72px 0 88px;
   background-color: var(--color-bg-base);
@@ -1233,18 +1203,24 @@
   object-fit: cover;
   display: block;
 }
-
-/* Gradient overlay on farmer photo for seamless integration */
 .ml-farmer-cta-visual::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(19, 78, 25, 0.3) 0%, transparent 60%);
+  background: linear-gradient(
+    180deg,
+    rgba(19, 78, 25, 0.3) 0%,
+    transparent 60%
+  );
   pointer-events: none;
 }
 
 @media (min-width: 992px) {
   .ml-farmer-cta-visual::after {
-    background: linear-gradient(90deg, rgba(19, 78, 25, 0.8) 0%, transparent 40%);
+    background: linear-gradient(
+      90deg,
+      rgba(19, 78, 25, 0.8) 0%,
+      transparent 40%
+    );
   }
 }

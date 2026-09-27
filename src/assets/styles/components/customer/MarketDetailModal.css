@@ -1,14 +1,8 @@
-/* ================================================================
-   MARKET DETAIL MODAL - Schedule & Interactive OpenStreetMap
-   ================================================================ */
-
 .ml-market-detail-content {
   display: flex;
   flex-direction: column;
   gap: var(--space-4, 16px);
 }
-
-/* Modal Tab Navigation */
 .ml-modal-tab-nav {
   display: flex;
   border-bottom: 2px solid var(--color-border-light, #e2e8f0);
@@ -44,8 +38,6 @@
   flex-direction: column;
   gap: var(--space-4, 16px);
 }
-
-/* Banner */
 .ml-detail-banner {
   position: relative;
   height: 200px;
@@ -68,8 +60,6 @@
   gap: 8px;
   flex-wrap: wrap;
 }
-
-/* Schedule Card */
 .ml-detail-schedule-card {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -100,8 +90,6 @@
   font-size: 13.5px;
   color: var(--color-text-main, #0f172a);
 }
-
-/* Session Card & Cutoff */
 .ml-session-card {
   background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
   border: 1px solid #fde68a;
@@ -149,8 +137,6 @@
   font-weight: 700;
   color: #d97706;
 }
-
-/* Section Headings */
 .ml-detail-heading {
   font-size: 14px;
   font-weight: 700;
@@ -164,8 +150,6 @@
   line-height: 1.6;
   margin: 0;
 }
-
-/* Steps Grid */
 .ml-steps-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -212,8 +196,6 @@
   color: var(--color-text-muted, #64748b);
   line-height: 1.4;
 }
-
-/* Amenities */
 .ml-amenities-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -231,8 +213,6 @@
   align-items: center;
   gap: 4px;
 }
-
-/* Footer & Actions */
 .ml-detail-footer {
   margin-top: 8px;
   display: flex;
@@ -253,10 +233,6 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-
-/* ================================================================
-   TAB 2: MAP & ROUTING STYLES
-   ================================================================ */
 
 .ml-map-top-bar {
   display: flex;
@@ -349,8 +325,6 @@
   color: #64748b;
   font-size: 13px;
 }
-
-/* Geofence Alert */
 .ml-geofence-alert-box {
   background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
   border: 1px solid #86efac;
@@ -363,8 +337,13 @@
 }
 
 @keyframes pulseGf {
-  0%, 100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
-  50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+  }
 }
 
 .ml-geofence-bell {
@@ -391,8 +370,6 @@
   font-size: 12px;
   color: #92400e;
 }
-
-/* GPS Simulator */
 .ml-gps-simulate-section {
   background-color: var(--color-bg-subtle, #f8fafc);
   border: 1px solid var(--color-border-light, #e2e8f0);
@@ -456,8 +433,6 @@
   color: var(--color-text-muted, #64748b);
   margin-top: 8px;
 }
-
-/* Steps list */
 .ml-route-steps-section {
   background-color: var(--color-bg-subtle, #f8fafc);
   border: 1px solid var(--color-border-light, #e2e8f0);
@@ -479,8 +454,6 @@
   color: var(--color-text-body, #334155);
   line-height: 1.6;
 }
-
-/* Map modal footer */
 .ml-map-modal-footer {
   display: flex;
   gap: 12px;

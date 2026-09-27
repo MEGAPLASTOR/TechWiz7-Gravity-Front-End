@@ -1,34 +1,31 @@
-import React, { useState } from 'react';
-import '@/assets/styles/components/common/Button.css';
-
+import React, { useState } from "react";
+import "@/assets/styles/components/common/Button.css";
 export default function Button({
   children,
-  variant = 'primary', // 'primary' | 'accent' | 'outline' | 'ghost' | 'danger'
-  size = 'md',        // 'sm' | 'md' | 'lg'
+  variant = "primary",
+  size = "md",
   icon = null,
   iconRight = null,
   loading = false,
   fullWidth = false,
   disabled = false,
-  type = 'button',
+  type = "button",
   onClick,
-  className = '',
+  className = "",
   ...props
 }) {
   const [autoLoading, setAutoLoading] = useState(false);
   const isLoading = loading || autoLoading;
-
   const handleClick = (event) => {
     const result = onClick?.(event);
-    if (result && typeof result.then === 'function') {
+    if (result && typeof result.then === "function") {
       setAutoLoading(true);
       Promise.resolve(result).then(
         () => setAutoLoading(false),
-        () => setAutoLoading(false)
+        () => setAutoLoading(false),
       );
     }
   };
-
   return (
     <button
       type={type}
@@ -36,10 +33,14 @@ export default function Button({
       onClick={handleClick}
       aria-busy={isLoading || undefined}
       className={
-        'ml-btn ml-btn--' + variant + ' ml-btn--' + size +
-        (fullWidth ? ' ml-btn--full' : '') +
-        (isLoading ? ' ml-btn--loading' : '') +
-        ' ' + className
+        "ml-btn ml-btn--" +
+        variant +
+        " ml-btn--" +
+        size +
+        (fullWidth ? " ml-btn--full" : "") +
+        (isLoading ? " ml-btn--loading" : "") +
+        " " +
+        className
       }
       {...props}
     >
@@ -49,7 +50,9 @@ export default function Button({
         icon && <span className="ml-btn-icon-left">{icon}</span>
       )}
       <span className="ml-btn-label">{children}</span>
-      {!isLoading && iconRight && <span className="ml-btn-icon-right">{iconRight}</span>}
+      {!isLoading && iconRight && (
+        <span className="ml-btn-icon-right">{iconRight}</span>
+      )}
     </button>
   );
 }

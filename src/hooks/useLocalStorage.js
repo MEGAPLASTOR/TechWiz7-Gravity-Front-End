@@ -1,8 +1,4 @@
-import { useState, useEffect } from 'react';
-
-/**
- * Hook to persist state in localStorage
- */
+import { useState, useEffect } from "react";
 export function useLocalStorage(key, initialValue) {
   const [storedValue, setStoredValue] = useState(() => {
     try {
@@ -13,7 +9,6 @@ export function useLocalStorage(key, initialValue) {
       return initialValue;
     }
   });
-
   useEffect(() => {
     try {
       window.localStorage.setItem(key, JSON.stringify(storedValue));
@@ -21,6 +16,5 @@ export function useLocalStorage(key, initialValue) {
       console.warn(`Error setting localStorage key "${key}":`, error);
     }
   }, [key, storedValue]);
-
   return [storedValue, setStoredValue];
 }

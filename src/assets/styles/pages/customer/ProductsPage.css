@@ -1,16 +1,8 @@
-/* ========================================================
-   PRODUCTS PAGE STYLES - MARKETLINK
-   Đảm bảo bố cục trực quan, rõ ràng, phân tầng mạch lạc
-   Hoàn toàn không bị chồng chéo hay che khuất trên mọi kích thước màn hình
-   ======================================================== */
-
 .ml-products-page {
   padding-bottom: var(--space-16);
   background-color: var(--color-bg-base);
   min-height: calc(100vh - 72px);
 }
-
-/* ================= BANNER ĐẦU TRANG ================= */
 .ml-products-banner {
   background: linear-gradient(180deg, #f5f1e8 0%, var(--color-bg-base) 100%);
   padding: var(--space-8) 0;
@@ -55,8 +47,6 @@
   max-width: 640px;
   line-height: 1.5;
 }
-
-/* Thanh tìm kiếm trên Banner */
 .ml-products-search-container {
   display: flex;
   flex-direction: column;
@@ -154,8 +144,6 @@
 .ml-search-clear:hover {
   color: var(--color-danger);
 }
-
-/* ================= 2-COLUMN RESPONSIVE LAYOUT ================= */
 .ml-products-layout {
   display: grid;
   grid-template-columns: 1fr;
@@ -169,11 +157,8 @@
     grid-template-columns: 290px minmax(0, 1fr);
   }
 }
-
-/* ================= SIDEBAR BỘ LỌC NÔNG SẢN ================= */
 .ml-products-sidebar,
 .ml-filters-sidebar {
-  /* Mặc định trên Mobile/Tablet: static để không che khuất danh sách sản phẩm khi cuộn */
   position: static;
   width: 100%;
 }
@@ -181,7 +166,6 @@
 @media (min-width: 1024px) {
   .ml-products-sidebar,
   .ml-filters-sidebar {
-    /* Sticky trên Desktop với khoảng cách an toàn dưới Header, tránh chồng chéo */
     position: sticky;
     top: 92px;
     max-height: calc(100vh - 110px);
@@ -242,8 +226,6 @@
 .ml-filters-reset:hover {
   background-color: var(--color-primary-subtle);
 }
-
-/* Từng khối lọc */
 .ml-filter-block {
   display: flex;
   flex-direction: column;
@@ -257,8 +239,6 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-
-/* Category Filter Buttons List */
 .ml-cat-list {
   display: flex;
   flex-direction: column;
@@ -305,8 +285,6 @@
   background-color: rgba(255, 255, 255, 0.25);
   color: #ffffff;
 }
-
-/* Select Form Controls */
 .ml-filter-select,
 .ml-form-select {
   width: 100%;
@@ -327,8 +305,6 @@
   background-color: #ffffff;
   box-shadow: 0 0 0 3px var(--color-primary-focus);
 }
-
-/* Price Range Slider */
 .ml-slider-header,
 .ml-price-range-header {
   display: flex;
@@ -361,16 +337,12 @@
   font-size: 11px;
   color: var(--color-text-muted);
 }
-
-/* ================= CỘT SẢN PHẨM CHÍNH ================= */
 .ml-products-main {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-  min-width: 0; /* Ngăn flex item tràn chiều rộng */
+  min-width: 0;
 }
-
-/* Thanh điều khiển catalog */
 .ml-products-topbar,
 .ml-catalog-bar {
   display: flex;
@@ -440,8 +412,6 @@
 .ml-sort-select:focus {
   border-color: var(--color-primary);
 }
-
-/* ================= GRID SẢN PHẨM ================= */
 .ml-products-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -459,8 +429,6 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
-
-/* Wrapper từng card sản phẩm - Giúp kích thước đồng nhất, không co méo */
 .ml-prod-card-wrap {
   display: flex;
   flex-direction: column;
@@ -472,8 +440,6 @@
 .ml-prod-card-wrap:hover {
   transform: translateY(-4px);
 }
-
-/* Trạng thái không có sản phẩm */
 .ml-no-products {
   display: flex;
   flex-direction: column;

@@ -1,16 +1,8 @@
-/* ========================================================
-   FARMER ORDERS PAGE STYLES - MARKETLINK
-   Giao diện quản lý đơn đặt trước tại sạp của nông dân
-   Trực quan, phân tách rõ ràng các ca nhận hàng và quy trình tiếp nhận
-   ======================================================== */
-
 .ml-farmer-orders-page {
   padding-bottom: var(--space-16);
   background-color: var(--color-bg-base);
   min-height: calc(100vh - 72px);
 }
-
-/* ================= BANNER & QUICK STATS ================= */
 .ml-farmer-orders-banner {
   background: linear-gradient(180deg, #f5f1e8 0%, var(--color-bg-base) 100%);
   padding: var(--space-8) 0 var(--space-5);
@@ -42,8 +34,6 @@
   margin-bottom: var(--space-5);
   line-height: 1.5;
 }
-
-/* Quick Strip Summary */
 .ml-farmer-quick-strip {
   display: flex;
   align-items: center;
@@ -86,8 +76,6 @@
     display: block;
   }
 }
-
-/* ================= CONTROLS & FILTER BAR ================= */
 .ml-farmer-orders-body {
   display: flex;
   flex-direction: column;
@@ -181,8 +169,6 @@
   color: #ffffff;
   box-shadow: 0 2px 6px rgba(46, 125, 50, 0.25);
 }
-
-/* Loading */
 .ml-farmer-loading {
   background-color: var(--color-primary-surface);
   border: 1px solid var(--color-primary-subtle);
@@ -193,8 +179,6 @@
   text-align: center;
   font-weight: var(--font-weight-medium);
 }
-
-/* Empty State */
 .ml-farmer-orders-empty,
 .ml-fo-empty {
   padding: var(--space-12) var(--space-6);
@@ -219,8 +203,6 @@
   align-items: center;
   justify-content: center;
 }
-
-/* ================= ORDERS CARDS GRID ================= */
 .ml-farmer-orders-grid,
 .ml-fo-list {
   display: grid;
@@ -253,8 +235,6 @@
   border-color: var(--color-primary-light);
   box-shadow: var(--shadow-md);
 }
-
-/* Card Top */
 .ml-farmer-card-top,
 .ml-fo-card-top {
   display: flex;
@@ -282,14 +262,16 @@
   color: var(--color-text-muted);
   margin-left: 8px;
 }
-
-/* Customer Contact Box */
 .ml-farmer-customer-box,
 .ml-fo-customer-info {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  background: linear-gradient(135deg, rgba(232, 245, 233, 0.4) 0%, rgba(250, 250, 245, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(232, 245, 233, 0.4) 0%,
+    rgba(250, 250, 245, 0.8) 100%
+  );
   border: 1px solid var(--color-primary-subtle);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
@@ -338,8 +320,6 @@
   padding: 4px 10px;
   border-radius: var(--radius-full);
 }
-
-/* Items list to prepare */
 .ml-farmer-items-wrap,
 .ml-fo-items {
   display: flex;
@@ -397,8 +377,6 @@
   color: var(--color-primary-dark);
   font-size: 13px;
 }
-
-/* Note */
 .ml-farmer-order-note,
 .ml-fo-note {
   font-size: 12px;
@@ -410,8 +388,6 @@
   border-radius: var(--radius-sm);
   line-height: 1.4;
 }
-
-/* Footer & Actions */
 .ml-farmer-card-footer,
 .ml-fo-card-footer {
   display: flex;
@@ -478,8 +454,6 @@
   padding: 4px 10px;
   border-radius: var(--radius-full);
 }
-
-/* Search and Date Filter Row */
 .ml-farmer-search-row {
   display: flex;
   flex-direction: column;

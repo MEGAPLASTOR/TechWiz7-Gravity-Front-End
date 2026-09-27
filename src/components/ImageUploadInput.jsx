@@ -1,127 +1,117 @@
-import React, { useState, useRef } from 'react';
-import '@/assets/styles/components/ImageUploadInput.css';
-
+import React, { useState, useRef } from "react";
+import "@/assets/styles/components/ImageUploadInput.css";
 export default function ImageUploadInput({
   value,
   initialUrl,
   onChange,
   onUploadSuccess,
-  folder = 'general',
-  label = '',
-  helpText = 'Hỗ trợ JPG, PNG, WEBP, GIF (Tối đa 15MB)',
-  placeholder = 'Nhập đường dẫn URL ảnh (https://...)'
+  folder = "general",
+  label = "",
+  helpText = "Hỗ trợ JPG, PNG, WEBP, GIF (Tối đa 15MB)",
+  placeholder = "Nhập đường dẫn URL ảnh (https://...)",
 }) {
-  const [mode, setMode] = useState('upload'); // 'upload' | 'url'
+  const [mode, setMode] = useState("upload");
   const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState('');
+  const [uploadError, setUploadError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [fileDetails, setFileDetails] = useState(null);
   const fileInputRef = useRef(null);
-
-  // Fallback to value or initialUrl
-  const currentValue = value !== undefined ? value : (initialUrl || '');
-
+  const currentValue = value !== undefined ? value : initialUrl || "";
   const triggerChange = (newUrl) => {
-    if (typeof onChange === 'function') {
+    if (typeof onChange === "function") {
       onChange(newUrl);
     }
-    if (typeof onUploadSuccess === 'function') {
+    if (typeof onUploadSuccess === "function") {
       onUploadSuccess(newUrl);
     }
   };
-
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Check size <= 15MB
     if (file.size > 15 * 1024 * 1024) {
-      setUploadError('Tệp ảnh vượt quá dung lượng tối đa 15MB. Vui lòng chọn tệp nhỏ hơn!');
+      setUploadError(
+        "Tệp ảnh vượt quá dung lượng tối đa 15MB. Vui lòng chọn tệp nhỏ hơn!",
+      );
       return;
     }
-
     setUploading(true);
-    setUploadError('');
+    setUploadError("");
     setUploadSuccess(false);
-
     try {
       const formData = new FormData();
-      formData.append('file', file);
-
-      // Support proxy via relative URL
-      const res = await fetch(`/api/upload/image?folder=${encodeURIComponent(folder)}`, {
-        method: 'POST',
-        body: formData
-      });
-
+      formData.append("file", file);
+      const res = await fetch(
+        `/api/upload/image?folder=${encodeURIComponent(folder)}`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
       const data = await res.json();
       const uploadedUrl = data.data?.fullUrl || data.data?.url || data.url;
-
       if (res.ok && uploadedUrl) {
         triggerChange(uploadedUrl);
         setUploadSuccess(true);
         setFileDetails({
           name: data.data?.originalFilename || file.name,
-          size: (file.size / 1024).toFixed(1) + ' KB'
+          size: (file.size / 1024).toFixed(1) + " KB",
         });
       } else {
-        setUploadError(data.message || 'Không thể tải ảnh lên máy chủ.');
+        setUploadError(data.message || "Không thể tải ảnh lên máy chủ.");
       }
     } catch (err) {
-      setUploadError('Lỗi kết nối khi tải ảnh: ' + (err.message || 'Vui lòng thử lại'));
+      setUploadError(
+        "Lỗi kết nối khi tải ảnh: " + (err.message || "Vui lòng thử lại"),
+      );
     } finally {
       setUploading(false);
     }
   };
-
   const handleClearImage = () => {
-    triggerChange('');
+    triggerChange("");
     setFileDetails(null);
     setUploadSuccess(false);
-    setUploadError('');
+    setUploadError("");
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
-
   return (
     <div className="ml-image-upload-wrapper">
-      {/* Top Header: Label + Switcher */}
       <div className="ml-upload-header-row">
-        {label ? (
-          <label className="ml-upload-label">{label}</label>
-        ) : <div />}
+        {label ? <label className="ml-upload-label">{label}</label> : <div />}
 
         <div className="ml-upload-mode-switcher">
           <button
             type="button"
-            className={`ml-upload-mode-btn ${mode === 'upload' ? 'active' : ''}`}
-            onClick={() => setMode('upload')}
+            className={`ml-upload-mode-btn ${mode === "upload" ? "active" : ""}`}
+            onClick={() => setMode("upload")}
           >
             📁 Tải từ máy
           </button>
           <button
             type="button"
-            className={`ml-upload-mode-btn ${mode === 'url' ? 'active' : ''}`}
-            onClick={() => setMode('url')}
+            className={`ml-upload-mode-btn ${mode === "url" ? "active" : ""}`}
+            onClick={() => setMode("url")}
           >
             🔗 Nhập link URL
           </button>
         </div>
       </div>
 
-      {mode === 'upload' ? (
+      {mode === "upload" ? (
         <div className="ml-upload-container">
-          {/* File Picker Box */}
           <div
-            className={`ml-upload-dropzone ${uploading ? 'is-uploading' : ''}`}
+            className={`ml-upload-dropzone ${uploading ? "is-uploading" : ""}`}
             onClick={() => fileInputRef.current?.click()}
           >
             <input
               type="file"
               ref={fileInputRef}
               accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml"
-              style={{ display: 'none' }}
+              style={{
+                display: "none",
+              }}
               onChange={handleFileChange}
             />
 
@@ -142,9 +132,7 @@ export default function ImageUploadInput({
           </div>
 
           {uploadError && (
-            <div className="ml-upload-alert error">
-              ⚠️ {uploadError}
-            </div>
+            <div className="ml-upload-alert error">⚠️ {uploadError}</div>
           )}
 
           {uploadSuccess && fileDetails && (
@@ -155,7 +143,6 @@ export default function ImageUploadInput({
           )}
         </div>
       ) : (
-        /* URL Input Mode */
         <div className="ml-upload-url-mode">
           <input
             type="url"
@@ -167,7 +154,6 @@ export default function ImageUploadInput({
         </div>
       )}
 
-      {/* Image Preview Thumbnail */}
       {currentValue && (
         <div className="ml-upload-preview-card">
           <div className="ml-upload-preview-thumb">
@@ -175,7 +161,8 @@ export default function ImageUploadInput({
               src={currentValue}
               alt="Preview"
               onError={(e) => {
-                e.target.src = 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&auto=format&fit=crop&q=80';
+                e.target.src =
+                  "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&auto=format&fit=crop&q=80";
               }}
             />
           </div>

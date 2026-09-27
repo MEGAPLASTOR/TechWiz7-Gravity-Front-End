@@ -49,8 +49,6 @@
   display: flex;
   gap: var(--space-2);
 }
-
-/* KPIs */
 .ml-farmer-kpis-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -115,8 +113,6 @@
   font-size: 11.5px;
   color: var(--color-text-muted);
 }
-
-/* Main 2-Col Grid */
 .ml-farmer-main-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -215,8 +211,6 @@
   background-color: var(--status-pending-bg);
   color: var(--status-pending);
 }
-
-/* Quick Nav Cards */
 .ml-quick-nav-cards {
   display: grid;
   grid-template-columns: 1fr;
@@ -258,8 +252,6 @@
   color: var(--color-text-muted);
   line-height: 1.4;
 }
-
-/* Best Sellers */
 .ml-bestseller-card {
   padding: var(--space-6);
 }

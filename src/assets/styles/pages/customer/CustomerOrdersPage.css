@@ -1,16 +1,8 @@
-/* ========================================================
-   CUSTOMER ORDERS PAGE STYLES - MARKETLINK
-   Giao diện quản lý đơn đặt trước nông sản trực quan, mạch lạc
-   Bố cục phân lớp rõ ràng, không bị tràn hay chồng chéo
-   ======================================================== */
-
 .ml-orders-page {
   padding-bottom: var(--space-16);
   background-color: var(--color-bg-base);
   min-height: calc(100vh - 72px);
 }
-
-/* ================= BANNER ĐẦU TRANG ================= */
 .ml-orders-banner {
   background: linear-gradient(180deg, #f5f1e8 0%, var(--color-bg-base) 100%);
   padding: var(--space-8) 0 var(--space-4);
@@ -39,8 +31,6 @@
   margin-bottom: var(--space-6);
   line-height: 1.5;
 }
-
-/* Status Tabs */
 .ml-orders-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -71,8 +61,6 @@
   color: #ffffff;
   box-shadow: 0 2px 6px rgba(46, 125, 50, 0.3);
 }
-
-/* Loading notice */
 .ml-orders-loading {
   background-color: var(--color-primary-surface);
   border: 1px solid var(--color-primary-subtle);
@@ -84,8 +72,6 @@
   margin-bottom: var(--space-6);
   text-align: center;
 }
-
-/* Empty State */
 .ml-orders-empty {
   padding: var(--space-12) var(--space-6);
   display: flex;
@@ -110,8 +96,6 @@
   justify-content: center;
   border-radius: var(--radius-full);
 }
-
-/* ================= ORDERS LIST ================= */
 .ml-orders-list {
   display: flex;
   flex-direction: column;
@@ -133,8 +117,6 @@
 .ml-order-card:hover {
   border-color: var(--color-primary-light);
 }
-
-/* Card Header */
 .ml-order-header,
 .ml-order-card-header {
   display: flex;
@@ -176,11 +158,13 @@
   display: flex;
   align-items: center;
 }
-
-/* Pickup Information Banner */
 .ml-order-pickup-box,
 .ml-order-pickup-strip {
-  background: linear-gradient(135deg, rgba(232, 245, 233, 0.45) 0%, rgba(250, 250, 245, 0.9) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(232, 245, 233, 0.45) 0%,
+    rgba(250, 250, 245, 0.9) 100%
+  );
   border: 1px solid var(--color-primary-subtle);
   border-radius: var(--radius-lg);
   padding: var(--space-4) var(--space-5);
@@ -231,8 +215,6 @@
   color: var(--color-text-muted);
   margin-top: 2px;
 }
-
-/* ================= PRODUCTS ITEMS TABLE ================= */
 .ml-order-items-table {
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
@@ -314,8 +296,6 @@
     display: none;
   }
 }
-
-/* Order Note */
 .ml-order-note {
   font-size: 12.5px;
   color: var(--color-text-body);
@@ -326,8 +306,6 @@
   border-radius: var(--radius-sm);
   line-height: 1.45;
 }
-
-/* ================= FOOTER & ACTIONS ================= */
 .ml-order-footer,
 .ml-order-card-footer {
   display: flex;
@@ -389,8 +367,6 @@
 .btn-danger-text:hover {
   background-color: var(--color-danger-surface) !important;
 }
-
-/* ================= MODAL MÃ QR NHẬN HÀNG ================= */
 .ml-qr-pickup-modal {
   display: flex;
   flex-direction: column;
@@ -438,8 +414,6 @@
   font-size: 13px;
   line-height: 1.6;
 }
-
-/* Reviewed badge */
 .ml-reviewed-badge {
   display: inline-flex;
   align-items: center;

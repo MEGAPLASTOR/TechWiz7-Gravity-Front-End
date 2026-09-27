@@ -34,7 +34,9 @@
   color: #d1d5db;
   cursor: pointer;
   padding: 0 4px;
-  transition: transform var(--transition-fast), color var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .ml-star-btn.active {

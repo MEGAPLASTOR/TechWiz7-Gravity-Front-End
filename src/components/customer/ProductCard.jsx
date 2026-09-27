@@ -1,55 +1,61 @@
-import React from 'react';
-import '@/assets/styles/components/customer/ProductCard.css';
-import Badge from '../common/Badge';
-import Button from '../common/Button';
-
+import React from "react";
+import "@/assets/styles/components/customer/ProductCard.css";
+import Badge from "../common/Badge";
+import Button from "../common/Button";
 export default function ProductCard({
   product,
   onAddToCart,
   cartQuantity = 0,
-  onUpdateCartQty
+  onUpdateCartQty,
 }) {
   const {
     id,
     name,
-    categoryName = 'Rau hữu cơ',
+    categoryName = "Rau hữu cơ",
     price = 25000,
-    unit = 'kg',
-    farmerName = 'Nông Trại Xanh Ba Vì',
-    stallCode = 'Sạp A-04',
-    marketName = 'Chợ Tây Hồ',
+    unit = "kg",
+    farmerName = "Nông Trại Xanh Ba Vì",
+    stallCode = "Sạp A-04",
+    marketName = "Chợ Tây Hồ",
     stockQuantity = 20,
-    harvestTime = 'Thu hoạch sáng nay',
+    harvestTime = "Thu hoạch sáng nay",
     imageUrl,
-    organicCertified = true
+    organicCertified = true,
   } = product;
-
-  const fallbackImg = 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80';
-
+  const fallbackImg =
+    "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80";
   const isOutOfStock = stockQuantity <= 0;
-
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
   };
-
   return (
-    <div className={`ml-card ml-product-card ${isOutOfStock ? 'is-out-of-stock' : ''}`}>
+    <div
+      className={`ml-card ml-product-card ${isOutOfStock ? "is-out-of-stock" : ""}`}
+    >
       <div className="ml-product-img-wrap">
-        <img 
-          src={imageUrl || fallbackImg} 
-          alt={name} 
+        <img
+          src={imageUrl || fallbackImg}
+          alt={name}
           className="ml-product-img"
           loading="lazy"
-          onError={(e) => { e.target.src = fallbackImg; }}
+          onError={(e) => {
+            e.target.src = fallbackImg;
+          }}
         />
-        
-        {/* Badges Overlay */}
+
         <div className="ml-product-badges">
           {organicCertified && (
-            <Badge variant="organic" size="sm">🌿 Hữu cơ</Badge>
+            <Badge variant="organic" size="sm">
+              🌿 Hữu cơ
+            </Badge>
           )}
           {isOutOfStock ? (
-            <Badge variant="cancelled" size="sm">Hết hàng</Badge>
+            <Badge variant="cancelled" size="sm">
+              Hết hàng
+            </Badge>
           ) : (
             <span className="ml-harvest-tag">⚡ {harvestTime}</span>
           )}
@@ -57,30 +63,36 @@ export default function ProductCard({
       </div>
 
       <div className="ml-product-body">
-        {/* Origin & Stall */}
         <div className="ml-product-origin">
           <span className="ml-farmer-name">🏡 {farmerName}</span>
           <span className="ml-stall-code">{stallCode}</span>
         </div>
 
-        {/* Product Title */}
-        <h4 className="ml-product-title" title={name}>{name}</h4>
-        
-        {/* Market location hint */}
+        <h4 className="ml-product-title" title={name}>
+          {name}
+        </h4>
+
         <div className="ml-product-market-hint">
-          <span>🎪 Nhận tại: <strong>{marketName}</strong></span>
+          <span>
+            🎪 Nhận tại: <strong>{marketName}</strong>
+          </span>
         </div>
 
-        {/* Stock Meter */}
         <div className="ml-product-stock-wrap">
           {!isOutOfStock ? (
-            <span className="ml-stock-text">Còn lại: <strong>{stockQuantity} {unit}</strong></span>
+            <span className="ml-stock-text">
+              Còn lại:{" "}
+              <strong>
+                {stockQuantity} {unit}
+              </strong>
+            </span>
           ) : (
-            <span className="ml-stock-text out">Sạp sẽ bổ sung vào phiên sau</span>
+            <span className="ml-stock-text out">
+              Sạp sẽ bổ sung vào phiên sau
+            </span>
           )}
         </div>
 
-        {/* Price & CTA */}
         <div className="ml-product-footer">
           <div className="ml-product-price-box">
             <span className="ml-product-price">{formatCurrency(price)}</span>
@@ -88,28 +100,33 @@ export default function ProductCard({
           </div>
 
           {onAddToCart && (
-            <div className="ml-product-action" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="ml-product-action"
+              onClick={(e) => e.stopPropagation()}
+            >
               {cartQuantity > 0 ? (
                 <div className="ml-qty-control">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="ml-qty-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onUpdateCartQty && onUpdateCartQty(product, cartQuantity - 1);
+                      onUpdateCartQty &&
+                        onUpdateCartQty(product, cartQuantity - 1);
                     }}
                     aria-label="Giảm số lượng"
                   >
                     -
                   </button>
                   <span className="ml-qty-num">{cartQuantity}</span>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="ml-qty-btn"
                     disabled={cartQuantity >= stockQuantity}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onUpdateCartQty && onUpdateCartQty(product, cartQuantity + 1);
+                      onUpdateCartQty &&
+                        onUpdateCartQty(product, cartQuantity + 1);
                     }}
                     aria-label="Tăng số lượng"
                   >

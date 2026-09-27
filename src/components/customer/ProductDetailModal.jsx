@@ -1,45 +1,43 @@
-import React, { useState } from 'react';
-import '@/assets/styles/components/customer/ProductDetailModal.css';
-import Modal from '../common/Modal';
-import Badge from '../common/Badge';
-import Button from '../common/Button';
-
+import React, { useState } from "react";
+import "@/assets/styles/components/customer/ProductDetailModal.css";
+import Modal from "../common/Modal";
+import Badge from "../common/Badge";
+import Button from "../common/Button";
 export default function ProductDetailModal({
   isOpen,
   onClose,
   product,
   onAddToCart,
   cartQuantity = 0,
-  onUpdateCartQty
+  onUpdateCartQty,
 }) {
   if (!product) return null;
-
   const [selectedQty, setSelectedQty] = useState(1);
-
   const {
     id,
     name,
-    categoryName = 'Rau hữu cơ',
+    categoryName = "Rau hữu cơ",
     price = 25000,
-    unit = 'kg',
-    farmerName = 'Nông Trại Xanh Ba Vì',
-    stallCode = 'Sạp A-04',
-    marketName = 'Chợ Tây Hồ',
+    unit = "kg",
+    farmerName = "Nông Trại Xanh Ba Vì",
+    stallCode = "Sạp A-04",
+    marketName = "Chợ Tây Hồ",
     stockQuantity = 20,
-    harvestTime = 'Thu hoạch sáng nay lúc 04:30',
-    description = 'Được canh tác tự nhiên không sử dụng thuốc trừ sâu hóa học, tưới bằng nguồn nước suối nguồn sạch. Thu hoạch sớm tinh sương và vận chuyển thẳng tới sạp chợ để giữ nguyên vị ngọt tự nhiên và độ giòn tươi.',
+    harvestTime = "Thu hoạch sáng nay lúc 04:30",
+    description = "Được canh tác tự nhiên không sử dụng thuốc trừ sâu hóa học, tưới bằng nguồn nước suối nguồn sạch. Thu hoạch sớm tinh sương và vận chuyển thẳng tới sạp chợ để giữ nguyên vị ngọt tự nhiên và độ giòn tươi.",
     imageUrl,
     organicCertified = true,
-    cutoffTime = 'Chốt đơn lúc 20:00 tối nay'
+    cutoffTime = "Chốt đơn lúc 20:00 tối nay",
   } = product;
-
-  const fallbackImg = 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80';
+  const fallbackImg =
+    "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80";
   const isOutOfStock = stockQuantity <= 0;
-
   const formatCurrency = (val) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(val);
   };
-
   const handleAdd = () => {
     if (onAddToCart) {
       for (let i = 0; i < selectedQty; i++) {
@@ -48,7 +46,6 @@ export default function ProductDetailModal({
       onClose();
     }
   };
-
   return (
     <Modal
       isOpen={isOpen}
@@ -59,21 +56,25 @@ export default function ProductDetailModal({
     >
       <div className="ml-product-detail-modal">
         <div className="ml-detail-grid">
-          {/* Left: Product Image */}
           <div className="ml-detail-img-box">
-            <img 
-              src={imageUrl || fallbackImg} 
-              alt={name} 
-              className="ml-detail-main-img" 
-              onError={(e) => { e.target.src = fallbackImg; }}
+            <img
+              src={imageUrl || fallbackImg}
+              alt={name}
+              className="ml-detail-main-img"
+              onError={(e) => {
+                e.target.src = fallbackImg;
+              }}
             />
             <div className="ml-detail-img-badges">
-              {organicCertified && <Badge variant="organic" size="sm">🌿 Hữu cơ kiểm định</Badge>}
+              {organicCertified && (
+                <Badge variant="organic" size="sm">
+                  🌿 Hữu cơ kiểm định
+                </Badge>
+              )}
               <span className="ml-cutoff-pill">⏰ {cutoffTime}</span>
             </div>
           </div>
 
-          {/* Right: Info & Ordering */}
           <div className="ml-detail-info-col">
             <div className="ml-detail-price-row">
               <span className="ml-detail-price">{formatCurrency(price)}</span>
@@ -87,7 +88,9 @@ export default function ProductDetailModal({
               </div>
               <div className="ml-detail-meta-item">
                 <span className="ml-meta-label">Điểm nhận hàng:</span>
-                <span className="ml-meta-val">🎪 {marketName} ({stallCode})</span>
+                <span className="ml-meta-val">
+                  🎪 {marketName} ({stallCode})
+                </span>
               </div>
               <div className="ml-detail-meta-item">
                 <span className="ml-meta-label">Thời điểm cắt:</span>
@@ -95,8 +98,10 @@ export default function ProductDetailModal({
               </div>
               <div className="ml-detail-meta-item">
                 <span className="ml-meta-label">Tình trạng kho:</span>
-                <span className={`ml-meta-val ${isOutOfStock ? 'out' : 'in'}`}>
-                  {isOutOfStock ? 'Đã hết hàng cho phiên này' : `Còn ${stockQuantity} ${unit}`}
+                <span className={`ml-meta-val ${isOutOfStock ? "out" : "in"}`}>
+                  {isOutOfStock
+                    ? "Đã hết hàng cho phiên này"
+                    : `Còn ${stockQuantity} ${unit}`}
                 </span>
               </div>
             </div>
@@ -106,26 +111,29 @@ export default function ProductDetailModal({
               <p className="ml-desc-text">{description}</p>
             </div>
 
-            {/* Quantity Selector & Action */}
             {onAddToCart ? (
               <div className="ml-detail-order-actions">
                 <div className="ml-detail-qty-picker">
                   <label className="ml-qty-label">Số lượng đặt:</label>
                   <div className="ml-qty-control">
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="ml-qty-btn"
                       disabled={selectedQty <= 1}
-                      onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))}
+                      onClick={() =>
+                        setSelectedQty(Math.max(1, selectedQty - 1))
+                      }
                     >
                       -
                     </button>
                     <span className="ml-qty-num">{selectedQty}</span>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="ml-qty-btn"
                       disabled={selectedQty >= stockQuantity}
-                      onClick={() => setSelectedQty(Math.min(stockQuantity, selectedQty + 1))}
+                      onClick={() =>
+                        setSelectedQty(Math.min(stockQuantity, selectedQty + 1))
+                      }
                     >
                       +
                     </button>
@@ -140,7 +148,9 @@ export default function ProductDetailModal({
                   onClick={handleAdd}
                   icon={<span>🧺</span>}
                 >
-                  {isOutOfStock ? 'Tạm hết hàng' : `Đặt trước • ${formatCurrency(price * selectedQty)}`}
+                  {isOutOfStock
+                    ? "Tạm hết hàng"
+                    : `Đặt trước • ${formatCurrency(price * selectedQty)}`}
                 </Button>
 
                 <div className="ml-detail-guarantee">
@@ -148,8 +158,18 @@ export default function ProductDetailModal({
                 </div>
               </div>
             ) : (
-              <div className="ml-detail-guarantee" style={{ marginTop: '20px', textAlign: 'center', background: 'var(--color-bg-base)', padding: '14px', borderRadius: '12px' }}>
-                🌾 Chế độ quản lý (Admin / Farmer): Chỉ xem thông tin niêm yết của sạp
+              <div
+                className="ml-detail-guarantee"
+                style={{
+                  marginTop: "20px",
+                  textAlign: "center",
+                  background: "var(--color-bg-base)",
+                  padding: "14px",
+                  borderRadius: "12px",
+                }}
+              >
+                🌾 Chế độ quản lý (Admin / Farmer): Chỉ xem thông tin niêm yết
+                của sạp
               </div>
             )}
           </div>

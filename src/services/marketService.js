@@ -1,61 +1,43 @@
-// frontend/src/services/marketService.js
-import apiClient from './apiClient';
-
+import apiClient from "./apiClient";
 export const marketService = {
-  /**
-   * Fetch all active farmers markets with optional keyword search and filters
-   */
-  async getMarkets({ search = '', city = '', dayOfWeek = '' } = {}) {
+  async getMarkets({ search = "", city = "", dayOfWeek = "" } = {}) {
     try {
       const params = new URLSearchParams();
-      if (search) params.append('search', search);
-      if (city && city !== 'all') params.append('city', city);
-      if (dayOfWeek && dayOfWeek !== 'all') params.append('dayOfWeek', dayOfWeek);
-
-      const qs = params.toString() ? `?${params.toString()}` : '';
+      if (search) params.append("search", search);
+      if (city && city !== "all") params.append("city", city);
+      if (dayOfWeek && dayOfWeek !== "all")
+        params.append("dayOfWeek", dayOfWeek);
+      const qs = params.toString() ? `?${params.toString()}` : "";
       const res = await apiClient.get(`/markets${qs}`);
       if (Array.isArray(res)) return res;
       if (res && Array.isArray(res.data)) return res.data;
       if (res && Array.isArray(res.value)) return res.value;
       return [];
     } catch (err) {
-      console.warn('Failed to fetch markets, returning fallback array', err);
+      console.warn("Failed to fetch markets, returning fallback array", err);
       return [];
     }
   },
-
-  /**
-   * Fetch farmer stalls across all markets or by marketId with search keyword
-   */
-  async getStalls({ search = '', marketId = '' } = {}) {
+  async getStalls({ search = "", marketId = "" } = {}) {
     try {
       const params = new URLSearchParams();
-      if (search) params.append('search', search);
-      if (marketId && marketId !== 'all') params.append('marketId', marketId);
-
-      const qs = params.toString() ? `?${params.toString()}` : '';
+      if (search) params.append("search", search);
+      if (marketId && marketId !== "all") params.append("marketId", marketId);
+      const qs = params.toString() ? `?${params.toString()}` : "";
       const res = await apiClient.get(`/markets/stalls${qs}`);
       if (Array.isArray(res)) return res;
       if (res && Array.isArray(res.data)) return res.data;
       if (res && Array.isArray(res.value)) return res.value;
       return [];
     } catch (err) {
-      console.warn('Failed to fetch stalls from backend', err);
+      console.warn("Failed to fetch stalls from backend", err);
       return [];
     }
   },
-
-  /**
-   * Fetch market detail by ID
-   */
   async getMarketById(id) {
     const res = await apiClient.get(`/markets/${id}`);
     return res.data || res;
   },
-
-  /**
-   * Fetch farmers assigned to stalls in a market
-   */
   async getMarketFarmers(marketId) {
     try {
       const res = await apiClient.get(`/markets/${marketId}/farmers`);
@@ -68,14 +50,12 @@ export const marketService = {
       return [];
     }
   },
-
-  /**
-   * Fetch pickup time slots for a market (optionally filter by farmerId)
-   */
   async getPickupSlots(marketId, farmerId = null) {
     try {
-      const query = farmerId ? `?farmerId=${farmerId}` : '';
-      const res = await apiClient.get(`/markets/${marketId}/pickup-slots${query}`);
+      const query = farmerId ? `?farmerId=${farmerId}` : "";
+      const res = await apiClient.get(
+        `/markets/${marketId}/pickup-slots${query}`,
+      );
       if (Array.isArray(res)) return res;
       if (res && Array.isArray(res.data)) return res.data;
       return [];
@@ -84,20 +64,11 @@ export const marketService = {
       return [];
     }
   },
-
-  /**
-   * Admin: Create a new market
-   */
   async createMarket(marketData) {
-    return apiClient.post('/admin/markets', marketData);
+    return apiClient.post("/admin/markets", marketData);
   },
-
-  /**
-   * Admin: Assign a farmer stall to a market
-   */
   async assignFarmerStall(assignmentData) {
-    return apiClient.post('/admin/markets/assignments', assignmentData);
-  }
+    return apiClient.post("/admin/markets/assignments", assignmentData);
+  },
 };
-
 export default marketService;

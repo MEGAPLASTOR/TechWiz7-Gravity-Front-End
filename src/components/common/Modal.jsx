@@ -1,37 +1,41 @@
-import React, { useEffect } from 'react';
-import '@/assets/styles/components/common/Modal.css';
-
+import React, { useEffect } from "react";
+import "@/assets/styles/components/common/Modal.css";
 export default function Modal({
   isOpen,
   onClose,
   title,
   subtitle,
   children,
-  maxWidth = '560px'
+  maxWidth = "560px",
 }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
     }
     return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
-
   if (!isOpen) return null;
-
   return (
-    <div className="ml-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
-      <div 
-        className="ml-modal-content" 
-        style={{ maxWidth }} 
+    <div
+      className="ml-modal-overlay"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="ml-modal-content"
+        style={{
+          maxWidth,
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="ml-modal-header">
@@ -39,9 +43,9 @@ export default function Modal({
             {title && <h3 className="ml-modal-title">{title}</h3>}
             {subtitle && <p className="ml-modal-subtitle">{subtitle}</p>}
           </div>
-          <button 
-            type="button" 
-            className="ml-modal-close" 
+          <button
+            type="button"
+            className="ml-modal-close"
             onClick={onClose}
             aria-label="Đóng hộp thoại"
           >
@@ -49,9 +53,7 @@ export default function Modal({
           </button>
         </div>
 
-        <div className="ml-modal-body">
-          {children}
-        </div>
+        <div className="ml-modal-body">{children}</div>
       </div>
     </div>
   );

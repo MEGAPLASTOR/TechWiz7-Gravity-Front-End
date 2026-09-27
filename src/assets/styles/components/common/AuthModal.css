@@ -1,13 +1,8 @@
-/* ========================================================
-   AUTH MODAL STYLES - MARKETLINK MODERN AUTHENTICATION
-   ======================================================== */
 .ml-auth-modal-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-
-/* Alerts */
 .ml-auth-alert {
   display: flex;
   align-items: center;
@@ -35,8 +30,6 @@
   font-size: 16px;
   flex-shrink: 0;
 }
-
-/* Role Segment Selector in Register */
 .ml-auth-role-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -91,8 +84,6 @@
 .ml-auth-role-tab.active strong {
   color: var(--color-primary-dark);
 }
-
-/* Form Layout */
 .ml-auth-form {
   display: flex;
   flex-direction: column;
@@ -138,8 +129,6 @@
   color: var(--color-text-muted);
   cursor: not-allowed;
 }
-
-/* Input with icon */
 .ml-input-wrapper {
   position: relative;
   display: flex;
@@ -182,8 +171,6 @@
 .ml-pwd-toggle-btn:hover {
   opacity: 0.8;
 }
-
-/* OTP Specific */
 .ml-otp-input {
   font-size: 1.5rem !important;
   font-weight: var(--font-weight-bold);
@@ -272,8 +259,6 @@
 .ml-auth-submit-btn {
   margin-top: 8px;
 }
-
-/* Switch between modes */
 .ml-auth-switch {
   text-align: center;
   font-size: 12px;
@@ -295,4 +280,48 @@
 .ml-auth-switch-btn:hover {
   color: var(--color-primary-dark);
   text-decoration: underline;
+}
+html[data-theme="dark"] .ml-auth-role-tabs {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-auth-role-tab.active {
+  background-color: var(--color-primary-surface);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.15);
+}
+
+html[data-theme="dark"] .ml-auth-role-tab.active strong {
+  color: var(--color-primary-dark);
+}
+
+html[data-theme="dark"] .ml-auth-role-tab:not(.active) strong {
+  color: var(--color-text-body);
+}
+
+html[data-theme="dark"] .ml-link-btn,
+html[data-theme="dark"] .ml-auth-switch-btn {
+  color: var(--color-primary);
+}
+
+html[data-theme="dark"] .ml-link-btn:hover,
+html[data-theme="dark"] .ml-auth-switch-btn:hover {
+  color: var(--color-primary-light);
+}
+
+html[data-theme="dark"] .ml-dev-otp-banner {
+  background-color: var(--color-info-surface);
+  border-color: var(--color-info);
+  color: #bae6fd;
+}
+
+html[data-theme="dark"] .ml-email-otp-notice {
+  background-color: var(--color-primary-surface);
+  border-color: var(--color-primary);
+  color: #dcfce7;
+}
+
+html[data-theme="dark"] .ml-email-otp-notice-text strong {
+  color: var(--color-primary);
 }

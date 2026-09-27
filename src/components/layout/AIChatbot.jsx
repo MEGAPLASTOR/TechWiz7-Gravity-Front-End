@@ -1,1 +1,1 @@
-export { default } from '../../layout/AIChatbot';
+export { default } from "../../layout/AIChatbot";

@@ -1,12 +1,8 @@
-/* frontend/src/components/layout/NotificationBell.css */
-
 .ml-notif-bell-wrap {
   position: relative;
   display: inline-flex;
   align-items: center;
 }
-
-/* Bell Trigger Button */
 .ml-notif-bell-btn {
   position: relative;
   display: inline-flex;
@@ -43,8 +39,6 @@
 .ml-notif-bell-btn:hover .ml-notif-icon-svg {
   transform: rotate(12deg);
 }
-
-/* Unread Badge */
 .ml-notif-badge {
   position: absolute;
   top: -4px;
@@ -65,12 +59,16 @@
 }
 
 @keyframes notif-pop {
-  0% { transform: scale(0); }
-  70% { transform: scale(1.25); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
-
-/* Connection Pulse Indicator */
 .ml-notif-live-dot {
   position: absolute;
   bottom: 3px;
@@ -83,7 +81,7 @@
 }
 
 .ml-notif-live-dot::after {
-  content: '';
+  content: "";
   position: absolute;
   top: -1.5px;
   left: -1.5px;
@@ -95,11 +93,15 @@
 }
 
 @keyframes live-pulse {
-  0% { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(2.6); opacity: 0; }
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
 }
-
-/* Dropdown Container */
 .ml-notif-dropdown {
   position: absolute;
   top: calc(100% + 10px);
@@ -109,7 +111,9 @@
   background: #ffffff;
   border-radius: 16px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  box-shadow:
+    0 20px 40px -15px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
   z-index: 1050;
   display: flex;
   flex-direction: column;
@@ -127,8 +131,6 @@
     transform: translateY(0) scale(1);
   }
 }
-
-/* Header */
 .ml-notif-header {
   padding: 14px 16px 10px;
   border-bottom: 1px solid #f1f5f9;
@@ -196,8 +198,6 @@
   background: #e2e8f0;
   color: #0f172a;
 }
-
-/* Tabs */
 .ml-notif-tabs {
   display: flex;
   gap: 4px;
@@ -220,8 +220,6 @@
   color: #15803d;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
-
-/* Browser Permission Banner */
 .ml-notif-permission-banner {
   display: flex;
   align-items: center;
@@ -248,8 +246,6 @@
 .ml-notif-perm-btn:hover {
   background: #b45309;
 }
-
-/* Notification List */
 .ml-notif-list {
   max-height: 380px;
   overflow-y: auto;
@@ -264,8 +260,6 @@
   background: #cbd5e1;
   border-radius: 4px;
 }
-
-/* Single Notification Item */
 .ml-notif-item {
   display: flex;
   align-items: flex-start;
@@ -368,8 +362,6 @@
   margin-top: 6px;
   flex-shrink: 0;
 }
-
-/* Empty State */
 .ml-notif-empty {
   padding: 36px 20px;
   text-align: center;
@@ -393,8 +385,6 @@
   font-size: 0.76rem;
   color: #94a3b8;
 }
-
-/* Footer */
 .ml-notif-footer {
   padding: 10px 16px;
   background: #f8fafc;

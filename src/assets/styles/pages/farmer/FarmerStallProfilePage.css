@@ -67,8 +67,6 @@
   flex-direction: column;
   gap: var(--space-4);
 }
-
-/* Right Col: Stalls */
 .ml-stall-stalls-header {
   display: flex;
   justify-content: space-between;
@@ -150,8 +148,6 @@
   color: var(--color-text-body);
   line-height: 1.4;
 }
-
-/* ================= PREVIEW CARD ================= */
 .ml-stall-preview-box {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -211,13 +207,15 @@
   line-height: 1.5;
   margin: 4px 0 0;
 }
-
-/* ================= KYC SECTION ================= */
 .ml-kyc-status-banner {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  background: linear-gradient(135deg, rgba(232, 245, 233, 0.5) 0%, rgba(240, 248, 240, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(232, 245, 233, 0.5) 0%,
+    rgba(240, 248, 240, 0.8) 100%
+  );
   border: 1px solid var(--color-primary-subtle);
   border-radius: var(--radius-lg);
   padding: var(--space-4) var(--space-5);
@@ -313,8 +311,6 @@
 .mb-4 {
   margin-bottom: var(--space-4);
 }
-
-/* ================= PROFILE PAGE VIEW ================= */
 .ml-profile-page-view {
   display: flex;
   flex-direction: column;
@@ -339,10 +335,14 @@
 }
 
 .ml-profile-hero-cover::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.45) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.05) 0%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
 }
 
 .ml-profile-hero-content {
@@ -421,8 +421,6 @@
   gap: 8px;
   margin-top: var(--space-3);
 }
-
-/* Quick Metrics Row */
 .ml-profile-metrics-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -444,7 +442,9 @@
   align-items: center;
   gap: var(--space-3);
   box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .ml-profile-metric-card:hover {
@@ -475,8 +475,6 @@
   font-weight: 700;
   color: var(--color-text-main);
 }
-
-/* Profile Body Grid */
 .ml-profile-body-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -495,8 +493,6 @@
   flex-direction: column;
   gap: var(--space-6);
 }
-
-/* Bio & Story */
 .ml-profile-bio-box {
   background: var(--color-bg-base);
   border-left: 4px solid var(--color-primary);
@@ -537,8 +533,6 @@
 .ml-commitment-icon {
   font-size: 18px;
 }
-
-/* Mini Stalls List in Profile */
 .ml-profile-stalls-list {
   display: flex;
   flex-direction: column;
@@ -571,8 +565,6 @@
   font-size: 12.5px;
   color: var(--color-text-muted);
 }
-
-/* Sidebar Info List */
 .ml-profile-info-list {
   display: flex;
   flex-direction: column;
@@ -737,11 +729,6 @@
   gap: var(--space-3);
 }
 
-/* ========================================================
-   MODAL & RESPONSIVE FORM STYLES - STALL PROFILE & FARMER
-   Tương thích đa thiết bị: Mobile, Tablet, Laptop, Desktop
-   ======================================================== */
-
 .ml-modal-overlay {
   position: fixed;
   inset: 0;
@@ -769,7 +756,9 @@
 .ml-modal-box {
   background-color: var(--color-bg-surface, #ffffff);
   border-radius: var(--radius-xl, 16px);
-  box-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 20px 45px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(0, 0, 0, 0.08);
   width: 100%;
   max-width: 580px;
   max-height: calc(100vh - 36px);
@@ -798,8 +787,6 @@
     transform: translateY(0) scale(1);
   }
 }
-
-/* Modal Header - Fixed at Top */
 .ml-modal-header {
   display: flex;
   align-items: flex-start;
@@ -846,8 +833,6 @@
   background-color: var(--color-bg-base, #f1f5f9);
   color: var(--color-text-main, #0f172a);
 }
-
-/* Modal Form & Scrollable Body */
 .ml-modal-form {
   display: flex;
   flex-direction: column;
@@ -867,8 +852,6 @@
   flex-direction: column;
   gap: 16px;
 }
-
-/* Custom Scrollbar for Modal Body */
 .ml-modal-body::-webkit-scrollbar {
   width: 6px;
 }
@@ -885,8 +868,6 @@
 .ml-modal-body::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
-
-/* Modal Actions - Fixed at Bottom */
 .ml-modal-actions {
   display: flex;
   align-items: center;
@@ -898,8 +879,6 @@
   flex-shrink: 0;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.03);
 }
-
-/* Responsive Grid inside Forms */
 .ml-form-grid-2 {
   display: grid;
   grid-template-columns: 1fr;
@@ -912,8 +891,6 @@
     gap: 16px;
   }
 }
-
-/* Multi-device adjustments for Mobile */
 @media (max-width: 640px) {
   .ml-modal-overlay {
     padding: 8px;
@@ -973,5 +950,3 @@
     grid-template-columns: 1fr;
   }
 }
-
-

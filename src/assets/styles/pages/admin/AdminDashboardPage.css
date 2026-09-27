@@ -1,19 +1,11 @@
-/* ========================================================
-   ADMIN DASHBOARD PAGE STYLES - MARKETLINK
-   Giao diện trung tâm điều hành nền tảng cho Admin
-   Bố cục trực quan, hiển thị KPI, thẩm định KYC & báo cáo chợ
-   ======================================================== */
-
 .ml-admin-dashboard {
   background-color: var(--color-bg-base);
   min-height: calc(100vh - 72px);
   padding-bottom: var(--space-16);
 }
-
-/* ================= BANNER ĐIỀU HÀNH ================= */
 .ml-admin-dash-banner {
-  background: linear-gradient(135deg, #1B5E20 0%, #0F3913 100%);
-  color: #FFFFFF;
+  background: linear-gradient(135deg, #1b5e20 0%, #0f3913 100%);
+  color: #ffffff;
   padding: var(--space-8) 0 var(--space-10);
   margin-bottom: var(--space-8);
   box-shadow: 0 4px 20px rgba(27, 94, 32, 0.15);
@@ -47,9 +39,9 @@
 .ml-admin-badge-dot {
   width: 8px;
   height: 8px;
-  background-color: #4ADE80;
+  background-color: #4ade80;
   border-radius: 50%;
-  box-shadow: 0 0 8px #4ADE80;
+  box-shadow: 0 0 8px #4ade80;
 }
 
 .ml-admin-dash-title {
@@ -78,8 +70,6 @@
   gap: var(--space-3);
   flex-wrap: wrap;
 }
-
-/* ================= KPI CARDS GRID ================= */
 .ml-admin-dash-content {
   display: flex;
   flex-direction: column;
@@ -117,7 +107,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .ml-kpi-card:hover,
@@ -198,8 +190,6 @@
   color: var(--color-text-muted);
   font-size: 11.5px;
 }
-
-/* ================= 2-COLUMN OPERATION GRID ================= */
 .ml-admin-op-grid,
 .ml-admin-two-col {
   display: grid;
@@ -250,8 +240,6 @@
   color: var(--color-text-muted);
   margin-top: 2px;
 }
-
-/* ================= KYC LIST IN ADMIN ================= */
 .ml-op-list {
   display: flex;
   flex-direction: column;
@@ -322,8 +310,6 @@
   padding-top: var(--space-2);
   border-top: 1px solid var(--color-border-light);
 }
-
-/* ================= MARKET OCCUPANCY / PERFORMANCE ================= */
 .ml-occupancy-list,
 .ml-market-occupancy-list {
   display: flex;
@@ -372,7 +358,7 @@
 .ml-occ-bar-fill,
 .ml-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #1B5E20, #4ADE80);
+  background: linear-gradient(90deg, #1b5e20, #4ade80);
   border-radius: var(--radius-full);
   transition: width 0.4s ease;
 }

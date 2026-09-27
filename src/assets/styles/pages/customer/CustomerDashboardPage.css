@@ -118,8 +118,6 @@
   display: flex;
   gap: var(--space-2);
 }
-
-/* Metrics */
 .ml-dashboard-metrics {
   display: grid;
   grid-template-columns: 1fr;
@@ -171,8 +169,6 @@
   font-size: 11.5px;
   color: var(--color-text-muted);
 }
-
-/* Upcoming Reminder */
 .ml-upcoming-card {
   background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
   border: 1px solid #fde68a;
@@ -234,8 +230,6 @@
   color: var(--color-primary-dark);
   margin-top: 4px;
 }
-
-/* Tabs */
 .ml-dashboard-tabs {
   display: flex;
   gap: var(--space-2);
@@ -264,8 +258,6 @@
   color: var(--color-primary-dark);
   border-bottom-color: var(--color-primary);
 }
-
-/* Favorites Grids */
 .ml-fav-farmers-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -313,8 +305,6 @@
   color: var(--color-accent);
   font-weight: var(--font-weight-semibold);
 }
-
-/* Favorite Products */
 .ml-fav-prods-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -354,8 +344,6 @@
   display: block;
   margin-top: 2px;
 }
-
-/* Profile Form */
 .ml-profile-settings-card {
   max-width: 540px;
   padding: var(--space-6);
@@ -367,8 +355,6 @@
   gap: var(--space-4);
   margin-top: var(--space-4);
 }
-
-/* ================= TÀI KHOẢN GIA ĐÌNH (FAMILY ACCOUNT) ================= */
 .ml-family-section {
   display: flex;
   flex-direction: column;
@@ -377,7 +363,11 @@
 
 .ml-family-intro-card {
   padding: var(--space-5);
-  background: linear-gradient(135deg, rgba(22, 163, 74, 0.08) 0%, rgba(240, 253, 244, 0.5) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(22, 163, 74, 0.08) 0%,
+    rgba(240, 253, 244, 0.5) 100%
+  );
   border: 1px solid var(--color-primary-subtle);
   border-radius: var(--radius-lg);
   display: flex;
@@ -519,10 +509,6 @@
   border-radius: var(--radius-sm);
   font-family: monospace;
 }
-
-/* ========================================================
-   TAB 4: PROFILE SETTINGS HEADER & OVERVIEW BOX
-   ======================================================== */
 .ml-profile-settings-header-flex {
   display: flex;
   flex-direction: column;
@@ -551,8 +537,6 @@
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(22, 163, 74, 0.2);
 }
-
-/* Profile Visual Overview Box */
 .ml-profile-overview-box {
   display: flex;
   flex-direction: column;
@@ -677,8 +661,6 @@
 .ml-overview-actions {
   flex-shrink: 0;
 }
-
-/* Quick inline update container */
 .ml-profile-inline-form-wrap {
   background-color: var(--color-bg-base);
   border: 1px solid var(--color-border);
@@ -700,14 +682,12 @@
   margin-top: var(--space-4);
   flex-wrap: wrap;
 }
-
-/* ========================================================
-   MODAL STYLES: CUSTOMER PROFILE & AVATAR EDIT (SIMILAR TO FARMER)
-   ======================================================== */
 .ml-customer-edit-modal-box {
   background-color: #ffffff;
   border-radius: var(--radius-xl, 16px);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(0, 0, 0, 0.08);
   width: 100%;
   max-width: 640px;
   max-height: calc(100vh - 40px);
@@ -718,8 +698,6 @@
   margin: auto;
   position: relative;
 }
-
-/* Avatar upload area in Modal */
 .ml-customer-modal-avatar-section {
   display: flex;
   flex-direction: column;
@@ -806,4 +784,3 @@
   margin-top: 4px;
   line-height: 1.4;
 }
-
