@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://nnquangdev.id.vn/api/:path*"
+      "destination": "http://14.225.212.94/api/:path*"
     },
     {
       "source": "/uploads/:path*",
-      "destination": "https://nnquangdev.id.vn/uploads/:path*"
+      "destination": "http://14.225.212.94/uploads/:path*"
     },
     {
       "source": "/(.*)",
