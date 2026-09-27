@@ -1,38 +1,93 @@
-import axios from 'axios';
-import { getBaseUrl } from './client';
+// frontend/src/services/apiClient.js
+// Centralized API client connecting Frontend to Spring Boot Reactive Backend
 
-const apiClient = axios.create({
-  baseURL: getBaseUrl(),
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 15000,
-});
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || '';
 
-// Tự động gắn Token vào Request
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('accessToken') || localStorage.getItem('marketlink_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Xử lý tự động khi Token hết hạn (401)
-apiClient.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('marketlink_token');
-      localStorage.removeItem('marketlink_user');
-      // window.location.href = '/login';
-    }
-    return Promise.reject(error);
+/**
+ * Normalizes image URLs from backend (relative /uploads or absolute Unsplash)
+ */
+export function formatImageUrl(url, fallback = 'https://images.unsplash.com/photo-1540420773420-3366772f4999') {
+  if (!url) return fallback;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
   }
-);
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  return `${IMAGE_BASE_URL}${cleanPath}`;
+}
 
-export default apiClient;
+/**
+ * Universal HTTP request handler
+ */
+export async function apiRequest(endpoint, { method = 'GET', body = null, headers = {}, token = null } = {}) {
+  const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+
+  const requestHeaders = {
+    ...headers
+  };
+
+  // Auth Bearer Token
+  const activeToken = token || localStorage.getItem('ml_token') || localStorage.getItem('accessToken');
+  if (activeToken) {
+    requestHeaders['Authorization'] = `Bearer ${activeToken}`;
+  }
+
+  // Handle JSON vs FormData
+  if (body && !(body instanceof FormData) && !requestHeaders['Content-Type']) {
+    requestHeaders['Content-Type'] = 'application/json; charset=utf-8';
+  }
+
+  const config = {
+    method,
+    headers: requestHeaders
+  };
+
+  if (body) {
+    config.body = body instanceof FormData ? body : JSON.stringify(body);
+  }
+
+  try {
+    const res = await fetch(url, config);
+
+    // Auto-detect JSON response
+    let responseData = null;
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      responseData = await res.json();
+    } else {
+      const text = await res.text();
+      try {
+        responseData = JSON.parse(text);
+      } catch {
+        responseData = { message: text };
+      }
+    }
+
+    if (!res.ok) {
+      const errMsg = responseData?.message || responseData?.error || `Lỗi máy chủ (${res.status})`;
+      const error = new Error(errMsg);
+      error.status = res.status;
+      error.data = responseData;
+      throw error;
+    }
+
+    return responseData;
+  } catch (err) {
+    console.warn(`[API ${method}] ${url} failed:`, err.message);
+    if (err.message === 'Failed to fetch') {
+      const friendlyErr = new Error('Không thể kết nối đến máy chủ Backend (Port 8081). Vui lòng đảm bảo Spring Boot backend đang chạy.');
+      friendlyErr.status = 0;
+      throw friendlyErr;
+    }
+    throw err;
+  }
+}
+
+export default {
+  get: (endpoint, options = {}) => apiRequest(endpoint, { ...options, method: 'GET' }),
+  post: (endpoint, body, options = {}) => apiRequest(endpoint, { ...options, method: 'POST', body }),
+  put: (endpoint, body, options = {}) => apiRequest(endpoint, { ...options, method: 'PUT', body }),
+  patch: (endpoint, body, options = {}) => apiRequest(endpoint, { ...options, method: 'PATCH', body }),
+  delete: (endpoint, options = {}) => apiRequest(endpoint, { ...options, method: 'DELETE' }),
+  formatImageUrl
+};

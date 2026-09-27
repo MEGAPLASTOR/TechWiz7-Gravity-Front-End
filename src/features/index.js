@@ -1,5 +1,11 @@
-export * from './auth';
-export * from './ai';
-export * from './market';
-export * from './order';
-export * from './product';
+/**
+ * Features module index
+ * Supports feature-based architecture (e.g. auth, cart, market, order, products)
+ */
+export const FEATURES = {
+  AUTH: 'auth',
+  CART: 'cart',
+  MARKET: 'market',
+  ORDER: 'order',
+  PRODUCT: 'product'
+};

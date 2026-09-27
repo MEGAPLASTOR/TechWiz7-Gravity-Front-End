@@ -1,11 +1,5 @@
-export { MainLayout } from './MainLayout';
-export { Navbar } from './Navbar';
-export { Footer } from './Footer';
-export { CustomerLayout } from './CustomerLayout';
-export { FarmerLayout } from './FarmerLayout';
-export { AdminLayout } from './AdminLayout';
-
-export { AdminNavbar } from './navigation/AdminNavbar';
-export { CustomerNavbar } from './navigation/CustomerNavbar';
-export { FarmerNavbar } from './navigation/FarmerNavbar';
-export { MarketplaceNavbar } from './navigation/MarketplaceNavbar';
+export { default as Header } from './Header';
+export { default as Footer } from './Footer';
+export { default as MobileDrawer } from './MobileDrawer';
+export { default as AIChatbot } from './AIChatbot';
+export { default as NotificationBell } from './NotificationBell';

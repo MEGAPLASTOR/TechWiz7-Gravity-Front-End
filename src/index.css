@@ -1,17 +1,39 @@
-/* Modular CSS entry importing separated stylesheets from assets/styles/ */
-@import './assets/styles/variables.css';
-@import './assets/styles/animations.css';
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import './assets/styles/tokens.css';
 @import './assets/styles/global.css';
-@import './assets/styles/navbar.css';
-@import './assets/styles/home.css';
-@import './assets/styles/product.css';
-@import './assets/styles/markets.css';
-@import './assets/styles/orders.css';
-@import './assets/styles/farmer.css';
-@import './assets/styles/admin.css';
-@import './assets/styles/drawer.css';
-@import './assets/styles/kyc.css';
-@import './assets/styles/customer.css';
-@import './assets/styles/auth.css';
-@import './assets/styles/ai.css';
-@import './assets/styles/footer.css';
+
+/* Fallback & legacy variable aliases for MarketLink theme */
+:root {
+  --primary: var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+  --primary-light: var(--color-primary-surface);
+  --accent: var(--color-accent);
+  --bg-main: var(--color-bg-base);
+  --card-bg: var(--color-bg-surface);
+  --card-border: var(--color-border);
+  --text-main: var(--color-text-main);
+  --text-muted: var(--color-text-muted);
+  --danger: var(--color-danger);
+  --warning: #d97706;
+  --info: var(--color-info);
+  --radius: var(--radius-lg);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-body);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}

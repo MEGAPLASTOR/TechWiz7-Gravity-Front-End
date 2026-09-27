@@ -1,401 +1,446 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  ShoppingBag,
-  Clock,
-  Calendar,
-  RefreshCw,
-  QrCode,
-  ArrowRight,
-  Store,
-  Star,
-} from 'lucide-react';
-import { customerApi, reviewsApi } from '@/services';
-import { useNotification } from '@/context/NotificationContext';
-import { formatCurrency, formatDateTime } from '@/utils/formatters';
-import { OrderStatusTracker } from '@/components/order/OrderStatusTracker';
-import { PATHS } from '@/routes/paths';
+import '@/assets/styles/pages/customer/CustomerOrdersPage.css';
+import Badge from '../../components/common/Badge';
+import Button from '../../components/common/Button';
+import Modal from '../../components/common/Modal';
+import OrderModifyModal from '../../components/customer/OrderModifyModal';
+import ReviewModal from '../../components/customer/ReviewModal';
+import orderService from '../../services/orderService';
+import customerService from '../../services/customerService';
 
-export const CustomerOrdersPage = () => {
-  const navigate = useNavigate();
+export default function CustomerOrdersPage({
+  initialOrderId,
+  initialOrderCode,
+  initialSearch,
+  onReorder,
+  onNavigate
+} = {}) {
+  const [activeTab, setActiveTab] = useState('all');
+  const [searchKeyword, setSearchKeyword] = useState(() => initialSearch || initialOrderCode || (initialOrderId ? String(initialOrderId) : ''));
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('ALL');
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [cancelModalOrder, setCancelModalOrder] = useState(null);
-  const [cancelReason, setCancelReason] = useState('');
-  const [cancelling, setCancelling] = useState(false);
+  const [selectedModifyOrder, setSelectedModifyOrder] = useState(null);
+  const [selectedReviewOrder, setSelectedReviewOrder] = useState(null);
+  const [selectedQrOrder, setSelectedQrOrder] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [actionMessage, setActionMessage] = useState('');
 
-  // State đánh giá chất lượng (Luồng 6)
-  const [reviewModalOrder, setReviewModalOrder] = useState(null);
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState('');
-  const [submittingReview, setSubmittingReview] = useState(false);
+  useEffect(() => {
+    const target = initialOrderCode || (initialOrderId ? String(initialOrderId) : '');
+    if (target) {
+      setSearchKeyword(target);
+      setActiveTab('all');
+    }
+  }, [initialOrderId, initialOrderCode]);
 
-  const { success, error } = useNotification();
-
+  // Load real orders from backend with Server-Side Search & Filters
   const loadOrders = async () => {
     setLoading(true);
     try {
-      const data = await customerApi.getOrders();
-      setOrders(Array.isArray(data) ? data : (data?.content || data?.data || []));
+      let statusParam = '';
+      if (activeTab === 'READY') statusParam = 'READY_FOR_PICKUP';
+      else if (activeTab === 'PENDING') statusParam = 'PLACED';
+      else if (activeTab !== 'all') statusParam = activeTab;
+
+      const realOrders = await orderService.getMyOrders({
+        keyword: searchKeyword.trim(),
+        status: statusParam
+      });
+      if (realOrders && realOrders.length > 0) {
+        setOrders(realOrders.map((o) => ({
+          id: o.orderId || o.id,
+          orderId: o.orderId || o.id,
+          orderCode: o.orderCode || `ORD-${o.orderId || o.id}`,
+          pickupMarket: o.marketName || 'Chợ Phiên Nông Sản',
+          marketAddress: o.marketAddress || '',
+          stallLocation: o.stallName ? `${o.stallName} (${o.marketAddress || ''})` : (o.marketAddress || 'Sạp nông dân'),
+          pickupDate: o.pickupDate,
+          pickupSlot: o.slotTimeRange || '07:00 - 08:00',
+          pickupSlotLabel: o.slotTimeRange ? `Ca nhận hàng: ${o.slotTimeRange}` : 'Khung giờ sáng sớm',
+          slotId: o.slotId,
+          farmerId: o.farmerId,
+          marketId: o.marketId,
+          status: o.orderStatus || 'PLACED',
+          totalAmount: o.totalAmount || 0,
+          paymentMethod: o.paymentMethod || 'Thanh toán trực tiếp tại sạp',
+          farmerName: o.farmerName || 'Nông Trại Hữu Cơ',
+          farmerPhone: o.customerPhone || '0900000003',
+          note: o.note || '',
+          createdAt: o.createdAt ? String(o.createdAt).replace('T', ' ').substring(0, 16) : 'Hôm nay',
+          canCancel: o.canCancel !== undefined ? o.canCancel : (o.orderStatus === 'PLACED'),
+          items: (o.items || []).map((it) => ({
+            id: it.productId || it.orderItemId,
+            name: it.productName || 'Nông sản sạch',
+            quantity: it.quantity || 1,
+            price: it.unitPrice || 0,
+            unit: it.productUnit || 'kg'
+          })),
+          reviewed: o.hasReview === true
+        })));
+      } else {
+        setOrders([]);
+      }
     } catch (err) {
-      console.error('Failed to load customer orders:', err);
-      setOrders([]);
+      console.warn('Error loading real orders', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadOrders();
-  }, []);
-
-  const handleCancelOrder = async () => {
-    if (!cancelModalOrder) return;
-    setCancelling(true);
-    try {
-      await customerApi.cancelOrder(cancelModalOrder.orderId, cancelReason || 'Khách hàng đổi ý');
-      success(`Đã hủy đơn hàng ${cancelModalOrder.orderCode || ''}!`);
-      setCancelModalOrder(null);
-      setCancelReason('');
+    const timer = setTimeout(() => {
       loadOrders();
-    } catch (err) {
-      error(err.message || 'Không thể hủy đơn hàng');
-    } finally {
-      setCancelling(false);
-    }
-  };
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchKeyword, activeTab]);
 
-  const filteredOrders = orders.filter((o) => {
-    if (statusFilter === 'ALL') return true;
-    return o.orderStatus === statusFilter;
-  });
+  // Orders are filtered entirely on server-side
+  const filteredOrders = orders;
+
+  const formatCurrency = (val) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+  };
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'PLACED':
-        return { label: 'Đang Chuẩn Bị', bg: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', border: '1px solid rgba(59, 130, 246, 0.35)' };
-      case 'ACCEPTED':
-        return { label: 'Nông Dân Tiếp Nhận', bg: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.35)' };
+      case 'READY':
       case 'READY_FOR_PICKUP':
-        return { label: 'Sẵn Sàng Tại Sạp', bg: 'rgba(16, 185, 129, 0.18)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.4)' };
+        return <Badge variant="ready" dot>Sẵn sàng tại sạp chợ</Badge>;
+      case 'PENDING':
+      case 'PLACED':
+        return <Badge variant="pending" dot>Đang chờ sạp chốt đơn</Badge>;
+      case 'ACCEPTED':
+      case 'CONFIRMED':
+        return <Badge variant="organic" dot>Đang thu hoạch & đóng gói</Badge>;
       case 'COMPLETED':
-        return { label: 'Đã Nhận & Thanh Toán', bg: 'rgba(148, 163, 184, 0.15)', color: '#cbd5e1', border: '1px solid rgba(148, 163, 184, 0.25)' };
-      case 'DECLINED':
+        return <Badge variant="completed">Đã nhận & thanh toán</Badge>;
       case 'CANCELLED':
-        return { label: status === 'CANCELLED' ? 'Đã Hủy' : 'Bị Từ Chối', bg: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.35)' };
+      case 'DECLINED':
+        return <Badge variant="cancelled">Đã hủy</Badge>;
       default:
-        return { label: status, bg: 'rgba(255, 255, 255, 0.08)', color: '#94a3b8', border: '1px solid rgba(255, 255, 255, 0.15)' };
+        return <Badge variant="neutral">{status}</Badge>;
     }
   };
 
-  const handleOpenReview = (order) => {
-    setReviewModalOrder(order);
-    setRating(5);
-    setComment('');
+  const handleCancelOrder = async (orderId) => {
+    if (window.confirm('Bạn có chắc muốn hủy đơn đặt trước này? Nông dân sẽ hoàn lại tồn kho cho khách hàng khác.')) {
+      try {
+        await orderService.cancelOrder(orderId);
+        setActionMessage('Đã hủy đơn thành công. Tồn kho đã được hoàn lại.');
+        setTimeout(() => setActionMessage(''), 4000);
+        await loadOrders();
+      } catch (err) {
+        alert(err?.message || 'Không thể hủy đơn hàng vào lúc này.');
+      }
+    }
   };
 
-  const handleSubmitReview = async () => {
-    if (!reviewModalOrder) return;
-    setSubmittingReview(true);
+  const handleSaveModification = async (orderId, newDetails) => {
     try {
-      await reviewsApi.createReview({
-        orderId: reviewModalOrder.orderId,
-        farmerId: reviewModalOrder.farmerId,
-        rating,
-        comment: comment.trim() || 'Nông sản rất tươi ngon và dịch vụ sạp rất tốt!',
+      await customerService.modifyOrder(orderId, {
+        pickupDate: newDetails.pickupDate,
+        slotId: Number(newDetails.slotId),
+        note: newDetails.note
       });
-      success('Cảm ơn bạn đã gửi đánh giá chất lượng nông sản!');
-      setReviewModalOrder(null);
+      setActionMessage('Đã điều chỉnh lịch nhận hàng thành công!');
+      setTimeout(() => setActionMessage(''), 4000);
+      await loadOrders();
     } catch (err) {
-      error(err.message || 'Không thể gửi đánh giá');
-    } finally {
-      setSubmittingReview(false);
+      alert(err?.message || 'Không thể thay đổi đơn hàng lúc này.');
+    }
+  };
+
+  const handleSubmitReview = async (reviewData) => {
+    try {
+      await customerService.submitReview({
+        orderId: Number(reviewData.orderId),
+        productId: reviewData.productId ? Number(reviewData.productId) : null,
+        rating: Number(reviewData.rating),
+        comment: reviewData.comment
+      });
+      setActionMessage('Cảm ơn bạn đã gửi đánh giá cho sạp nông dân!');
+      setTimeout(() => setActionMessage(''), 4000);
+      // Reload from server so hasReview flag is accurate
+      await loadOrders();
+    } catch (err) {
+      alert(err?.message || 'Không thể gửi đánh giá lúc này.');
     }
   };
 
   return (
-    <div>
-      <div className="customer-filter-bar">
-        <div className="customer-pill-group">
-          {[
-            { key: 'ALL', label: `Tất Cả (${orders.length})` },
-            { key: 'PLACED', label: 'Chờ Tiếp Nhận' },
-            { key: 'ACCEPTED', label: 'Đã Tiếp Nhận' },
-            { key: 'READY_FOR_PICKUP', label: 'Sẵn Sàng Tại Sạp' },
-            { key: 'COMPLETED', label: 'Đã Hoàn Tất' },
-            { key: 'DECLINED', label: 'Bị Từ Chối' },
-            { key: 'CANCELLED', label: 'Đã Hủy' },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setStatusFilter(tab.key)}
-              className={`customer-filter-pill ${statusFilter === tab.key ? 'active' : ''}`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+    <div className="ml-orders-page">
+      {/* Page Header */}
+      <div className="ml-orders-banner">
+        <div className="ml-container">
+          <span className="ml-section-subtitle">Đơn Hàng Của Bạn</span>
+          <h1 className="ml-orders-title">Quản Lý Đơn Đặt Trước Nông Sản</h1>
+          <p className="ml-orders-subtitle">
+            Theo dõi trạng thái thu hoạch và đóng gói từ nhà vườn, lấy mã QR xuất trình tại sạp và thanh toán tiền mặt trực tiếp khi đến chợ.
+          </p>
 
-        <button onClick={() => loadOrders(true)} className="btn btn-secondary">
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          <span>Làm mới</span>
-        </button>
+          {/* Status Tabs & Search Toolbar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginTop: 16 }}>
+            <div className="ml-orders-tabs" style={{ margin: 0 }}>
+              {[
+                { key: 'all', label: `Tất cả (${orders.length})` },
+                { key: 'READY', label: '🌿 Sẵn sàng tại sạp' },
+                { key: 'PENDING', label: '⏳ Chờ chốt đơn' },
+                { key: 'COMPLETED', label: '✓ Đã nhận hàng' },
+                { key: 'CANCELLED', label: '✕ Đã hủy' }
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  className={`ml-order-tab ${activeTab === tab.key ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab.key)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="text"
+                className="ml-products-search-input"
+                style={{ width: 280, padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13.5 }}
+                placeholder="Tìm mã đơn, tên nông sản, sạp..."
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+              />
+              {searchKeyword && (
+                <button
+                  type="button"
+                  className="ml-search-clear"
+                  onClick={() => setSearchKeyword('')}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: '#64748b' }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {filteredOrders.length === 0 ? (
-        <div className="customer-empty-state">
-          <ShoppingBag size={48} className="customer-empty-icon" />
-          <h3 className="customer-empty-title">
-            Không tìm thấy đơn đặt trước nào
-          </h3>
-          <p className="customer-empty-desc">
-            Hãy dạo quanh các sạp nông sản sạch trên trang chủ và đặt trước để giữ phần tươi ngon nhất cho bạn.
-          </p>
-          <button onClick={() => navigate(PATHS.HOME)} className="btn btn-primary">
-            <span>Khám Phá Sạp Nông Sản</span>
-            <ArrowRight size={16} />
-          </button>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {filteredOrders.map((order) => {
-            const badge = getStatusBadge(order.orderStatus);
-            return (
-              <div key={order.orderId} className="customer-order-card">
-                <div className="customer-order-header">
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span className="customer-order-code">
-                        {order.orderCode || `Đơn #${order.orderId}`}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          padding: '3px 10px',
-                          borderRadius: '999px',
-                          background: badge.bg,
-                          color: badge.color,
-                        }}
-                      >
-                        {badge.label}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
-                      Đặt lúc: {formatDateTime(order.createdAt)}
-                    </div>
-                  </div>
+      <div className="ml-container">
+        {actionMessage && (
+          <div className="ml-orders-loading" style={{ backgroundColor: '#ecfdf5', borderColor: '#a7f3d0', color: '#065f46' }}>
+            ✓ {actionMessage}
+          </div>
+        )}
 
-                  <div style={{ textAlign: 'right' }}>
-                    <div className="customer-order-total">
-                      {formatCurrency(order.totalAmount)}
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                      Pay-at-pickup (Thanh toán tại sạp)
-                    </span>
+        {loading && <div className="ml-orders-loading">Đang tải dữ liệu đơn hàng thực tế từ hệ thống...</div>}
+
+        {!loading && filteredOrders.length === 0 ? (
+          <div className="ml-card ml-orders-empty">
+            <span className="ml-orders-empty-icon">🧺</span>
+            <h3>Chưa có đơn đặt trước nào</h3>
+            <p>Các sạp nông dân họp chợ đang mở nhận đơn rau sạch sớm. Đặt trước để giữ phần ngon nhất!</p>
+            <Button variant="primary" size="md" onClick={() => onNavigate && onNavigate('products')}>
+              Khám phá nông sản mùa vụ
+            </Button>
+          </div>
+        ) : (
+          <div className="ml-orders-list">
+            {filteredOrders.map((order) => (
+              <div key={order.id} className="ml-card ml-order-card">
+                {/* Header */}
+                <div className="ml-order-header">
+                  <div className="ml-order-identity">
+                    <span className="ml-order-code">Mã: #{order.orderCode}</span>
+                    <span className="ml-order-dot">•</span>
+                    <span className="ml-order-time">Đặt lúc: {order.createdAt}</span>
+                  </div>
+                  <div className="ml-order-status-wrap">
+                    {getStatusBadge(order.status)}
                   </div>
                 </div>
 
-                <div style={{ margin: '14px 0 18px' }}>
-                  <OrderStatusTracker currentStatus={order.orderStatus} />
-                </div>
+                {/* Pickup Info Banner */}
+                <div className="ml-order-pickup-box">
+                  <div className="ml-pickup-grid">
+                    <div className="ml-pickup-col">
+                      <span className="ml-pickup-icon">🎪</span>
+                      <div>
+                        <div className="ml-pickup-label">Điểm hẹn chợ phiên:</div>
+                        <div className="ml-pickup-val"><strong>{order.pickupMarket}</strong></div>
+                        <div className="ml-pickup-sub">{order.stallLocation}</div>
+                      </div>
+                    </div>
 
-                <div className="customer-order-grid">
-                  <div className="customer-order-pickup-box">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ffffff', fontWeight: 700, marginBottom: '6px' }}>
-                      <Store size={16} color="var(--primary-light)" />
-                      <span>{order.marketName || 'Điểm chợ phiên'}</span>
+                    <div className="ml-pickup-col">
+                      <span className="ml-pickup-icon">⏰</span>
+                      <div>
+                        <div className="ml-pickup-label">Thời gian đến lấy hàng:</div>
+                        <div className="ml-pickup-val"><strong>{order.pickupSlotLabel || order.pickupSlot}</strong></div>
+                        <div className="ml-pickup-sub">Ngày: {order.pickupDate}</div>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                      <Calendar size={14} color="#60a5fa" />
-                      <span>Ngày lấy: <strong style={{ color: '#ffffff' }}>{order.pickupDate || 'Thứ 7 tuần này'}</strong></span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)' }}>
-                      <Clock size={14} color="#fbbf24" />
-                      <span>Khung giờ: <strong style={{ color: '#ffffff' }}>{order.slotTimeRange || '07:00 - 09:00'}</strong></span>
-                    </div>
-                  </div>
 
-                  <div>
-                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px' }}>
-                      Danh Sách Nông Sản:
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {order.items?.map((it, idx) => (
-                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.86rem' }}>
-                          <span style={{ color: '#ffffff', fontWeight: 600 }}>
-                            {it.productName || it.name} <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>x{it.quantity} {it.unit || 'kg'}</span>
-                          </span>
-                          <span style={{ color: 'var(--primary-light)', fontWeight: 700 }}>
-                            {formatCurrency(it.unitPrice * it.quantity)}
-                          </span>
-                        </div>
-                      ))}
+                    <div className="ml-pickup-col">
+                      <span className="ml-pickup-icon">👨‍🌾</span>
+                      <div>
+                        <div className="ml-pickup-label">Sạp nông dân:</div>
+                        <div className="ml-pickup-val"><strong>{order.farmerName}</strong></div>
+                        <div className="ml-pickup-sub">Hotline: {order.farmerPhone}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                  <button onClick={() => setSelectedOrder(order)} className="btn btn-secondary">
-                    <QrCode size={14} />
-                    <span>Mã Nhận Hàng (QR)</span>
-                  </button>
+                {/* Products Table */}
+                <div className="ml-order-items-table">
+                  <div className="ml-table-head">
+                    <span className="col-name">Nông sản đặt trước</span>
+                    <span className="col-qty">Số lượng</span>
+                    <span className="col-price">Đơn giá</span>
+                    <span className="col-total">Tạm tính</span>
+                  </div>
+                  <div className="ml-table-body">
+                    {order.items.map((item, idx) => (
+                      <div key={idx} className="ml-table-row">
+                        <span className="col-name">🥬 {item.name}</span>
+                        <span className="col-qty">{item.quantity} {item.unit}</span>
+                        <span className="col-price">{formatCurrency(item.price)}</span>
+                        <span className="col-total">{formatCurrency(item.price * item.quantity)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-                  {order.orderStatus === 'COMPLETED' && (
-                    <button
-                      onClick={() => handleOpenReview(order)}
-                      className="btn btn-primary"
-                      style={{ background: '#f59e0b', borderColor: '#f59e0b' }}
+                {/* Note */}
+                {order.note && (
+                  <div className="ml-order-note">
+                    <strong>Ghi chú cho nông dân:</strong> "{order.note}"
+                  </div>
+                )}
+
+                {/* Footer & Actions */}
+                <div className="ml-order-footer">
+                  <div className="ml-order-total-block">
+                    <span className="ml-total-label">Tổng thanh toán tại sạp:</span>
+                    <span className="ml-total-val">{formatCurrency(order.totalAmount)}</span>
+                    <span className="ml-payment-tag">{order.paymentMethod}</span>
+                  </div>
+
+                  <div className="ml-order-actions">
+                    {/* View Pickup QR Code button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedQrOrder(order)}
                     >
-                      <Star size={14} fill="#ffffff" />
-                      <span>Đánh Giá Sạp</span>
-                    </button>
-                  )}
+                      📱 Xem mã QR nhận hàng
+                    </Button>
 
-                  {order.orderStatus === 'PLACED' && (
-                    <button onClick={() => setCancelModalOrder(order)} className="btn btn-danger">
-                      Hủy Đặt Trước
-                    </button>
-                  )}
+                    {order.status === 'COMPLETED' && !order.reviewed && (
+                      <Button
+                        variant="accent"
+                        size="sm"
+                        onClick={() => setSelectedReviewOrder(order)}
+                      >
+                        ⭐ Đánh giá sạp
+                      </Button>
+                    )}
+
+                    {order.status === 'COMPLETED' && order.reviewed && (
+                      <span className="ml-reviewed-badge">✓ Đã đánh giá</span>
+                    )}
+
+                    {(order.status === 'PENDING' || order.status === 'PLACED') && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedModifyOrder(order)}
+                        >
+                          Đổi giờ lấy hàng
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="btn-danger-text"
+                          onClick={() => handleCancelOrder(order.id)}
+                        >
+                          Hủy đơn
+                        </Button>
+                      </>
+                    )}
+
+                    {order.status === 'COMPLETED' && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => onReorder && onReorder(order)}
+                      >
+                        🧺 Đặt lại đơn này
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
 
-      {selectedOrder && (
-        <div className="kyc-modal-overlay" onClick={() => setSelectedOrder(null)}>
-          <div className="kyc-modal-content" onClick={(e) => e.stopPropagation()} style={{ padding: '28px', maxWidth: '420px', textAlign: 'center' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '4px' }}>
-              Mã Nhận Nông Sản Tại Sạp
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
-              Đưa mã QR này cho Nông dân tại sạp để quét tiếp nhận và nhận nông sản tươi
+      {/* Pickup QR Code Modal */}
+      {selectedQrOrder && (
+        <Modal
+          isOpen={!!selectedQrOrder}
+          onClose={() => setSelectedQrOrder(null)}
+          title="Mã Nhận Hàng Tại Sạp Chợ"
+          subtitle={`Xuất trình mã này cho chủ sạp ${selectedQrOrder.farmerName}`}
+          maxWidth="440px"
+        >
+          <div className="ml-qr-pickup-modal">
+            <div className="ml-qr-code-text">#{selectedQrOrder.orderCode}</div>
+            
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(selectedQrOrder.orderCode)}`}
+              alt="Mã QR đơn hàng"
+              className="ml-qr-code-img"
+            />
+
+            <div className="ml-qr-stall-info">
+              <div>🎪 <strong>Điểm hẹn:</strong> {selectedQrOrder.pickupMarket}</div>
+              <div>📍 <strong>Vị trí sạp:</strong> {selectedQrOrder.stallLocation}</div>
+              <div>⏰ <strong>Ca lấy hàng:</strong> {selectedQrOrder.pickupSlotLabel || selectedQrOrder.pickupSlot} ({selectedQrOrder.pickupDate})</div>
+              <div>💵 <strong>Số tiền thanh toán:</strong> <span style={{ color: 'var(--color-accent)', fontWeight: 'bold' }}>{formatCurrency(selectedQrOrder.totalAmount)}</span></div>
+            </div>
+
+            <p className="ml-qr-pickup-guide">
+              Khi đến sạp, hãy đưa màn hình này cho nông dân quét hoặc đọc mã đơn để nhận giỏ nông sản đã đóng gói sẵn và kiểm tra trước khi trả tiền mặt.
             </p>
 
-            <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '20px', borderRadius: '16px', display: 'inline-block', border: '1px solid var(--border-light)', marginBottom: '16px' }}>
-              <div style={{ width: '180px', height: '180px', background: '#ffffff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', border: '2px solid var(--primary)' }}>
-                <QrCode size={140} color="#0b0f15" />
-              </div>
-              <div style={{ fontWeight: 800, fontSize: '1.15rem', color: 'var(--text-main)', marginTop: '12px' }}>
-                {selectedOrder.orderCode || `#ORDER-${selectedOrder.orderId}`}
-              </div>
-            </div>
-
-            <div style={{ fontSize: '0.9rem', color: 'var(--primary-light)', fontWeight: 700, marginBottom: '20px' }}>
-              Tổng tiền thanh toán tại sạp: {formatCurrency(selectedOrder.totalAmount)}
-            </div>
-
-            <button onClick={() => setSelectedOrder(null)} className="btn btn-primary" style={{ width: '100%' }}>
-              Đóng
-            </button>
+            <Button variant="primary" size="md" fullWidth onClick={() => setSelectedQrOrder(null)}>
+              Đã hiểu & Đóng
+            </Button>
           </div>
-        </div>
+        </Modal>
       )}
 
-      {cancelModalOrder && (
-        <div className="kyc-modal-overlay" onClick={() => setCancelModalOrder(null)}>
-          <div className="kyc-modal-content" onClick={(e) => e.stopPropagation()} style={{ padding: '24px', maxWidth: '460px' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f87171', marginBottom: '6px' }}>
-              Xác Nhận Hủy Đặt Trước
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-              Bạn có chắc chắn muốn hủy đơn hàng <strong style={{ color: 'var(--text-main)' }}>{cancelModalOrder.orderCode}</strong>?
-            </p>
-
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '4px' }}>
-                Lý do hủy đơn:
-              </label>
-              <textarea
-                rows={3}
-                value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
-                placeholder="VD: Thay đổi kế hoạch cuối tuần..."
-                className="form-input"
-              />
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button onClick={() => setCancelModalOrder(null)} className="btn btn-secondary">
-                Không, giữ đơn
-              </button>
-              <button disabled={cancelling} onClick={handleCancelOrder} className="btn btn-danger">
-                {cancelling ? 'Đang hủy...' : 'Xác Nhận Hủy'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Modify Modal */}
+      {selectedModifyOrder && (
+        <OrderModifyModal
+          isOpen={!!selectedModifyOrder}
+          onClose={() => setSelectedModifyOrder(null)}
+          order={selectedModifyOrder}
+          onSave={handleSaveModification}
+          onSaveModification={handleSaveModification}
+        />
       )}
 
-      {reviewModalOrder && (
-        <div className="kyc-modal-overlay" onClick={() => setReviewModalOrder(null)}>
-          <div className="kyc-modal-content" onClick={(e) => e.stopPropagation()} style={{ padding: '24px', maxWidth: '460px' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '4px' }}>
-              Đánh Giá Chất Lượng Nông Sản
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-              Chia sẻ cảm nhận về độ tươi ngon và dịch vụ tại sạp của đơn hàng <strong style={{ color: 'var(--text-main)' }}>{reviewModalOrder.orderCode}</strong>
-            </p>
-
-            <div style={{ marginBottom: '16px', textAlign: 'center' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '6px' }}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setRating(star)}
-                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}
-                  >
-                    <Star
-                      size={28}
-                      color="#f59e0b"
-                      fill={star <= rating ? '#f59e0b' : 'transparent'}
-                    />
-                  </button>
-                ))}
-              </div>
-              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f59e0b' }}>
-                {rating === 5 && 'Tuyệt vời - Rất tươi ngon!'}
-                {rating === 4 && 'Hài lòng - Nông sản sạch'}
-                {rating === 3 && 'Bình thường - Đạt yêu cầu'}
-                {rating === 2 && 'Chưa hài lòng'}
-                {rating === 1 && 'Không đạt chất lượng'}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '4px' }}>
-                Nhận xét chi tiết:
-              </label>
-              <textarea
-                rows={3}
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="VD: Rau rất tươi, giữ nguyên vị ngọt tự nhiên, sạp giao hàng đúng giờ..."
-                className="form-input"
-              />
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button onClick={() => setReviewModalOrder(null)} className="btn btn-secondary">
-                Đóng
-              </button>
-              <button
-                disabled={submittingReview}
-                onClick={handleSubmitReview}
-                className="btn btn-primary"
-                style={{ background: '#f59e0b', borderColor: '#f59e0b' }}
-              >
-                {submittingReview ? 'Đang gửi...' : 'Gửi Đánh Giá'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Review Modal */}
+      {selectedReviewOrder && (
+        <ReviewModal
+          isOpen={!!selectedReviewOrder}
+          onClose={() => setSelectedReviewOrder(null)}
+          order={selectedReviewOrder}
+          onSubmit={handleSubmitReview}
+          onSubmitReview={handleSubmitReview}
+        />
       )}
     </div>
   );
-};
+}

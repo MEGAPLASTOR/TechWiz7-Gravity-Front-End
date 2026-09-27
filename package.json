@@ -1,5 +1,5 @@
 {
-  "name": "techwiz7-gravity-fe",
+  "name": "frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,14 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "axios": "^1.20.0",
-    "canvas-confetti": "^1.9.4",
     "leaflet": "^1.9.4",
-    "lucide-react": "^1.48.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.4",
-    "three": "^0.186.0"
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",

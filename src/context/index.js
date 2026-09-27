@@ -1,11 +1,19 @@
-export { AuthContext } from './AuthContext';
-export { AuthProvider } from './AuthProvider';
-export { useAuth } from '@/hooks/useAuth';
+import React, { createContext, useContext, useState } from 'react';
 
-export { CartContext } from './CartContext';
-export { CartProvider } from './CartProvider';
-export { useCart } from '@/hooks/useCart';
+export const ThemeContext = createContext({
+  theme: 'light',
+  toggleTheme: () => {}
+});
 
-export { NotificationContext } from './NotificationContext';
-export { NotificationProvider } from './NotificationProvider';
-export { useNotification } from '@/hooks/useNotification';
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+  const toggleTheme = () => setTheme((t) => (t === 'light' ? 'dark' : 'light'));
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+export const useTheme = () => useContext(ThemeContext);
