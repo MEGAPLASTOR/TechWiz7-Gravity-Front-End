@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://14.225.212.94/api/:path*"
+      "destination": "https://backend.anhgamc.com/api/:path*"
     },
     {
       "source": "/uploads/:path*",
-      "destination": "http://14.225.212.94/uploads/:path*"
+      "destination": "https://backend.anhgamc.com/uploads/:path*"
     },
     {
       "source": "/(.*)",

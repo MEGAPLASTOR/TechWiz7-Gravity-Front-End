@@ -15,12 +15,12 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: process.env.VITE_BACKEND_TARGET || 'https://nnquangdev.id.vn',
+        target: process.env.VITE_BACKEND_TARGET || 'https://backend.anhgamc.com',
         changeOrigin: true,
         secure: false
       },
       '/uploads': {
-        target: process.env.VITE_BACKEND_TARGET || 'https://nnquangdev.id.vn',
+        target: process.env.VITE_BACKEND_TARGET || 'https://backend.anhgamc.com',
         changeOrigin: true,
         secure: false
       }
