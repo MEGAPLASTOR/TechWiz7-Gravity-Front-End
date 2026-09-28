@@ -25,245 +25,7 @@ export default function MarketStallsModal({
   const [loading, setLoading] = useState(false);
   const marketId = market?.id || market?.marketId || "";
   const marketName = market?.name || "";
-  const defaultStalls = useMemo(() => {
-    if (marketId === 101 || marketName.includes("Ba Đình")) {
-      return [
-        {
-          stallNumber: "Sạp A-01",
-          stallName: "Nông Trại Hữu Cơ Ba Vì",
-          farmerName: "Bác Ba Nông Dân",
-          phone: "0912 345 678",
-          farmAddress: "Thôn 2, Xã Yên Bài, Ba Vì, Hà Nội",
-          bio: "Chuyên canh rau ăn lá vi sinh hữu cơ, đạt chuẩn VietGAP thu hoạch sáng sớm ngày họp chợ.",
-          avatarUrl:
-            "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-          featuredItems: ["Cải Bó Xôi", "Rau Muống Tiến Vua", "Cải Xoăn Kale"],
-        },
-        {
-          stallNumber: "Sạp A-02",
-          stallName: "Vườn Rau Sinh Thái Mộc Châu",
-          farmerName: "Chị Lan Mộc Châu",
-          phone: "0987 654 321",
-          farmAddress: "Thảo nguyên Mộc Châu, Sơn La",
-          bio: "Trồng rau củ ôn đới không tồn dư thuốc trừ sâu, khí hậu cao nguyên mát mẻ quanh năm.",
-          avatarUrl:
-            "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
-          featuredItems: [
-            "Cà Chua Cherry",
-            "Bắp Cải Tí Hon",
-            "Cải Ngọt Thảo Nguyên",
-          ],
-        },
-        {
-          stallNumber: "Sạp A-03",
-          stallName: "HTX Nấm & Dược Liệu Tươi Sa Pa",
-          farmerName: "Anh Hùng Sa Pa",
-          phone: "0903 112 233",
-          farmAddress: "Bản Tả Phìn, Sa Pa, Lào Cai",
-          bio: "Cung cấp nấm hương rừng mọc tự nhiên trên thân gỗ mục và thảo dược thanh nhiệt.",
-          avatarUrl:
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-          featuredItems: ["Nấm Hương Rừng", "Mộc Nhĩ Đen", "Đẳng Sâm Tươi"],
-        },
-        {
-          stallNumber: "Sạp A-04",
-          stallName: "Vườn Cây Ăn Trái Bản Địa",
-          farmerName: "Chú Tư Miền Tây & Đà Lạt",
-          phone: "0938 998 877",
-          farmAddress: "Chợ Lách, Bến Tre & Đà Lạt",
-          bio: "Hoa quả đặc sản hái đúng độ chín cây, ngọt thơm tự nhiên không dùng hóa chất thúc chín.",
-          avatarUrl:
-            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-          featuredItems: ["Dâu Tây Hana", "Bưởi Da Xanh", "Cam Sành"],
-        },
-      ];
-    } else if (marketId === 103 || marketName.includes("Thảo Điền")) {
-      return [
-        {
-          stallNumber: "Sạp C-01",
-          stallName: "Nông Sản Sạch Đà Lạt Farm",
-          farmerName: "Anh Minh Đà Lạt",
-          phone: "0918 223 344",
-          farmAddress: "Huyện Đơn Dương, Lâm Đồng",
-          bio: "Rau củ quả sạch cao nguyên Đà Lạt hái lúc 4h sáng vận chuyển lạnh về TP.HCM.",
-          avatarUrl:
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-          featuredItems: ["Dâu Tây Hana", "Xà Lách Lolo Búp", "Cà Chua Socola"],
-        },
-        {
-          stallNumber: "Sạp C-02",
-          stallName: "Vườn Trái Cây Sinh Thái Tiền Giang",
-          farmerName: "Chị Mai Tiền Giang",
-          phone: "0945 667 788",
-          farmAddress: "Huyện Cái Bè, Tiền Giang",
-          bio: "Trái cây sông nước miền Tây đạt chuẩn an toàn, độ ngọt thanh mát tự nhiên.",
-          avatarUrl:
-            "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
-          featuredItems: ["Xoài Cát Hòa Lộc", "Mít Ruột Đỏ", "Thanh Long"],
-        },
-        {
-          stallNumber: "Sạp C-03",
-          stallName: "Nông Trại Rau Thủy Canh Thủ Đức",
-          farmerName: "Bác Sáu Rau Sạch",
-          phone: "0922 445 566",
-          farmAddress: "Phường Long Phước, TP. Thủ Đức",
-          bio: "Rau thủy canh dinh dưỡng khép kín, tươi giòn sạch đất, dùng ngay không cần rửa nhiều.",
-          avatarUrl:
-            "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-          featuredItems: ["Cải Bẹ Xanh", "Xà Lách Mỡ", "Rau Dền Đỏ"],
-        },
-      ];
-    } else {
-      return [
-        {
-          stallNumber: "Sạp B-01",
-          stallName: "HTX Vải & Cây Ăn Trái Hải Dương",
-          farmerName: "Bác Năm Thanh Hà",
-          phone: "0913 556 677",
-          farmAddress: "Thanh Hà, Hải Dương",
-          bio: "Đặc sản vải thiều cùi dày hạt tiêu mọng nước thu hoạch đúng mùa vụ ngọt ngào.",
-          avatarUrl:
-            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-          featuredItems: ["Vải Thiều Thanh Hà", "Ổi Bo", "Dưa Lưới"],
-        },
-        {
-          stallNumber: "Sạp B-02",
-          stallName: "Hợp Tác Xã Nấm Sạch Tây Hồ",
-          farmerName: "Chị Hà Nấm Sạch",
-          phone: "0976 112 244",
-          farmAddress: "Q. Tây Hồ, Hà Nội",
-          bio: "Cung cấp các loại nấm tươi dinh dưỡng, nấm sò, mộc nhĩ không dùng chất kích thích.",
-          avatarUrl:
-            "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
-          featuredItems: ["Nấm Hương Tươi", "Nấm Đùi Gà", "Mộc Nhĩ"],
-        },
-        {
-          stallNumber: "Sạp B-03",
-          stallName: "Nông Trại Hữu Cơ Sông Hồng",
-          farmerName: "Anh Tuấn Tây Hồ",
-          phone: "0989 334 455",
-          farmAddress: "Bãi bồi Sông Hồng, Hà Nội",
-          bio: "Đất phù sa màu mỡ trồng rau màu ăn lá giòn ngọt tự nhiên.",
-          avatarUrl:
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-          featuredItems: ["Rau Muống Sạch", "Mồng Tơi", "Rau Đay"],
-        },
-      ];
-    }
-  }, [marketId, marketName]);
   const [stalls, setStalls] = useState([]);
-  const defaultProducts = useMemo(() => {
-    return [
-      {
-        id: 101,
-        name: "Cải Bó Xôi Hữu Cơ Ba Vì",
-        categoryId: 1,
-        categoryName: "Rau Lá Hữu Cơ",
-        price: 45000,
-        unit: "kg",
-        farmerName: "Nông Trại Hữu Cơ Ba Vì",
-        stallCode: "Sạp A-01",
-        marketName,
-        stockQuantity: 35,
-        harvestTime: "Thu hoạch 5h sáng",
-        imageUrl:
-          "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=600&q=80",
-        organicCertified: true,
-        description:
-          "Rau bina trồng hữu cơ vi sinh, lá dày xanh thẫm, giàu sắt và vitamin.",
-      },
-      {
-        id: 102,
-        name: "Rau Muống Tiến Vua Sạch",
-        categoryId: 1,
-        categoryName: "Rau Lá Hữu Cơ",
-        price: 15000,
-        unit: "bó",
-        farmerName: "Nông Trại Hữu Cơ Ba Vì",
-        stallCode: "Sạp A-01",
-        marketName,
-        stockQuantity: 60,
-        harvestTime: "Cắt 4h30 sáng",
-        imageUrl:
-          "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
-        organicCertified: true,
-        description:
-          "Thu hoạch sớm từ ngọn non, thân giòn xào tỏi hoặc nấu canh thanh mát.",
-      },
-      {
-        id: 103,
-        name: "Cà Chua Cherry Mộc Châu Ngọt Giòn",
-        categoryId: 2,
-        categoryName: "Củ & Quả Tươi Sạch",
-        price: 35000,
-        unit: "hộp 500g",
-        farmerName: "Vườn Rau Sinh Thái Mộc Châu",
-        stallCode: "Sạp A-02",
-        marketName,
-        stockQuantity: 45,
-        harvestTime: "Chín cây tự nhiên",
-        imageUrl:
-          "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=600&q=80",
-        organicCertified: true,
-        description:
-          "Cà chua bi giống Socola Mộc Châu vỏ mỏng mọng nước, vị ngọt đậm đà.",
-      },
-      {
-        id: 104,
-        name: "Dâu Tây Hana Đà Lạt Tuyển Chọn",
-        categoryId: 3,
-        categoryName: "Trái Cây Bản Địa",
-        price: 125000,
-        unit: "hộp 500g",
-        farmerName: "Nông Sản Sạch Đà Lạt Farm",
-        stallCode: "Sạp C-01",
-        marketName,
-        stockQuantity: 30,
-        harvestTime: "Thu hái sáng sớm",
-        imageUrl:
-          "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=600&q=80",
-        organicCertified: true,
-        description:
-          "Dâu tây giống Hana hái tại vườn Đà Lạt lúc sáng sớm, thơm lừng vị ngọt.",
-      },
-      {
-        id: 106,
-        name: "Nấm Hương Rừng Sa Pa Tươi",
-        categoryId: 4,
-        categoryName: "Nấm & Thảo Dược",
-        price: 98000,
-        unit: "kg",
-        farmerName: "HTX Nấm & Dược Liệu Tươi Sa Pa",
-        stallCode: "Sạp A-03",
-        marketName,
-        stockQuantity: 20,
-        harvestTime: "Hái tự nhiên trên núi",
-        imageUrl:
-          "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80",
-        organicCertified: true,
-        description:
-          "Nấm hương sinh trưởng tự nhiên trên gỗ mục vùng núi Tả Phìn, thơm nồng.",
-      },
-      {
-        id: 105,
-        name: "Vải Thiều Thanh Hà Chính Gốc",
-        categoryId: 3,
-        categoryName: "Trái Cây Bản Địa",
-        price: 65000,
-        unit: "kg",
-        farmerName: "HTX Vải & Cây Ăn Trái Hải Dương",
-        stallCode: "Sạp B-01",
-        marketName,
-        stockQuantity: 80,
-        harvestTime: "Hái đúng độ chín",
-        imageUrl:
-          "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=600&q=80",
-        organicCertified: true,
-        description:
-          "Cùi dày hạt tiêu mọng nước, ngọt sắc hương thơm đặc trưng vùng Thanh Hà.",
-      },
-    ];
-  }, [marketName]);
   const [products, setProducts] = useState([]);
   useEffect(() => {
     let isMounted = true;
@@ -271,24 +33,29 @@ export default function MarketStallsModal({
       if (!marketId) return;
       try {
         const farmers = await marketService.getMarketFarmers(marketId);
-        if (isMounted && Array.isArray(farmers) && farmers.length > 0) {
-          const mapped = farmers.map((f, idx) => ({
-            stallNumber: f.stallNumber || `Sạp ${idx + 1}`,
-            stallName:
-              f.stallName || f.farmerName || `Sạp Nông Dân #${idx + 1}`,
-            farmerName: f.farmerName || "Chủ nông trại",
-            phone: f.phoneNumber || "0912 345 678",
-            farmAddress: f.farmAddress || "Vùng trồng liên kết",
-            bio: f.bio || "Chuyên cung cấp nông sản sạch cho phiên chợ.",
-            avatarUrl:
-              f.avatarUrl ||
-              "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-            featuredItems: ["Rau hữu cơ", "Củ quả tươi", "Trái cây sạch"],
-          }));
-          setStalls(mapped);
+        if (isMounted) {
+          if (Array.isArray(farmers) && farmers.length > 0) {
+            const mapped = farmers.map((f, idx) => ({
+              stallNumber: f.stallNumber || `Sạp ${idx + 1}`,
+              stallName:
+                f.stallName || f.farmerName || `Sạp Nông Dân #${idx + 1}`,
+              farmerName: f.farmerName || "Chủ nông trại",
+              phone: f.phoneNumber || "",
+              farmAddress: f.farmAddress || "Vùng trồng liên kết",
+              bio: f.bio || "Chuyên cung cấp nông sản sạch cho phiên chợ.",
+              avatarUrl:
+                f.avatarUrl ||
+                "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
+              featuredItems: ["Rau hữu cơ", "Củ quả tươi", "Trái cây sạch"],
+            }));
+            setStalls(mapped);
+          } else {
+            setStalls([]);
+          }
         }
       } catch (err) {
-        console.warn("Using default stalls for market:", err);
+        console.warn("Failed to load stalls for market:", err);
+        if (isMounted) setStalls([]);
       }
     }
     async function loadProducts() {
@@ -300,12 +67,13 @@ export default function MarketStallsModal({
         if (isMounted) {
           if (Array.isArray(prods) && prods.length > 0) {
             setProducts(prods);
-          } else if (Array.isArray(prods) && prods.length === 0) {
+          } else {
             setProducts([]);
           }
         }
       } catch (err) {
-        console.warn("Using default products for market modal:", err);
+        console.warn("Failed to load products for market modal:", err);
+        if (isMounted) setProducts([]);
       }
     }
     loadStalls();

@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "@/assets/styles/pages/admin/AdminOrdersPage.css";
 import Button from "../../components/common/Button";
 import Badge from "../../components/common/Badge";
 import Modal from "../../components/common/Modal";
+import Pagination from "../../components/common/Pagination";
 import adminService from "../../services/adminService";
 import marketService from "../../services/marketService";
+
 export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
   const [activeTab, setActiveTab] = useState("ALL");
   const [searchKeyword, setSearchKeyword] = useState(() =>
     initialOrderId ? String(initialOrderId) : "",
@@ -54,6 +58,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
     }
   };
   useEffect(() => {
+    setCurrentPage(1);
     const timer = setTimeout(() => {
       loadOrders();
     }, 250);
@@ -72,6 +77,10 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
     0,
   );
   const filteredOrders = orders;
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredOrders.slice(start, start + PAGE_SIZE);
+  }, [filteredOrders, currentPage]);
   const handleResetFilters = () => {
     setSearchKeyword("");
     setSelectedMarketFilter("ALL");
@@ -478,12 +487,13 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
             Không tìm thấy đơn đặt trước nào phù hợp với bộ lọc.
           </div>
         ) : (
-          <div
-            className="ml-card"
-            style={{
-              overflowX: "auto",
-              padding: 0,
-            }}
+          <>
+            <div
+              className="ml-card"
+              style={{
+                overflowX: "auto",
+                padding: 0,
+              }}
           >
             <table
               style={{
@@ -554,7 +564,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.map((o) => (
+                {paginatedOrders.map((o) => (
                   <tr
                     key={o.orderId}
                     style={{
@@ -709,6 +719,14 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
               </tbody>
             </table>
           </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredOrders.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
       </div>
 

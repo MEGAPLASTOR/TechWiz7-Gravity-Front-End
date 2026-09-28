@@ -107,10 +107,9 @@ body {
   .ml-inv-card:hover,
   .ml-kpi-card:hover,
   .ml-admin-kpi-card:hover {
-    transform: perspective(900px) rotateX(1deg) rotateY(-0.5deg)
-      translateY(-3px);
+    transform: none !important;
     border-color: var(--color-primary-light);
-    box-shadow: 0 12px 24px rgba(38, 65, 47, 0.11);
+    box-shadow: 0 8px 20px rgba(38, 65, 47, 0.08);
   }
 }
 
@@ -136,7 +135,6 @@ body {
 .ml-btn {
   min-height: 38px;
   border-radius: 7px;
-  transform-style: preserve-3d;
   transition:
     transform 180ms ease,
     box-shadow 180ms ease,
@@ -144,7 +142,7 @@ body {
     border-color 160ms ease;
 }
 .ml-btn:not(:disabled):active {
-  transform: perspective(500px) translateY(1px) translateZ(-2px);
+  transform: translateY(1px);
 }
 .ml-btn--loading {
   cursor: progress;

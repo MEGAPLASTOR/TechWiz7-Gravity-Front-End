@@ -457,8 +457,10 @@ export default function OpenStreetMapRouting({
       marketName,
     });
     setFarmerAlert({
-      farmerName: "Bác Ba Nông Dân (Sạp 05)",
-      msg: `🔔 Thông báo tới Nông Dân: Khách hàng vừa tiến vào phạm vi 300m chợ! Hãy chuẩn bị sẵn giỏ nông sản đã hẹn.`,
+      farmerName: targetMarket?.farmerName || (isEn ? "Market Stall Farmer" : "Chủ Sạp Nông Dân"),
+      msg: isEn
+        ? `🔔 Notification to Farmer: Customer entered 300m range of the market! Prepare their reserved produce bundle.`
+        : `🔔 Thông báo tới Nông Dân: Khách hàng vừa tiến vào phạm vi 300m chợ! Hãy chuẩn bị sẵn giỏ nông sản đã hẹn.`,
     });
     playNotificationChime();
     try {

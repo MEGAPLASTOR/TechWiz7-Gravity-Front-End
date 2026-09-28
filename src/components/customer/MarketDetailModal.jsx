@@ -29,22 +29,16 @@ export default function MarketDetailModal({
     marketId,
     name,
     address,
-    city = "Hà Nội",
-    distance = "1.2 km",
-    operatingDays = "Thứ 7 & Chủ Nhật",
-    operatingHours = "06:00 - 11:30",
-    stallsCount = 16,
-    description = "Chợ phiên nông sản sạch quy tụ các hợp tác xã và nông hộ từ vùng Ba Vì, Mộc Châu, Đà Lạt. Toàn bộ rau củ thu hoạch trong bán kính 60km, đảm bảo độ tươi ngon nhất.",
+    city = "",
+    distance = "",
+    operatingDays = "",
+    operatingHours = "",
+    stallsCount = 0,
+    description = "",
     imageUrl = "https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=700&q=80",
-    amenities = [
-      "Bãi giữ xe miễn phí",
-      "Điểm nhận hàng nhanh",
-      "Thùng rác hữu cơ",
-      "Sạp kiểm định chất lượng",
-      "Thanh toán VietQR",
-    ],
-    latitude = 21.0312,
-    longitude = 105.8189,
+    amenities = [],
+    latitude,
+    longitude,
   } = market || {};
   const mLat = Number(market.latitude || latitude || 21.0312);
   const mLon = Number(market.longitude || longitude || 105.8189);
@@ -320,9 +314,11 @@ export default function MarketDetailModal({
             <div className="ml-detail-banner">
               <img src={imageUrl} alt={name} className="ml-detail-img" />
               <div className="ml-detail-pills">
-                <Badge variant="organic" size="sm">
-                  📍 {isEn ? "Distance:" : "Khoảng cách:"} {distance}
-                </Badge>
+                {distance && (
+                  <Badge variant="organic" size="sm">
+                    📍 {isEn ? "Distance:" : "Khoảng cách:"} {distance}
+                  </Badge>
+                )}
                 <Badge variant="ready" size="sm">
                   ✓ {isEn ? "Open for Pre-orders" : "Đang mở nhận đặt trước"}
                 </Badge>

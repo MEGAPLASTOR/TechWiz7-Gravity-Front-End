@@ -30,6 +30,7 @@ export const productService = {
       return rawList.map((p) => ({
         ...p,
         id: p.productId || p.id,
+        farmerId: p.farmerId || p.farmer?.id || p.farmerUserId || p.userId,
         imageUrl: formatImageUrl(p.imageUrl),
         farmerName: p.farmerStallName || p.farmerName || fallbackFarmer,
         stallNumber: p.stallNumber || p.stallCode || fallbackStall,
@@ -59,6 +60,7 @@ export const productService = {
     return {
       ...p,
       id: p.productId || p.id,
+      farmerId: p.farmerId || p.farmer?.id || p.farmerUserId || p.userId,
       imageUrl: formatImageUrl(p.imageUrl),
       farmerName: p.farmerStallName || p.farmerName || "Nông Trại Thành Viên",
     };

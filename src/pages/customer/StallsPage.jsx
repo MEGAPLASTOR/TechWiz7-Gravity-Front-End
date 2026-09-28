@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "@/assets/styles/pages/customer/StallsPage.css";
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
+import Pagination from "../../components/common/Pagination";
 import ProductCard from "../../components/customer/ProductCard";
 import marketService from "../../services/marketService";
 import productService from "../../services/productService";
@@ -26,237 +27,6 @@ export default function StallsPage({
     localizeStallName,
     localizeOperatingDays,
   } = useLanguage();
-  const defaultStalls = [
-    {
-      id: 103,
-      farmerId: 103,
-      assignmentId: 1,
-      stallCode: "Sạp A-01",
-      stallName: "Sạp Rau Củ Hữu Cơ Ba Vì",
-      farmName: "Nông Trại Hữu Cơ Ba Vì",
-      farmerName: "Bác Ba Nông Dân Ba Vì",
-      marketId: 101,
-      marketName: "Phiên Chợ Xanh Nông Sản Ba Đình",
-      marketCity: "Hà Nội",
-      marketAddress: "12 Núi Trúc, P. Giảng Võ, Ba Đình, Hà Nội",
-      operatingDays: "Thứ Bảy & Chủ Nhật",
-      operatingHours: "06:00 - 11:30",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80",
-      coverUrl:
-        "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80",
-      farmAddress: "Xã Vân Hòa, Huyện Ba Vì, Hà Nội",
-      experienceYears: "12 năm làm nông",
-      rating: 4.9,
-      reviewCount: 48,
-      specialty: "Rau",
-      specialtyName: "Rau Lá Hữu Cơ",
-      specialtyTags: ["Cải bó xôi", "Rau muống sạch", "Mồng tơi", "Cải ngọt"],
-      certification: "VietGAP",
-      certifications: [
-        "Chứng nhận VietGAP 2024",
-        "Nguồn nước suối ngầm Ba Vì kiểm định",
-        "Không chất bảo quản",
-      ],
-      bio: "Nhà vườn chúng tôi chuyên canh tác rau cải bó xôi, rau muống nước ngọt và các loại rau ăn lá hoàn toàn tự nhiên dưới chân núi Ba Vì. Rau được tưới bằng nước suối nguồn trong lành, thu hoạch lúc 4h-5h sáng sớm rồi chở thẳng tới các phiên chợ để bạn nhận rau tươi ngon nhất.",
-      productsCount: 12,
-    },
-    {
-      id: 104,
-      farmerId: 104,
-      assignmentId: 2,
-      stallCode: "Sạp A-02",
-      stallName: "Sạp Cà Chua & Dâu Mộc Châu",
-      farmName: "Vườn Rau Sinh Thái Mộc Châu",
-      farmerName: "Cô Mộc Châu Xanh",
-      marketId: 101,
-      marketName: "Phiên Chợ Xanh Nông Sản Ba Đình",
-      marketCity: "Hà Nội",
-      marketAddress: "12 Núi Trúc, P. Giảng Võ, Ba Đình, Hà Nội",
-      operatingDays: "Thứ Bảy & Chủ Nhật",
-      operatingHours: "06:30 - 11:30",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?auto=format&fit=crop&w=200&q=80",
-      coverUrl:
-        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80",
-      farmAddress: "Tiểu khu Pa Khen, TT. Nông trường Mộc Châu, Sơn La",
-      experienceYears: "8 năm làm nông",
-      rating: 4.8,
-      reviewCount: 38,
-      specialty: "Củ",
-      specialtyName: "Củ & Quả Tươi Sạch",
-      specialtyTags: [
-        "Cà chua Cherry",
-        "Dưa chuột bao tử",
-        "Cà rốt tím",
-        "Ớt chuông mini",
-      ],
-      certification: "Organic",
-      certifications: [
-        "Hữu cơ vi sinh",
-        "Thu hoạch trong ngày",
-        "Canh tác khí hậu cao nguyên",
-      ],
-      bio: "Chuyên canh cà chua cherry bi socola ngọt giòn và dâu tây giống Nhật trên cao nguyên Mộc Châu mát mẻ quanh năm. Thu hoạch sáng sớm và vận chuyển trong thùng xốp bảo ôn xuống chợ phiên Hà Nội.",
-      productsCount: 9,
-    },
-    {
-      id: 105,
-      farmerId: 105,
-      assignmentId: 3,
-      stallCode: "Sạp D-02",
-      stallName: "Sạp Nấm & Thảo Dược Tây Bắc",
-      farmName: "HTX Dược Liệu & Nấm Sạch Sa Pa",
-      farmerName: "Chị Lan Sa Pa Xanh",
-      marketId: 104,
-      marketName: "Hội Chợ Nông Sản Vùng Miền Tây Hồ",
-      marketCity: "Hà Nội",
-      marketAddress: "614 Lạc Long Quân, P. Nhật Tân, Tây Hồ, Hà Nội",
-      operatingDays: "Chủ Nhật hàng tuần",
-      operatingHours: "06:30 - 11:30",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-      coverUrl:
-        "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1200&q=80",
-      farmAddress: "Bản Tả Phìn, Thị xã Sa Pa, Lào Cai",
-      experienceYears: "15 năm bản địa",
-      rating: 4.9,
-      reviewCount: 56,
-      specialty: "Nấm",
-      specialtyName: "Nấm & Thảo Dược",
-      specialtyTags: [
-        "Nấm hương rừng",
-        "Nấm tuyết",
-        "Mật ong rừng",
-        "Thảo quả khô",
-      ],
-      certification: "OCOP",
-      certifications: [
-        "OCOP 4 sao tỉnh Lào Cai",
-        "100% tự nhiên không chất bảo quản",
-        "Thu hái tự nhiên bền vững",
-      ],
-      bio: "Thu hái nấm hương rừng tự nhiên, thảo mộc quý và rau ôn đới đặc sản trên sườn núi Hoàng Liên Sơn. Quy trình sấy mộc và bảo quản không hóa chất.",
-      productsCount: 8,
-    },
-    {
-      id: 106,
-      farmerId: 106,
-      assignmentId: 4,
-      stallCode: "Sạp C-05",
-      stallName: "Sạp Trái Cây & Nông Sản Đà Lạt",
-      farmName: "Nông Sản Sạch Đà Lạt Farm",
-      farmerName: "Anh Tuấn Đà Lạt",
-      marketId: 103,
-      marketName: "Phiên Chợ Hữu Cơ Thảo Điền EcoMarket",
-      marketCity: "TP. Hồ Chí Minh",
-      marketAddress: "28 Thảo Điền, TP. Thủ Đức, TP. Hồ Chí Minh",
-      operatingDays: "Thứ Bảy & Chủ Nhật",
-      operatingHours: "07:00 - 12:00",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
-      coverUrl:
-        "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=1200&q=80",
-      farmAddress: "Thôn Đa Quý, Xã Xuân Thọ, TP. Đà Lạt, Lâm Đồng",
-      experienceYears: "10 năm làm nông",
-      rating: 4.9,
-      reviewCount: 52,
-      specialty: "Trái Cây",
-      specialtyName: "Trái Cây Bản Địa & Ôn Đới",
-      specialtyTags: [
-        "Dâu tây Hana",
-        "Bông Atiso tươi",
-        "Phúc bồn tử",
-        "Xà lách thủy canh",
-      ],
-      certification: "VietGAP",
-      certifications: [
-        "VietGAP 2024",
-        "GlobalGAP rau củ",
-        "Đóng gói màng thở bảo quản tự nhiên",
-      ],
-      bio: "Nhà kính công nghệ cao tại Đà Lạt, kiểm soát nhiệt độ và độ ẩm hoàn toàn tự nhiên. Nông sản được thu hái rạng sáng, bảo quản lạnh chuyển về phiên chợ Thảo Điền.",
-      productsCount: 15,
-    },
-    {
-      id: 107,
-      farmerId: 107,
-      assignmentId: 5,
-      stallCode: "Sạp B-03",
-      stallName: "Sạp Đặc Sản Trái Cây Miền Bắc",
-      farmName: "HTX Vải & Cây Ăn Trái Hải Dương",
-      farmerName: "Bác Hoàng Thanh Hà",
-      marketId: 104,
-      marketName: "Hội Chợ Nông Sản Vùng Miền Tây Hồ",
-      marketCity: "Hà Nội",
-      marketAddress: "614 Lạc Long Quân, P. Nhật Tân, Tây Hồ, Hà Nội",
-      operatingDays: "Chủ Nhật hàng tuần",
-      operatingHours: "06:30 - 11:30",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-      coverUrl:
-        "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=1200&q=80",
-      farmAddress: "Xã Thanh Thủy, Huyện Thanh Hà, Hải Dương",
-      experienceYears: "20 năm nhà vườn",
-      rating: 4.8,
-      reviewCount: 34,
-      specialty: "Trái Cây",
-      specialtyName: "Trái Cây Bản Địa",
-      specialtyTags: [
-        "Vải thiều Thanh Hà",
-        "Nhãn cùi Hưng Yên",
-        "Bưởi tiến vua",
-        "Ổi Thanh Hà",
-      ],
-      certification: "VietGAP",
-      certifications: [
-        "VietGAP quả tươi",
-        "Chỉ dẫn địa lý quốc gia",
-        "Thu hái đúng độ chín cây",
-      ],
-      bio: "Vườn cây ăn trái truyền thống ba đời tại ven sông Thái Bình. Quả được chăm sóc theo hướng hữu cơ, hái rạng sáng để giữ nguyên vị ngọt đậm đà thơm ngát.",
-      productsCount: 7,
-    },
-    {
-      id: 108,
-      farmerId: 108,
-      assignmentId: 6,
-      stallCode: "Sạp E-04",
-      stallName: "Sạp Trái Cây & Bánh Men Thủ Công",
-      farmName: "Vườn Trái Cây Sinh Thái Miền Tây",
-      farmerName: "Chú Năm Miền Tây",
-      marketId: 103,
-      marketName: "Phiên Chợ Hữu Cơ Thảo Điền EcoMarket",
-      marketCity: "TP. Hồ Chí Minh",
-      marketAddress: "28 Thảo Điền, TP. Thủ Đức, TP. Hồ Chí Minh",
-      operatingDays: "Thứ Bảy & Chủ Nhật",
-      operatingHours: "07:00 - 12:00",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80",
-      coverUrl:
-        "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=1200&q=80",
-      farmAddress: "Cù lao Tân Phong, Huyện Cai Lậy, Tiền Giang",
-      experienceYears: "14 năm canh tác thuận tự nhiên",
-      rating: 4.9,
-      reviewCount: 45,
-      specialty: "Trái Cây",
-      specialtyName: "Trái Cây & Bánh Thủ Công",
-      specialtyTags: [
-        "Bưởi da xanh",
-        "Xoài cát Hòa Lộc",
-        "Mãng cầu xiêm",
-        "Bánh mì men chua",
-      ],
-      certification: "Organic",
-      certifications: [
-        "Hữu cơ vi sinh",
-        "Đạt chuẩn OCOP Bến Tre",
-        "Không chất bảo quản",
-      ],
-      bio: "Vườn sinh thái ngập phù sa sông Tiền. Trái cây chín cây tự nhiên, không nhúng thuốc, ngọt lịm thanh mát.",
-      productsCount: 11,
-    },
-  ];
   const [stalls, setStalls] = useState([]);
   const [marketsList, setMarketsList] = useState([]);
   const [viewMode, setViewMode] = useState("list");
@@ -264,6 +34,8 @@ export default function StallsPage({
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedMarketId, setSelectedMarketId] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
   const [selectedSpecialty, setSelectedSpecialty] = useState("all");
   const [selectedCert, setSelectedCert] = useState("all");
   const [sortBy, setSortBy] = useState("rating_desc");
@@ -309,30 +81,29 @@ export default function StallsPage({
                 ? "TP. Hồ Chí Minh"
                 : "Hà Nội",
             marketAddress: f.farmAddress || "",
-            operatingDays: "Thứ 7 & Chủ Nhật",
-            operatingHours: "06:00 - 11:30",
+            operatingDays: f.operatingDays || "",
+            operatingHours: f.operatingHours || "",
             avatarUrl:
               f.avatarUrl ||
               "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80",
             coverUrl:
+              f.coverUrl ||
               "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80",
             farmAddress: f.farmAddress || "",
-            experienceYears: "10+ năm làm nông",
-            rating: 4.9,
-            reviewCount: 30 + (f.farmerId % 10) * 5,
-            specialty: "Rau",
-            specialtyName: "Nông Sản Tươi Sạch",
-            specialtyTags: ["Nông sản sạch", "Thu hoạch sáng sớm", "VietGAP"],
-            certification: "VietGAP",
-            certifications: [
-              "Chứng nhận VietGAP",
-              "Kiểm định an toàn thực phẩm",
-              "Canh tác sinh thái",
-            ],
-            bio:
-              f.bio ||
-              "Chuyên canh nông sản sạch chất lượng cao, phục vụ khách hàng đặt trước tại phiên chợ sáng.",
-            productsCount: 8,
+            experienceYears: f.experienceYears || "",
+            rating: f.rating || 5.0,
+            reviewCount: f.reviewCount || 0,
+            specialty: f.specialty || "Nông sản",
+            specialtyName: f.specialtyName || "Nông Sản Tươi Sạch",
+            specialtyTags: Array.isArray(f.specialtyTags)
+              ? f.specialtyTags
+              : ["Nông sản sạch", "VietGAP"],
+            certification: f.certification || "VietGAP",
+            certifications: Array.isArray(f.certifications)
+              ? f.certifications
+              : ["Chứng nhận VietGAP"],
+            bio: f.bio || "",
+            productsCount: f.productsCount || 0,
           }));
           setStalls(mapped);
           if (!initialFarmerId && mapped.length > 0) {
@@ -502,6 +273,23 @@ export default function StallsPage({
     }
     return 0;
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchKeyword,
+    selectedMarketId,
+    selectedCity,
+    selectedSpecialty,
+    selectedCert,
+    sortBy,
+  ]);
+
+  const paginatedStalls = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return sortedStalls.slice(start, start + PAGE_SIZE);
+  }, [sortedStalls, currentPage]);
+
   const getCartQty = (prodId) => {
     const found = cartItems.find(
       (item) => item.id === prodId || item.productId === prodId,
@@ -1143,7 +931,7 @@ export default function StallsPage({
         )}
 
         <div className="ml-stalls-grid">
-          {sortedStalls.map((stall) => (
+          {paginatedStalls.map((stall) => (
             <div key={stall.id} className="ml-stall-card">
               <div className="ml-stall-card-header">
                 <img
@@ -1226,6 +1014,16 @@ export default function StallsPage({
             </div>
           ))}
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={sortedStalls.length}
+          pageSize={PAGE_SIZE}
+          onPageChange={(p) => {
+            setCurrentPage(p);
+            window.scrollTo({ top: 400, behavior: "smooth" });
+          }}
+        />
 
         {sortedStalls.length === 0 && (
           <div className="ml-stalls-empty-container">

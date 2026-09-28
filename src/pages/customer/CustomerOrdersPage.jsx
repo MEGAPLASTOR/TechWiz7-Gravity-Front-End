@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "@/assets/styles/pages/customer/CustomerOrdersPage.css";
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
 import Modal from "../../components/common/Modal";
+import Pagination from "../../components/common/Pagination";
 import OrderModifyModal from "../../components/customer/OrderModifyModal";
 import ReviewModal from "../../components/customer/ReviewModal";
 import orderService from "../../services/orderService";
@@ -30,6 +31,8 @@ export default function CustomerOrdersPage({
   const [selectedQrOrder, setSelectedQrOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
 
   useEffect(() => {
     const target =
@@ -59,28 +62,28 @@ export default function CustomerOrdersPage({
             id: o.orderId || o.id,
             orderId: o.orderId || o.id,
             orderCode: o.orderCode || `ORD-${o.orderId || o.id}`,
-            pickupMarket: o.marketName || "Chợ Phiên Nông Sản",
+            pickupMarket: o.marketName || "",
             marketAddress: o.marketAddress || "",
             stallLocation: o.stallName
               ? `${o.stallName} (${o.marketAddress || ""})`
-              : o.marketAddress || "Sạp nông dân",
+              : o.marketAddress || "",
             pickupDate: o.pickupDate,
-            pickupSlot: o.slotTimeRange || "07:00 - 08:00",
+            pickupSlot: o.slotTimeRange || "",
             pickupSlotLabel: o.slotTimeRange
               ? `Ca nhận hàng: ${o.slotTimeRange}`
-              : "Khung giờ sáng sớm",
+              : "",
             slotId: o.slotId,
             farmerId: o.farmerId,
             marketId: o.marketId,
             status: o.orderStatus || "PLACED",
             totalAmount: o.totalAmount || 0,
             paymentMethod: o.paymentMethod || "Thanh toán trực tiếp tại sạp",
-            farmerName: o.farmerName || "Nông Trại Hữu Cơ",
-            farmerPhone: o.customerPhone || "0900000003",
+            farmerName: o.farmerName || "",
+            farmerPhone: o.farmerPhone || o.customerPhone || "",
             note: o.note || "",
             createdAt: o.createdAt
               ? String(o.createdAt).replace("T", " ").substring(0, 16)
-              : "Hôm nay",
+              : "",
             canCancel:
               o.canCancel !== undefined
                 ? o.canCancel
@@ -112,7 +115,16 @@ export default function CustomerOrdersPage({
     return () => clearTimeout(timer);
   }, [searchKeyword, activeTab]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchKeyword, activeTab]);
+
   const filteredOrders = orders;
+
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredOrders.slice(start, start + PAGE_SIZE);
+  }, [filteredOrders, currentPage]);
 
   const formatCurrency = (val) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -346,8 +358,9 @@ export default function CustomerOrdersPage({
             </Button>
           </div>
         ) : (
-          <div className="ml-orders-list">
-            {filteredOrders.map((order) => (
+          <>
+            <div className="ml-orders-list">
+              {paginatedOrders.map((order) => (
               <div key={order.id} className="ml-card ml-order-card">
                 <div className="ml-order-header">
                   <div className="ml-order-identity">
@@ -517,6 +530,16 @@ export default function CustomerOrdersPage({
               </div>
             ))}
           </div>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredOrders.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={(p) => {
+                setCurrentPage(p);
+                window.scrollTo({ top: 250, behavior: "smooth" });
+              }}
+            />
+          </>
         )}
       </div>
 

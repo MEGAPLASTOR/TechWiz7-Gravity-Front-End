@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "@/assets/styles/pages/admin/UserModerationPage.css";
 import Button from "../../components/common/Button";
 import Badge from "../../components/common/Badge";
 import Modal from "../../components/common/Modal";
+import Pagination from "../../components/common/Pagination";
 import adminService from "../../services/adminService";
+
 export default function UserModerationPage({ onNavigate }) {
   const [mainTab, setMainTab] = useState("users");
   const [users, setUsers] = useState([]);
+  const [usersPage, setUsersPage] = useState(1);
+  const [kycPage, setKycPage] = useState(1);
+  const PAGE_SIZE = 15;
   const [userFilters, setUserFilters] = useState({
     keyword: "",
     role: "ALL",
@@ -88,11 +93,13 @@ export default function UserModerationPage({ onNavigate }) {
   };
   useEffect(() => {
     if (mainTab === "users") {
+      setUsersPage(1);
       const timer = setTimeout(() => {
         loadUsers();
       }, 250);
       return () => clearTimeout(timer);
     } else {
+      setKycPage(1);
       const timer = setTimeout(() => {
         loadKyc(kycSearch);
       }, 250);
@@ -261,6 +268,17 @@ export default function UserModerationPage({ onNavigate }) {
     }
   };
   const filteredKycList = kycList;
+
+  const paginatedUsers = useMemo(() => {
+    const start = (usersPage - 1) * PAGE_SIZE;
+    return users.slice(start, start + PAGE_SIZE);
+  }, [users, usersPage]);
+
+  const paginatedKycList = useMemo(() => {
+    const start = (kycPage - 1) * PAGE_SIZE;
+    return filteredKycList.slice(start, start + PAGE_SIZE);
+  }, [filteredKycList, kycPage]);
+
   return (
     <div className="ml-mod-page">
       {toastMsg.text && (
@@ -632,12 +650,13 @@ export default function UserModerationPage({ onNavigate }) {
                 Không tìm thấy người dùng nào phù hợp với bộ lọc tìm kiếm.
               </div>
             ) : (
-              <div
-                className="ml-card"
-                style={{
-                  overflowX: "auto",
-                  padding: 0,
-                }}
+              <>
+                <div
+                  className="ml-card"
+                  style={{
+                    overflowX: "auto",
+                    padding: 0,
+                  }}
               >
                 <table
                   style={{
@@ -708,7 +727,7 @@ export default function UserModerationPage({ onNavigate }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((u) => (
+                    {paginatedUsers.map((u) => (
                       <tr
                         key={u.userId}
                         style={{
@@ -877,7 +896,15 @@ export default function UserModerationPage({ onNavigate }) {
                   </tbody>
                 </table>
               </div>
-            )}
+
+              <Pagination
+                currentPage={usersPage}
+                totalItems={users.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setUsersPage}
+              />
+            </>
+          )}
           </div>
         )}
 
@@ -989,14 +1016,15 @@ export default function UserModerationPage({ onNavigate }) {
                 định.
               </div>
             ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
-                  gap: 16,
-                }}
-              >
-                {filteredKycList.map((k) => (
+              <>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+                    gap: 16,
+                  }}
+                >
+                {paginatedKycList.map((k) => (
                   <div
                     key={k.farmerId}
                     className="ml-card"
@@ -1111,7 +1139,15 @@ export default function UserModerationPage({ onNavigate }) {
                   </div>
                 ))}
               </div>
-            )}
+
+              <Pagination
+                currentPage={kycPage}
+                totalItems={filteredKycList.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setKycPage}
+              />
+            </>
+          )}
           </div>
         )}
       </div>

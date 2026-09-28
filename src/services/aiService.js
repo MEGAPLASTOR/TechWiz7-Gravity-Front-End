@@ -419,14 +419,14 @@ export const aiService = {
       }
 
       // F. LỜI CHÀO & CÂU HỎI TỔNG QUAN
-      const marketCount = markets.length || 7;
-      const productCount = products.length || 11;
+      const marketCount = markets.length;
+      const productCount = products.length;
 
       if (isEn) {
-        return `🌿 Hello! I am the MarketLink AI Assistant.\nOur system currently connects **${marketCount} farmers' markets** and **${productCount} VietGAP produce items** ready for pre-order.\n\nFeel free to ask me:\n• *"When does the market open?"* for weekend schedules\n• *"How much is tomato?"* or *"What fresh vegetables are available?"* to browse produce\n• *"How to pre-order?"* for pickup instructions`;
+        return `🌿 Hello! I am the MarketLink AI Assistant.\nOur system currently connects **${marketCount} farmers' markets** and **${productCount} produce items** ready for pre-order.\n\nFeel free to ask me:\n• *"When does the market open?"* for weekend schedules\n• *"How much is tomato?"* or *"What fresh vegetables are available?"* to browse produce\n• *"How to pre-order?"* for pickup instructions`;
       }
 
-      return `🌿 Xin chào bạn! Tôi là Trợ lý AI MarketLink.\nHiện tại hệ thống đang kết nối trực tiếp với **${marketCount} phiên chợ nông sản** và **${productCount} mặt hàng VietGAP** sẵn sàng đặt trước.\n\nBạn có thể hỏi tôi về:\n• *"Chợ họp khi nào?"* để xem lịch mở cửa các phiên chợ\n• *"Giá cà chua bao nhiêu?"* hoặc *"Có những loại rau gì?"* để tra cứu nông sản\n• *"Cách đặt trước nhận tại sạp?"* để xem hướng dẫn mua sắm`;
+      return `🌿 Xin chào bạn! Tôi là Trợ lý AI MarketLink.\nHiện tại hệ thống đang kết nối trực tiếp với **${marketCount} phiên chợ nông sản** và **${productCount} mặt hàng** sẵn sàng đặt trước.\n\nBạn có thể hỏi tôi về:\n• *"Chợ họp khi nào?"* để xem lịch mở cửa các phiên chợ\n• *"Giá cà chua bao nhiêu?"* hoặc *"Có những loại rau gì?"* để tra cứu nông sản\n• *"Cách đặt trước nhận tại sạp?"* để xem hướng dẫn mua sắm`;
     } catch (fallbackErr) {
       console.warn("Fallback query error:", fallbackErr);
       return isEn

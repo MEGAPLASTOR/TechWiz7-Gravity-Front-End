@@ -1,8 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import ImageUploadInput from "./ImageUploadInput";
+import Pagination from "./common/Pagination";
 export default function ImageUploadStudio({ token, callApi }) {
   const [selectedFolder, setSelectedFolder] = useState("markets");
   const [singleImageUrl, setSingleImageUrl] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
   const [uploadedGallery, setUploadedGallery] = useState([
     {
       url: "/uploads/images/markets/markets_20260925_013948_b55b70d6.png",
@@ -12,6 +15,12 @@ export default function ImageUploadStudio({ token, callApi }) {
       time: "Vừa tải lên",
     },
   ]);
+
+  const paginatedGallery = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return uploadedGallery.slice(start, start + PAGE_SIZE);
+  }, [uploadedGallery, currentPage]);
+
   const [multiFiles, setMultiFiles] = useState([]);
   const [multiUploading, setMultiUploading] = useState(false);
   const [multiMessage, setMultiMessage] = useState("");
@@ -386,15 +395,16 @@ export default function ImageUploadStudio({ token, callApi }) {
             khung phía trên để bắt đầu!
           </div>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-              gap: 16,
-              marginTop: 10,
-            }}
-          >
-            {uploadedGallery.map((item, idx) => (
+          <>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                gap: 16,
+                marginTop: 10,
+              }}
+            >
+              {paginatedGallery.map((item, idx) => (
               <div
                 key={idx}
                 style={{
@@ -513,7 +523,14 @@ export default function ImageUploadStudio({ token, callApi }) {
               </div>
             ))}
           </div>
-        )}
+          <Pagination
+            currentPage={currentPage}
+            totalItems={uploadedGallery.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setCurrentPage}
+          />
+        </>
+      )}
       </div>
     </div>
   );

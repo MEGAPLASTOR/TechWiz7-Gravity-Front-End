@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import "@/assets/styles/pages/HomePage.css";
 import MarketCard from "../components/customer/MarketCard";
 import ProductCard from "../components/customer/ProductCard";
@@ -6,6 +6,7 @@ import MarketDetailModal from "../components/customer/MarketDetailModal";
 import MarketStallsModal from "../components/customer/MarketStallsModal";
 import Button from "../components/common/Button";
 import Badge from "../components/common/Badge";
+import Pagination from "../components/common/Pagination";
 import marketService from "../services/marketService";
 import productService from "../services/productService";
 import { matchSearch, POPULAR_PRODUCT_KEYWORDS } from "../utils/searchUtils";
@@ -28,157 +29,9 @@ export default function HomePage({
   const [scheduleMapMarket, setScheduleMapMarket] = useState(null);
   const [stallProductsMarket, setStallProductsMarket] = useState(null);
   const [markets, setMarkets] = useState([]);
-  /* Live markets are loaded from the backend; no demo records are rendered. */
-  /*
-    {
-      id: 101,
-      name: "Phiên Chợ Xanh Nông Sản Ba Đình",
-      address: "12 Núi Trúc, Phường Giảng Võ, Ba Đình, Hà Nội",
-      city: "Hà Nội",
-      distance: "1.2 km",
-      operatingDays: "Thứ 7 & Chủ Nhật",
-      operatingHours: "06:00 - 11:30",
-      stallsCount: 18,
-      imageUrl:
-        "https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=700&q=80",
-      tag: "Chợ rau hữu cơ",
-      verified: true,
-      description:
-        "Chợ phiên cuối tuần quy tụ hơn 30 nhà vườn đạt chuẩn VietGAP và hữu cơ vùng Bắc Bộ.",
-    },
-    {
-      id: 103,
-      name: "Phiên Chợ Hữu Cơ Thảo Điền EcoMarket",
-      address: "28 Thảo Điền, TP. Thủ Đức, TP. Hồ Chí Minh",
-      city: "TP. Hồ Chí Minh",
-      distance: "3.5 km",
-      operatingDays: "Thứ Bảy & Chủ Nhật",
-      operatingHours: "07:00 - 12:00",
-      stallsCount: 22,
-      imageUrl:
-        "https://images.unsplash.com/photo-1516594798947-e65505dbb29d?auto=format&fit=crop&w=700&q=80",
-      tag: "Đặc sản hữu cơ Miền Tây",
-      verified: true,
-      description:
-        "Phiên chợ thực phẩm xanh, bánh men thủ công và trái cây hữu cơ miền Tây Nam Bộ.",
-    },
-    {
-      id: 104,
-      name: "Hội Chợ Nông Sản Vùng Miền Tây Hồ",
-      address: "614 Lạc Long Quân, P. Nhật Tân, Tây Hồ, Hà Nội",
-      city: "Hà Nội",
-      distance: "2.1 km",
-      operatingDays: "Chủ Nhật hàng tuần",
-      operatingHours: "06:30 - 11:30",
-      stallsCount: 16,
-      imageUrl:
-        "https://images.unsplash.com/photo-1471193945509-9ad0617afabf?auto=format&fit=crop&w=700&q=80",
-      tag: "Nông sản vùng cao",
-      verified: true,
-      description:
-        "Giao lưu nông sản đặc sản vùng cao Tây Bắc, mật ong rừng, gạo nương và hoa quả tươi.",
-    },
-  ]); */
   const [products, setProducts] = useState([]);
-  /* Live products are loaded from the backend; no demo records are rendered. */
-  /*
-    {
-      id: 101,
-      name: "Cải Bó Xôi Hữu Cơ Ba Vì",
-      category: "veg",
-      categoryName: "Rau Lá Hữu Cơ",
-      price: 45000,
-      unit: "kg",
-      farmerName: "Nông Trại Hữu Cơ Ba Vì",
-      stallCode: "Sạp A-01",
-      marketName: "Phiên Chợ Xanh Nông Sản Ba Đình",
-      stockQuantity: 35,
-      harvestTime: "Thu hoạch 5h sáng",
-      imageUrl:
-        "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=600&q=80",
-      organicCertified: true,
-    },
-    {
-      id: 106,
-      name: "Nấm Hương Rừng Sa Pa Tươi",
-      category: "specialty",
-      categoryName: "Nấm & Thảo Dược",
-      price: 98000,
-      unit: "kg",
-      farmerName: "Hợp Tác Xã Dược Liệu & Nấm Sạch Sa Pa",
-      stallCode: "Sạp D-02",
-      marketName: "Hội Chợ Nông Sản Tây Hồ",
-      stockQuantity: 20,
-      harvestTime: "Hái tự nhiên trên núi",
-      imageUrl:
-        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80",
-      organicCertified: true,
-    },
-    {
-      id: 104,
-      name: "Dâu Tây Hana Đà Lạt Tuyển Chọn",
-      category: "fruit",
-      categoryName: "Trái Cây Bản Địa",
-      price: 125000,
-      unit: "hộp 500g",
-      farmerName: "Nông Sản Sạch Đà Lạt Farm",
-      stallCode: "Sạp C-05",
-      marketName: "Phiên Chợ Thảo Điền",
-      stockQuantity: 30,
-      harvestTime: "Thu hái sáng sớm",
-      imageUrl:
-        "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=600&q=80",
-      organicCertified: true,
-    },
-    {
-      id: 103,
-      name: "Cà Chua Cherry Mộc Châu Ngọt Giòn",
-      category: "fruit_veg",
-      categoryName: "Củ & Quả Tươi Sạch",
-      price: 35000,
-      unit: "hộp 500g",
-      farmerName: "Vườn Rau Sinh Thái Mộc Châu",
-      stallCode: "Sạp A-02",
-      marketName: "Phiên Chợ Xanh Ba Đình",
-      stockQuantity: 45,
-      harvestTime: "Chín cây tự nhiên",
-      imageUrl:
-        "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=600&q=80",
-      organicCertified: true,
-    },
-    {
-      id: 102,
-      name: "Rau Muống Tiến Vua Sạch",
-      category: "veg",
-      categoryName: "Rau Lá Hữu Cơ",
-      price: 15000,
-      unit: "bó",
-      farmerName: "Nông Trại Hữu Cơ Ba Vì",
-      stallCode: "Sạp A-01",
-      marketName: "Phiên Chợ Xanh Ba Đình",
-      stockQuantity: 60,
-      harvestTime: "Cắt 4h30 sáng",
-      imageUrl:
-        "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
-      organicCertified: true,
-    },
-    {
-      id: 105,
-      name: "Vải Thiều Thanh Hà Chính Gốc",
-      category: "fruit",
-      categoryName: "Trái Cây Bản Địa",
-      price: 65000,
-      unit: "kg",
-      farmerName: "Hợp Tác Xã Vải & Cây Ăn Trái Hải Dương",
-      stallCode: "Sạp B-03",
-      marketName: "Hội Chợ Nông Sản Tây Hồ",
-      stockQuantity: 80,
-      harvestTime: "Hái đúng độ chín",
-      imageUrl:
-        "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=600&q=80",
-      organicCertified: true,
-    },
-  ]); */
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
   useEffect(() => {
     let isMounted = true;
     const timer = setTimeout(async () => {
@@ -197,6 +50,7 @@ export default function HomePage({
               realProducts.map((p) => ({
                 ...p,
                 id: p.productId || p.id,
+                farmerId: p.farmerId || p.farmer?.id || p.farmerUserId || p.userId,
                 name: p.name,
                 categoryName: p.categoryName || "Nông sản mùa vụ",
                 price: p.price,
@@ -205,10 +59,10 @@ export default function HomePage({
                   p.farmerStallName || p.farmerName || "Nông Trại Thành Viên",
                 stallCode: p.stallCode || "Sạp Tiêu Chuẩn",
                 marketName: p.marketName || "Phiên Chợ Nông Sản",
-                stockQuantity: p.currentStock || p.stockQuantity || 25,
+                stockQuantity: p.currentStock ?? p.stockQuantity ?? 0,
                 harvestTime: p.harvestTime || "Thu hoạch sáng sớm",
                 imageUrl: p.imageUrl,
-                organicCertified: true,
+                organicCertified: Boolean(p.isOrganic || p.organicCertified),
               })),
             );
           } else {
@@ -317,7 +171,17 @@ export default function HomePage({
     selectedArea,
     selectedMarketDay,
   ]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchKeyword, activeCategory, selectedArea]);
+
   const filteredProducts = products;
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredProducts.slice(start, start + PAGE_SIZE);
+  }, [filteredProducts, currentPage]);
   const displayedMarkets = markets;
   const getCartQty = (prodId) => {
     const found = cartItems.find((item) => item.id === prodId);
@@ -861,7 +725,7 @@ export default function HomePage({
           )}
 
           <div className="ml-products-grid">
-            {filteredProducts.map((product, idx) => (
+            {paginatedProducts.map((product, idx) => (
               <div
                 key={product.id}
                 className={`ml-reveal ml-stagger-${(idx % 4) + 1}`}
@@ -875,6 +739,19 @@ export default function HomePage({
               </div>
             ))}
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredProducts.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={(p) => {
+              setCurrentPage(p);
+              const target = document.getElementById("seasonal-products");
+              if (target) {
+                target.scrollIntoView({ behavior: "smooth" });
+              }
+            }}
+          />
 
           {filteredProducts.length === 0 && (
             <div className="ml-empty-state-card ml-reveal">

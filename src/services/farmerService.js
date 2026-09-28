@@ -23,9 +23,9 @@ export const farmerService = {
         id: p.productId || p.id,
         imageUrl: formatImageUrl(p.imageUrl),
         marketId: p.marketId,
-        marketName: p.marketName || "Chợ Phiên Nông Sản",
-        stallNumber: p.stallNumber || p.stallCode || "Chưa gán sạp",
-        stallCode: p.stallNumber || p.stallCode || "Chưa gán sạp",
+        marketName: p.marketName || "",
+        stallNumber: p.stallNumber || p.stallCode || "",
+        stallCode: p.stallNumber || p.stallCode || "",
       }));
     } catch (err) {
       console.warn("Failed to fetch farmer products", err);

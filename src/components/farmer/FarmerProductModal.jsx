@@ -3,6 +3,9 @@ import "@/assets/styles/components/farmer/FarmerProductModal.css";
 import Modal from "../common/Modal";
 import Button from "../common/Button";
 import ImageUploadInput from "../ImageUploadInput";
+import farmerService from "../../services/farmerService";
+import productService from "../../services/productService";
+
 export default function FarmerProductModal({
   isOpen,
   onClose,
@@ -19,6 +22,7 @@ export default function FarmerProductModal({
   const [imageUrl, setImageUrl] = useState("");
   const [selectedStallKey, setSelectedStallKey] = useState("");
   const [stallsList, setStallsList] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loadingStalls, setLoadingStalls] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -27,61 +31,50 @@ export default function FarmerProductModal({
     : stallsList.filter((stall) =>
         ["ACTIVE", "APPROVED"].includes(String(stall.status || "").toUpperCase()),
       );
-  const categories = [
-    {
-      id: 1,
-      name: "Rau Lá Hữu Cơ",
-    },
-    {
-      id: 2,
-      name: "Củ & Quả Tươi Sạch",
-    },
-    {
-      id: 3,
-      name: "Trái Cây Bản Địa",
-    },
-    {
-      id: 4,
-      name: "Nấm & Thảo Dược",
-    },
-    {
-      id: 5,
-      name: "Trứng & Đặc Sản Nhà Vườn",
-    },
-  ];
+
   useEffect(() => {
     if (!isOpen) return;
     let isMounted = true;
-    async function loadStalls() {
+    async function loadData() {
       if (assignedMarkets && assignedMarkets.length > 0) {
         setStallsList(assignedMarkets);
-        return;
+      } else {
+        setLoadingStalls(true);
+        try {
+          const res = await farmerService.getMyMarketAssignments();
+          if (isMounted && Array.isArray(res)) {
+            setStallsList(res);
+          }
+        } catch (err) {
+          console.warn("Could not load farmer market assignments", err);
+        } finally {
+          if (isMounted) setLoadingStalls(false);
+        }
       }
-      setLoadingStalls(true);
+
       try {
-        const res = await farmerService.getMyMarketAssignments();
-        if (isMounted && Array.isArray(res)) {
-          setStallsList(res);
+        const catRes = await productService.getCategories();
+        if (isMounted && Array.isArray(catRes)) {
+          setCategories(catRes);
         }
       } catch (err) {
-        console.warn("Could not load farmer market assignments", err);
-      } finally {
-        if (isMounted) setLoadingStalls(false);
+        console.warn("Could not load categories", err);
       }
     }
-    loadStalls();
+    loadData();
     return () => {
       isMounted = false;
     };
   }, [isOpen, assignedMarkets]);
+
   useEffect(() => {
     setErrorMsg("");
     if (product) {
       setName(product.name || "");
-      setCategoryId(product.categoryId || 1);
-      setPrice(product.price || 25000);
+      setCategoryId(product.categoryId || "");
+      setPrice(product.price != null ? product.price : "");
       setUnit(product.unit || "kg");
-      setStockQuantity(product.currentStock || product.stockQuantity || 20);
+      setStockQuantity(product.currentStock ?? product.stockQuantity ?? "");
       setDescription(product.description || "");
       setImageUrl(product.imageUrl || "");
       if (product.marketId) {
@@ -277,11 +270,14 @@ export default function FarmerProductModal({
               required
             >
               <option value="">-- Chọn danh mục --</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {categories.map((c) => {
+                const cId = c.categoryId || c.id;
+                return (
+                  <option key={cId} value={cId}>
+                    {c.name}
+                  </option>
+                );
+              })}
             </select>
           </div>
 

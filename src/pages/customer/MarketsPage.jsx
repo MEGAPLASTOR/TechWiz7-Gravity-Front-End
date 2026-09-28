@@ -5,6 +5,7 @@ import MarketDetailModal from "../../components/customer/MarketDetailModal";
 import MarketStallsModal from "../../components/customer/MarketStallsModal";
 import OpenStreetMapRouting from "../../components/OpenStreetMapRouting";
 import Button from "../../components/common/Button";
+import Pagination from "../../components/common/Pagination";
 import marketService from "../../services/marketService";
 import { matchSearch, POPULAR_MARKET_KEYWORDS } from "../../utils/searchUtils";
 import { useLanguage } from "../../context/LanguageContext";
@@ -24,72 +25,9 @@ export default function MarketsPage({
   const [scheduleMapMarket, setScheduleMapMarket] = useState(null);
   const [stallProductsMarket, setStallProductsMarket] = useState(null);
   const [marketsData, setMarketsData] = useState([]);
-  /*
-    {
-      id: 101,
-      name: "Phiên Chợ Xanh Nông Sản Ba Đình",
-      address: "12 Núi Trúc, Phường Giảng Võ, Q. Ba Đình",
-      city: "Hà Nội",
-      distance: "1.2 km",
-      operatingDays: "Thứ 7 & Chủ Nhật",
-      operatingHours: "06:00 - 11:30",
-      stallsCount: 18,
-      imageUrl:
-        "https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=700&q=80",
-      tag: "Chợ rau hữu cơ",
-      verified: true,
-      description:
-        "Chợ phiên cuối tuần quy tụ hơn 30 nhà vườn đạt chuẩn VietGAP và hữu cơ vùng Bắc Bộ.",
-    },
-    {
-      id: 103,
-      name: "Phiên Chợ Hữu Cơ Thảo Điền EcoMarket",
-      address: "28 Thảo Điền, P. Thảo Điền, TP. Thủ Đức",
-      city: "TP. Hồ Chí Minh",
-      distance: "3.8 km",
-      operatingDays: "Thứ Bảy & Chủ Nhật",
-      operatingHours: "07:00 - 12:00",
-      stallsCount: 22,
-      imageUrl:
-        "https://images.unsplash.com/photo-1516594798947-e65505dbb29d?auto=format&fit=crop&w=700&q=80",
-      tag: "Đặc sản Đà Lạt & Miền Tây",
-      verified: true,
-      description:
-        "Phiên chợ thực phẩm xanh, bánh men thủ công và trái cây hữu cơ miền Tây Nam Bộ.",
-    },
-    {
-      id: 104,
-      name: "Hội Chợ Nông Sản Vùng Miền Tây Hồ",
-      address: "614 Lạc Long Quân, P. Nhật Tân, Q. Tây Hồ",
-      city: "Hà Nội",
-      distance: "2.1 km",
-      operatingDays: "Chủ Nhật hàng tuần",
-      operatingHours: "06:30 - 11:30",
-      stallsCount: 16,
-      imageUrl:
-        "https://images.unsplash.com/photo-1471193945509-9ad0617afabf?auto=format&fit=crop&w=700&q=80",
-      tag: "Nông sản vùng cao",
-      verified: true,
-      description:
-        "Giao lưu nông sản đặc sản vùng cao Tây Bắc, mật ong rừng, gạo nương và hoa quả tươi.",
-    },
-    {
-      id: 105,
-      name: "Chợ Phiên Nông Nghiệp Xanh Ecopark",
-      address: "Công viên Mùa Hạ, KĐT Ecopark, Văn Giang",
-      city: "Hưng Yên",
-      distance: "12.0 km",
-      operatingDays: "Thứ 7 hàng tuần",
-      operatingHours: "06:00 - 11:30",
-      stallsCount: 25,
-      imageUrl:
-        "https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=700&q=80",
-      tag: "Nông sản sinh thái",
-      verified: true,
-      description:
-        "Chợ phiên sinh thái phục vụ cư dân đô thị với nguồn rau quả hái tươi trong ngày.",
-    },
-  ]); */
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
+
   useEffect(() => {
     let isMounted = true;
     const timer = setTimeout(async () => {
@@ -120,23 +58,22 @@ export default function MarketsPage({
                   id: m.marketId || m.id,
                   name: m.name,
                   address: m.address,
-                  city: isHcm
+                  city: m.city || (isHcm
                     ? "TP. Hồ Chí Minh"
                     : isEcopark
                       ? "Hưng Yên"
-                      : "Hà Nội",
-                  distance: "1.5 km",
-                  operatingDays: m.operatingDays || "Thứ 7 & Chủ Nhật",
-                  operatingHours: m.operatingHours || "06:00 - 11:30",
-                  stallsCount: m.stallsCount || 16,
+                      : "Hà Nội"),
+                  distance: m.distance || "",
+                  operatingDays: m.operatingDays || "",
+                  operatingHours: m.operatingHours || "",
+                  stallsCount: m.stallsCount || m.farmerCount || 0,
                   imageUrl:
                     m.imageUrl ||
                     "https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=700&q=80",
-                  tag: m.tag || "Chợ nông sản sinh thái",
-                  verified: true,
+                  tag: m.tag || "",
+                  verified: m.verified !== undefined ? m.verified : true,
                   description:
-                    m.description ||
-                    "Chợ phiên nông sản sạch liên kết nông dân địa phương.",
+                    m.description || "",
                 };
               }),
             );
@@ -152,8 +89,18 @@ export default function MarketsPage({
       isMounted = false;
       clearTimeout(timer);
     };
+  }, [activeCity, activeDay, searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
   }, [searchTerm, activeCity, activeDay]);
+
   const filteredMarkets = marketsData;
+
+  const paginatedMarkets = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredMarkets.slice(start, start + PAGE_SIZE);
+  }, [filteredMarkets, currentPage]);
   return (
     <div className="ml-markets-page">
       <div className="ml-markets-banner">
@@ -336,52 +283,65 @@ export default function MarketsPage({
                   </div>
                 </div>
 
-                <div
-                  className="ml-fallback-recommended-section"
-                  style={{
-                    width: "100%",
-                    marginTop: "32px",
-                    textAlign: "left",
-                  }}
-                >
-                  <div className="ml-fallback-header">
-                    <span className="ml-fallback-badge">
-                      {t("marketsFeaturedBadge", "⭐ CHỢ PHIÊN TIÊU BIỂU")}
-                    </span>
-                    <h3 className="ml-fallback-title">
-                      {t("marketsFeaturedTitle", "Gợi Ý Các Phiên Chợ Nổi Bật Cho Bạn")}
-                    </h3>
-                    <p className="ml-fallback-sub">
-                      {t(
-                        "marketsFeaturedSub",
-                        "Các điểm chợ nông sản sạch họp định kỳ mỗi cuối tuần:"
-                      )}
-                    </p>
-                  </div>
+                {marketsData.length > 0 && (
+                  <div
+                    className="ml-fallback-recommended-section"
+                    style={{
+                      width: "100%",
+                      marginTop: "32px",
+                      textAlign: "left",
+                    }}
+                  >
+                    <div className="ml-fallback-header">
+                      <span className="ml-fallback-badge">
+                        {t("marketsFeaturedBadge", "⭐ CHỢ PHIÊN TIÊU BIỂU")}
+                      </span>
+                      <h3 className="ml-fallback-title">
+                        {t("marketsFeaturedTitle", "Gợi Ý Các Phiên Chợ Nổi Bật Cho Bạn")}
+                      </h3>
+                      <p className="ml-fallback-sub">
+                        {t(
+                          "marketsFeaturedSub",
+                          "Các điểm chợ nông sản sạch họp định kỳ mỗi cuối tuần:"
+                        )}
+                      </p>
+                    </div>
 
-                  <div className="ml-markets-cards-grid">
-                    {marketsData.slice(0, 3).map((market) => (
-                      <MarketCard
-                        key={market.id}
-                        market={market}
-                        onViewDetails={(m) => setScheduleMapMarket(m)}
-                        onSelectMarket={(m) => setStallProductsMarket(m)}
-                      />
-                    ))}
+                    <div className="ml-markets-cards-grid">
+                      {marketsData.slice(0, 3).map((market) => (
+                        <MarketCard
+                          key={market.id}
+                          market={market}
+                          onViewDetails={(m) => setScheduleMapMarket(m)}
+                          onSelectMarket={(m) => setStallProductsMarket(m)}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ) : (
-              <div className="ml-markets-cards-grid">
-                {filteredMarkets.map((market) => (
-                  <MarketCard
-                    key={market.id}
-                    market={market}
-                    onViewDetails={(m) => setScheduleMapMarket(m)}
-                    onSelectMarket={(m) => setStallProductsMarket(m)}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="ml-markets-cards-grid">
+                  {paginatedMarkets.map((market) => (
+                    <MarketCard
+                      key={market.id}
+                      market={market}
+                      onViewDetails={(m) => setScheduleMapMarket(m)}
+                      onSelectMarket={(m) => setStallProductsMarket(m)}
+                    />
+                  ))}
+                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={filteredMarkets.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={(p) => {
+                    setCurrentPage(p);
+                    window.scrollTo({ top: 320, behavior: "smooth" });
+                  }}
+                />
+              </>
             )}
           </div>
         )}

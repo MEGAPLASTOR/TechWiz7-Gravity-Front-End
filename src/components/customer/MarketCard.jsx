@@ -18,24 +18,24 @@ export default function MarketCard({
     id,
     name,
     address,
-    city = "Hà Nội",
-    distance = "1.2 km",
-    operatingDays = "Thứ 7 & Chủ Nhật",
-    operatingHours = "06:00 - 11:30",
-    stallsCount = 12,
+    city = "",
+    distance = "",
+    operatingDays = "",
+    operatingHours = "",
+    stallsCount = 0,
     imageUrl,
-    tag = "Chợ phiên sạch",
+    tag = "",
     verified = true,
   } = market;
 
   const displayName = localizeMarketName(name);
   const displayOperatingDays = localizeOperatingDays(operatingDays);
   const displayCity = isEn
-    ? city.replace(/TP\. Hồ Chí Minh/gi, "Ho Chi Minh City")
-    : city;
+    ? (city || "").replace(/TP\. Hồ Chí Minh/gi, "Ho Chi Minh City")
+    : (city || "");
 
   const displayTag = isEn
-    ? tag
+    ? (tag || "")
         .replace(/Chợ rau hữu cơ/gi, "Organic Produce Market")
         .replace(/Chợ phiên sạch/gi, "Clean Produce Market")
         .replace(/Đặc sản hữu cơ/gi, "Organic Specialties")
@@ -81,18 +81,22 @@ export default function MarketCard({
           }}
         />
         <div className="ml-market-badge-top">
-          <Badge variant="organic" size="sm">
-            📍 {distance}
-          </Badge>
+          {distance && (
+            <Badge variant="organic" size="sm">
+              📍 {distance}
+            </Badge>
+          )}
           {verified && (
             <Badge variant="ready" size="sm">
               ✓ {t("verifiedMarket", "Đã kiểm duyệt")}
             </Badge>
           )}
         </div>
-        <div className="ml-market-schedule-pill">
-          🕒 {displayOperatingDays} ({operatingHours})
-        </div>
+        {(displayOperatingDays || operatingHours) && (
+          <div className="ml-market-schedule-pill">
+            🕒 {displayOperatingDays || (isEn ? "Market Day" : "Ngày họp chợ")}{operatingHours ? ` (${operatingHours})` : ""}
+          </div>
+        )}
       </div>
 
       <div className="ml-market-body">
@@ -100,7 +104,7 @@ export default function MarketCard({
           <h3 className="ml-market-name" title={displayName}>
             {displayName}
           </h3>
-          <span className="ml-market-city">{displayCity}</span>
+          {displayCity && <span className="ml-market-city">{displayCity}</span>}
         </div>
 
         <p className="ml-market-address">
@@ -111,10 +115,10 @@ export default function MarketCard({
           <div className="ml-market-stalls">
             <span className="ml-stalls-icon">🎪</span>
             <span>
-              <strong>{stallsCount}</strong> {t("stallsCountLabel", "gian hàng nông dân")}
+              <strong>{stallsCount || 0}</strong> {t("stallsCountLabel", "gian hàng nông dân")}
             </span>
           </div>
-          <span className="ml-market-tag">{displayTag}</span>
+          {displayTag && <span className="ml-market-tag">{displayTag}</span>}
         </div>
 
         <div className="ml-market-actions">

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "@/assets/styles/pages/farmer/FarmerOrdersPage.css";
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
+import Pagination from "../../components/common/Pagination";
 import farmerService from "../../services/farmerService";
 export default function FarmerOrdersPage({
   initialOrderId,
@@ -20,6 +21,8 @@ export default function FarmerOrdersPage({
   );
   const [loading, setLoading] = useState(false);
   const [actionSuccessMsg, setActionSuccessMsg] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
   useEffect(() => {
     const targetQuery =
       initialOrderCode || (initialOrderId ? String(initialOrderId) : "");
@@ -70,20 +73,20 @@ export default function FarmerOrdersPage({
             id: o.orderId || o.id,
             orderCode: o.orderCode || `ORD-${o.orderId}`,
             customerName: o.customerName || "Khách hàng",
-            customerPhone: o.customerPhone || "0900000000",
+            customerPhone: o.customerPhone || "",
             pickupDate: o.pickupDate,
-            pickupSession: o.slotTimeRange || "07:00 - 08:00",
+            pickupSession: o.slotTimeRange || "",
             pickupSessionLabel: o.slotTimeRange
               ? `Ca: ${o.slotTimeRange}`
-              : "Ca nhận sáng",
-            marketName: o.marketName || "Chợ Nông Sản",
+              : "",
+            marketName: o.marketName || "",
             status: o.orderStatus || "PLACED",
             totalAmount: Number(o.totalAmount) || 0,
             paymentMethod: o.paymentMethod || "CASH_ON_PICKUP",
             note: o.note || "",
             createdAt: o.createdAt
               ? o.createdAt.replace("T", " ").substring(0, 16)
-              : "Hôm nay",
+              : "",
             items: (o.items || []).map((it) => ({
               name: it.productName || "Nông sản",
               qty: it.quantity,
@@ -117,6 +120,20 @@ export default function FarmerOrdersPage({
     }, 250);
     return () => clearTimeout(timer);
   }, [dateFilter, activeTab, searchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dateFilter, activeTab, searchQuery, sessionFilter]);
+
+  const filteredOrders = useMemo(() => {
+    if (sessionFilter === "all") return orders;
+    return orders.filter((o) => o.pickupSession === sessionFilter);
+  }, [orders, sessionFilter]);
+
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredOrders.slice(start, start + PAGE_SIZE);
+  }, [filteredOrders, currentPage]);
   const formatCurrency = (val) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -159,10 +176,6 @@ export default function FarmerOrdersPage({
       reason: "",
     });
   };
-  const filteredOrders =
-    sessionFilter === "all"
-      ? orders
-      : orders.filter((o) => o.pickupSession === sessionFilter);
   const getStatusBadge = (status) => {
     switch (status) {
       case "READY_FOR_PICKUP":
@@ -370,8 +383,9 @@ export default function FarmerOrdersPage({
             </p>
           </div>
         ) : (
-          <div className="ml-farmer-orders-grid">
-            {filteredOrders.map((order) => (
+          <>
+            <div className="ml-farmer-orders-grid">
+            {paginatedOrders.map((order) => (
               <div key={order.id} className="ml-card ml-farmer-order-card">
                 <div className="ml-farmer-card-top">
                   <div>
@@ -507,6 +521,16 @@ export default function FarmerOrdersPage({
               </div>
             ))}
           </div>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredOrders.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={(p) => {
+                setCurrentPage(p);
+                window.scrollTo({ top: 320, behavior: "smooth" });
+              }}
+            />
+          </>
         )}
       </div>
 

@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "@/assets/styles/pages/farmer/FarmerReviewsPage.css";
 import Button from "../../components/common/Button";
+import Pagination from "../../components/common/Pagination";
 import farmerService from "../../services/farmerService";
+
 export default function FarmerReviewsPage() {
   const [replyTextMap, setReplyTextMap] = useState({});
   const [replyingId, setReplyingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [actionSuccessMsg, setActionSuccessMsg] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
   const [farmerInfo, setFarmerInfo] = useState({
-    id: 90,
-    name: "Bác Ba",
+    id: null,
+    name: "Chủ Sạp",
   });
   const [reviews, setReviews] = useState([]);
   const showSuccess = (msg) => {
@@ -20,63 +24,42 @@ export default function FarmerReviewsPage() {
     setLoading(true);
     try {
       const profile = await farmerService.getFarmerProfile();
-      const currentFarmerId = profile?.userId || 90;
+      const currentFarmerId = profile?.userId || null;
       setFarmerInfo({
         id: currentFarmerId,
         name: profile?.fullName || "Chủ Sạp",
       });
-      const list = await farmerService.getFarmerReviews(currentFarmerId);
-      if (list && Array.isArray(list) && list.length > 0) {
-        setReviews(
-          list.map((r) => ({
-            id: r.reviewId || r.id,
-            orderId: r.orderId,
-            productName: r.productName,
-            customerName: r.customerName || "Khách hàng thân thiết",
-            customerAvatar: r.customerAvatar || "👤",
-            date: r.createdAt
-              ? r.createdAt.replace("T", " ").substring(0, 10)
-              : "Gần đây",
-            rating: r.rating || 5,
-            comment: r.comment || "",
-            replied: !!r.farmerReply,
-            replyMessage: r.farmerReply || "",
-            replyAt: r.farmerReplyAt
-              ? r.farmerReplyAt.replace("T", " ").substring(0, 16)
-              : "",
-          })),
-        );
+      if (currentFarmerId) {
+        const list = await farmerService.getFarmerReviews(currentFarmerId);
+        if (list && Array.isArray(list) && list.length > 0) {
+          setReviews(
+            list.map((r) => ({
+              id: r.reviewId || r.id,
+              orderId: r.orderId,
+              productName: r.productName,
+              customerName: r.customerName || "Khách hàng thân thiết",
+              customerAvatar: r.customerAvatar || "👤",
+              date: r.createdAt
+                ? r.createdAt.replace("T", " ").substring(0, 10)
+                : "Gần đây",
+              rating: r.rating || 5,
+              comment: r.comment || "",
+              replied: !!r.farmerReply,
+              replyMessage: r.farmerReply || "",
+              replyAt: r.farmerReplyAt
+                ? r.farmerReplyAt.replace("T", " ").substring(0, 16)
+                : "",
+            })),
+          );
+        } else {
+          setReviews([]);
+        }
       } else {
-        setReviews([
-          {
-            id: 101,
-            customerName: "Chị Mai Lan",
-            customerAvatar: "👩",
-            date: "2026-09-24",
-            productName: "Cải Bó Xôi Hữu Cơ Ba Vì",
-            rating: 5,
-            comment:
-              "[Rau rất tươi, Đúng hẹn tại sạp] Cải mèo của bác Ba rất ngọt và non! Mình đặt trước trên web, 7h sáng ra chợ nhận là bác đã bó sẵn rồi, cân chuẩn đủ ký.",
-            replied: true,
-            replyMessage:
-              "Cảm ơn chị Mai Lan đã tin tưởng ủng hộ sạp Bác Ba! Phiên chợ Thứ 7 tới bác có lứa cải mèo mới hái lúc 4h30 sáng, mong gặp lại chị nhé!",
-          },
-          {
-            id: 106,
-            customerName: "Anh Quốc Bảo",
-            customerAvatar: "👨",
-            date: "2026-09-26",
-            productName: "Rau Muống Tiến Vua Sạch",
-            rating: 5,
-            comment:
-              "Rau muống rất giòn ngọt, dầm sấu tuyệt vời! Sạp bác Ba phục vụ chu đáo, đóng gói sạch sẽ.",
-            replied: false,
-            replyMessage: "",
-          },
-        ]);
+        setReviews([]);
       }
     } catch (err) {
       console.warn("Error loading real farmer reviews", err);
+      setReviews([]);
     } finally {
       setLoading(false);
     }
@@ -123,14 +106,20 @@ export default function FarmerReviewsPage() {
       ? (
           reviews.reduce((sum, r) => sum + (r.rating || 5), 0) / totalReviews
         ).toFixed(1)
-      : "5.0";
+      : "0.0";
   const count5 = reviews.filter((r) => r.rating === 5).length;
   const count4 = reviews.filter((r) => r.rating === 4).length;
   const count3 = reviews.filter((r) => r.rating <= 3).length;
   const pct5 =
-    totalReviews > 0 ? Math.round((count5 / totalReviews) * 100) : 100;
+    totalReviews > 0 ? Math.round((count5 / totalReviews) * 100) : 0;
   const pct4 = totalReviews > 0 ? Math.round((count4 / totalReviews) * 100) : 0;
   const pct3 = totalReviews > 0 ? Math.round((count3 / totalReviews) * 100) : 0;
+
+  const paginatedReviews = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return reviews.slice(start, start + PAGE_SIZE);
+  }, [reviews, currentPage]);
+
   return (
     <div className="ml-farmer-reviews-page">
       <div className="ml-reviews-banner">
@@ -215,7 +204,19 @@ export default function FarmerReviewsPage() {
           )}
 
           <div className="ml-reviews-list-col">
-            {reviews.map((rev) => (
+            {!loading && reviews.length === 0 && (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "40px",
+                  color: "var(--color-text-muted)",
+                  fontSize: "14px",
+                }}
+              >
+                Chưa có đánh giá nào từ khách hàng
+              </div>
+            )}
+            {paginatedReviews.map((rev) => (
               <div key={rev.id} className="ml-card ml-rev-feed-card">
                 <div className="ml-rev-feed-top">
                   <div className="ml-rev-user">
@@ -330,6 +331,13 @@ export default function FarmerReviewsPage() {
                 )}
               </div>
             ))}
+
+            <Pagination
+              currentPage={currentPage}
+              totalItems={reviews.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
       </div>

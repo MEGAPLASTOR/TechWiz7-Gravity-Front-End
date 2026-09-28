@@ -1,11 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "@/assets/styles/pages/admin/ContentModerationPage.css";
 import Button from "../../components/common/Button";
 import Badge from "../../components/common/Badge";
 import Modal from "../../components/common/Modal";
+import Pagination from "../../components/common/Pagination";
 import adminService from "../../services/adminService";
+
 export default function ContentModerationPage({ onNavigate }) {
   const [activeTab, setActiveTab] = useState("reviews");
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [categoriesPage, setCategoriesPage] = useState(1);
+  const [announcementsPage, setAnnouncementsPage] = useState(1);
+  const PAGE_SIZE = 15;
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [reviewFilter, setReviewFilter] = useState("ALL");
@@ -34,20 +40,7 @@ export default function ContentModerationPage({ onNavigate }) {
     targetRole: "ALL",
     isActive: true,
   });
-  const [disputes, setDisputes] = useState([
-    {
-      id: 301,
-      orderCode: "ORD-2026-001",
-      customerName: "Nguyễn Nhựt Quang",
-      farmerName: "Nguyễn Văn Nông Dân",
-      marketName: "Phiên Chợ Xanh Nông Sản Ba Đình",
-      issue:
-        "Khách đến sạp muộn 30 phút so với ca nhận hàng, sạp đã chuẩn bị sẵn rau tươi trong túi sinh học giữ lạnh.",
-      solution:
-        "Ban Quản Lý chợ đã hướng dẫn khách kiểm tra chất lượng và nhận hàng bình thường.",
-      status: "RESOLVED",
-    },
-  ]);
+  const [disputes, setDisputes] = useState([]);
   const [notification, setNotification] = useState({
     type: "",
     text: "",
@@ -106,14 +99,17 @@ export default function ContentModerationPage({ onNavigate }) {
   };
   useEffect(() => {
     if (activeTab === "reviews") {
+      setReviewsPage(1);
       const timer = setTimeout(() => loadReviews(), 250);
       return () => clearTimeout(timer);
     }
     if (activeTab === "categories") {
+      setCategoriesPage(1);
       const timer = setTimeout(() => loadCategories(), 250);
       return () => clearTimeout(timer);
     }
     if (activeTab === "announcements") {
+      setAnnouncementsPage(1);
       const timer = setTimeout(() => loadAnnouncements(), 250);
       return () => clearTimeout(timer);
     }
@@ -144,6 +140,21 @@ export default function ContentModerationPage({ onNavigate }) {
     }
   };
   const filteredReviews = reviews;
+
+  const paginatedReviews = useMemo(() => {
+    const start = (reviewsPage - 1) * PAGE_SIZE;
+    return filteredReviews.slice(start, start + PAGE_SIZE);
+  }, [filteredReviews, reviewsPage]);
+
+  const paginatedCategories = useMemo(() => {
+    const start = (categoriesPage - 1) * PAGE_SIZE;
+    return categories.slice(start, start + PAGE_SIZE);
+  }, [categories, categoriesPage]);
+
+  const paginatedAnnouncements = useMemo(() => {
+    const start = (announcementsPage - 1) * PAGE_SIZE;
+    return announcements.slice(start, start + PAGE_SIZE);
+  }, [announcements, announcementsPage]);
   const handleOpenCategoryModal = (cat = null) => {
     setEditingCategory(cat);
     if (cat) {
@@ -497,14 +508,15 @@ export default function ContentModerationPage({ onNavigate }) {
                 Không có đánh giá nào phù hợp với bộ lọc.
               </div>
             ) : (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 14,
-                }}
-              >
-                {filteredReviews.map((r) => (
+              <>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 14,
+                  }}
+                >
+                {paginatedReviews.map((r) => (
                   <div
                     key={r.reviewId}
                     className="ml-card"
@@ -641,7 +653,15 @@ export default function ContentModerationPage({ onNavigate }) {
                   </div>
                 ))}
               </div>
-            )}
+
+              <Pagination
+                currentPage={reviewsPage}
+                totalItems={filteredReviews.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setReviewsPage}
+              />
+            </>
+          )}
           </div>
         )}
 
@@ -708,12 +728,13 @@ export default function ContentModerationPage({ onNavigate }) {
                 Chưa có danh mục nào. Hãy bấm "Thêm danh mục mới" ở trên.
               </div>
             ) : (
-              <div
-                className="ml-card"
-                style={{
-                  overflowX: "auto",
-                  padding: 0,
-                }}
+              <>
+                <div
+                  className="ml-card"
+                  style={{
+                    overflowX: "auto",
+                    padding: 0,
+                  }}
               >
                 <table
                   style={{
@@ -770,7 +791,7 @@ export default function ContentModerationPage({ onNavigate }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {categories.map((c) => (
+                    {paginatedCategories.map((c) => (
                       <tr
                         key={c.categoryId}
                         style={{
@@ -850,7 +871,15 @@ export default function ContentModerationPage({ onNavigate }) {
                   </tbody>
                 </table>
               </div>
-            )}
+
+              <Pagination
+                currentPage={categoriesPage}
+                totalItems={categories.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setCategoriesPage}
+              />
+            </>
+          )}
           </div>
         )}
 
@@ -918,14 +947,15 @@ export default function ContentModerationPage({ onNavigate }) {
                 báo tới toàn sàn.
               </div>
             ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-                  gap: 16,
-                }}
-              >
-                {announcements.map((a) => {
+              <>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+                    gap: 16,
+                  }}
+                >
+                {paginatedAnnouncements.map((a) => {
                   const annId = a.announcementId || a.id;
                   return (
                     <div
@@ -1028,7 +1058,15 @@ export default function ContentModerationPage({ onNavigate }) {
                   );
                 })}
               </div>
-            )}
+
+              <Pagination
+                currentPage={announcementsPage}
+                totalItems={announcements.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setAnnouncementsPage}
+              />
+            </>
+          )}
           </div>
         )}
 
@@ -1041,80 +1079,102 @@ export default function ContentModerationPage({ onNavigate }) {
                 gap: 14,
               }}
             >
-              {disputes.map((d) => (
+              {disputes.length === 0 ? (
                 <div
-                  key={d.id}
                   className="ml-card"
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
+                    padding: "48px 20px",
+                    textAlign: "center",
+                    color: "#64748b",
+                    backgroundColor: "#f8fafc",
+                    border: "1px dashed #cbd5e1",
+                    borderRadius: 12,
                   }}
                 >
+                  <div style={{ fontSize: 36, marginBottom: 12 }}>🤝</div>
+                  <h4 style={{ margin: "0 0 8px 0", color: "#1e293b", fontSize: 16 }}>
+                    Không có khiếu nại hoặc tranh chấp nào
+                  </h4>
+                  <p style={{ margin: 0, fontSize: 14 }}>
+                    Hiện tại hệ thống không ghi nhận phản ánh cần ban quản lý chợ can thiệp xử lý.
+                  </p>
+                </div>
+              ) : (
+                disputes.map((d) => (
                   <div
+                    key={d.id}
+                    className="ml-card"
                     style={{
                       display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
+                      flexDirection: "column",
+                      gap: 8,
                     }}
                   >
                     <div
                       style={{
-                        fontWeight: 700,
-                        fontSize: 15,
-                        color: "#1e293b",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
                       }}
                     >
-                      Đơn hàng #{d.orderCode} • {d.marketName}
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: 15,
+                          color: "#1e293b",
+                        }}
+                      >
+                        Đơn hàng #{d.orderCode} • {d.marketName}
+                      </div>
+                      <Badge
+                        variant={d.status === "RESOLVED" ? "ready" : "pending"}
+                      >
+                        {d.status === "RESOLVED"
+                          ? "Đã giải quyết thỏa đáng"
+                          : "Đang tiếp nhận"}
+                      </Badge>
                     </div>
-                    <Badge
-                      variant={d.status === "RESOLVED" ? "ready" : "pending"}
-                    >
-                      {d.status === "RESOLVED"
-                        ? "Đã giải quyết thỏa đáng"
-                        : "Đang tiếp nhận"}
-                    </Badge>
-                  </div>
 
-                  <div
-                    style={{
-                      fontSize: 13,
-                      color: "#475569",
-                    }}
-                  >
-                    Người mua: <strong>{d.customerName}</strong> ↔ Chủ sạp:{" "}
-                    <strong>{d.farmerName}</strong>
-                  </div>
-
-                  <div
-                    style={{
-                      backgroundColor: "#fffbeb",
-                      border: "1px solid #fef3c7",
-                      padding: 10,
-                      borderRadius: 6,
-                      fontSize: 13,
-                      color: "#92400e",
-                    }}
-                  >
-                    ⚠️ <strong>Nội dung phản ánh:</strong> {d.issue}
-                  </div>
-
-                  {d.solution && (
                     <div
                       style={{
-                        backgroundColor: "#f0fdf4",
-                        border: "1px solid #bbf7d0",
+                        fontSize: 13,
+                        color: "#475569",
+                      }}
+                    >
+                      Người mua: <strong>{d.customerName}</strong> ↔ Chủ sạp:{" "}
+                      <strong>{d.farmerName}</strong>
+                    </div>
+
+                    <div
+                      style={{
+                        backgroundColor: "#fffbeb",
+                        border: "1px solid #fef3c7",
                         padding: 10,
                         borderRadius: 6,
                         fontSize: 13,
-                        color: "#166534",
+                        color: "#92400e",
                       }}
                     >
-                      ✅ <strong>Kết quả xử lý:</strong> {d.solution}
+                      ⚠️ <strong>Nội dung phản ánh:</strong> {d.issue}
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {d.solution && (
+                      <div
+                        style={{
+                          backgroundColor: "#f0fdf4",
+                          border: "1px solid #bbf7d0",
+                          padding: 10,
+                          borderRadius: 6,
+                          fontSize: 13,
+                          color: "#166534",
+                        }}
+                      >
+                        ✅ <strong>Kết quả xử lý:</strong> {d.solution}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}

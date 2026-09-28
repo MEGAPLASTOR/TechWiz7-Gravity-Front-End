@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "@/assets/styles/pages/farmer/FarmerStallProfilePage.css";
 import Button from "../../components/common/Button";
 import Badge from "../../components/common/Badge";
+import Pagination from "../../components/common/Pagination";
 import ImageUploadInput from "../../components/ImageUploadInput";
 import farmerService from "../../services/farmerService";
 import marketService from "../../services/marketService";
@@ -61,6 +62,26 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
   });
   const [assignedMarkets, setAssignedMarkets] = useState([]);
   const [availableMarkets, setAvailableMarkets] = useState([]);
+  const [marketsPage, setMarketsPage] = useState(1);
+  const [slotsPage, setSlotsPage] = useState(1);
+  const [cutoffPage, setCutoffPage] = useState(1);
+  const PAGE_SIZE = 15;
+
+  const paginatedAssignedMarkets = useMemo(() => {
+    const start = (marketsPage - 1) * PAGE_SIZE;
+    return assignedMarkets.slice(start, start + PAGE_SIZE);
+  }, [assignedMarkets, marketsPage]);
+
+  const paginatedPickupSlots = useMemo(() => {
+    const start = (slotsPage - 1) * PAGE_SIZE;
+    return pickupSlots.slice(start, start + PAGE_SIZE);
+  }, [pickupSlots, slotsPage]);
+
+  const paginatedCutoffSettings = useMemo(() => {
+    const start = (cutoffPage - 1) * PAGE_SIZE;
+    return cutoffSettings.slice(start, start + PAGE_SIZE);
+  }, [cutoffSettings, cutoffPage]);
+
   const [isRegisterMarketModalOpen, setIsRegisterMarketModalOpen] =
     useState(false);
   const [registerMarketForm, setRegisterMarketForm] = useState({
@@ -913,50 +934,58 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 </Button>
               </div>
             ) : (
-              <div className="ml-templates-table-wrap">
-                <table className="ml-templates-table">
-                  <thead>
-                    <tr>
-                      <th>Phiên chợ áp dụng</th>
-                      <th>Thứ họp chợ</th>
-                      <th>Hạn chốt đơn trước giờ mở</th>
-                      <th className="text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cutoffSettings.map((c) => (
-                      <tr key={c.settingId}>
-                        <td>
-                          <strong>
-                            🎪 {c.marketName || `Chợ #${c.marketId}`}
-                          </strong>
-                        </td>
-                        <td>
-                          <span className="ml-day-badge">
-                            {DAY_OF_WEEK_NAMES[c.dayOfWeek] ||
-                              `Thứ ${c.dayOfWeek}`}
-                          </span>
-                        </td>
-                        <td>
-                          <strong className="text-accent">
-                            Chốt trước {c.cutoffHoursBefore} tiếng
-                          </strong>
-                        </td>
-                        <td className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="btn-danger-text"
-                            onClick={() => handleDeleteCutoff(c.settingId)}
-                          >
-                            🗑️ Xóa
-                          </Button>
-                        </td>
+              <>
+                <div className="ml-templates-table-wrap">
+                  <table className="ml-templates-table">
+                    <thead>
+                      <tr>
+                        <th>Phiên chợ áp dụng</th>
+                        <th>Thứ họp chợ</th>
+                        <th>Hạn chốt đơn trước giờ mở</th>
+                        <th className="text-right">Thao tác</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {paginatedCutoffSettings.map((c) => (
+                        <tr key={c.settingId}>
+                          <td>
+                            <strong>
+                              🎪 {c.marketName || `Chợ #${c.marketId}`}
+                            </strong>
+                          </td>
+                          <td>
+                            <span className="ml-day-badge">
+                              {DAY_OF_WEEK_NAMES[c.dayOfWeek] ||
+                                `Thứ ${c.dayOfWeek}`}
+                            </span>
+                          </td>
+                          <td>
+                            <strong className="text-accent">
+                              Chốt trước {c.cutoffHoursBefore} tiếng
+                            </strong>
+                          </td>
+                          <td className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="btn-danger-text"
+                              onClick={() => handleDeleteCutoff(c.settingId)}
+                            >
+                              🗑️ Xóa
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <Pagination
+                  currentPage={cutoffPage}
+                  totalItems={cutoffSettings.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={setCutoffPage}
+                />
+              </>
             )}
           </div>
         )}
@@ -1004,48 +1033,56 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 </Button>
               </div>
             ) : (
-              <div className="ml-templates-table-wrap">
-                <table className="ml-templates-table">
-                  <thead>
-                    <tr>
-                      <th>Phiên chợ</th>
-                      <th>Khung giờ nhận</th>
-                      <th>Sức chứa đơn tối đa</th>
-                      <th className="text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pickupSlots.map((s) => (
-                      <tr key={s.slotId}>
-                        <td>
-                          <strong>
-                            🎪 {s.marketName || `Chợ #${s.marketId}`}
-                          </strong>
-                        </td>
-                        <td>
-                          <span className="ml-day-badge">
-                            ⏰ {s.startTime?.substring(0, 5)} -{" "}
-                            {s.endTime?.substring(0, 5)}
-                          </span>
-                        </td>
-                        <td>
-                          <strong>{s.maxOrdersCapacity} đơn / ca</strong>
-                        </td>
-                        <td className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="btn-danger-text"
-                            onClick={() => handleDeleteSlot(s.slotId)}
-                          >
-                            🗑️ Xóa
-                          </Button>
-                        </td>
+              <>
+                <div className="ml-templates-table-wrap">
+                  <table className="ml-templates-table">
+                    <thead>
+                      <tr>
+                        <th>Phiên chợ</th>
+                        <th>Khung giờ nhận</th>
+                        <th>Sức chứa đơn tối đa</th>
+                        <th className="text-right">Thao tác</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {paginatedPickupSlots.map((s) => (
+                        <tr key={s.slotId}>
+                          <td>
+                            <strong>
+                              🎪 {s.marketName || `Chợ #${s.marketId}`}
+                            </strong>
+                          </td>
+                          <td>
+                            <span className="ml-day-badge">
+                              ⏰ {s.startTime?.substring(0, 5)} -{" "}
+                              {s.endTime?.substring(0, 5)}
+                            </span>
+                          </td>
+                          <td>
+                            <strong>{s.maxOrdersCapacity} đơn / ca</strong>
+                          </td>
+                          <td className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="btn-danger-text"
+                              onClick={() => handleDeleteSlot(s.slotId)}
+                            >
+                              🗑️ Xóa
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <Pagination
+                  currentPage={slotsPage}
+                  totalItems={pickupSlots.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={setSlotsPage}
+                />
+              </>
             )}
           </div>
         )}
@@ -1102,37 +1139,45 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 </Button>
               </div>
             ) : (
-              <div className="ml-stall-items-list">
-                {assignedMarkets.map((m) => (
-                  <div
-                    key={m.assignmentId || m.marketId}
-                    className="ml-assigned-stall-item"
-                  >
-                    <div className="ml-stall-badge-top">
-                      <span className="ml-stall-num-pill">
-                        {m.stallNumber || "Sạp Chính"}
-                      </span>
-                      <Badge
-                        variant={m.status === "ACTIVE" ? "ready" : "pending"}
-                        size="sm"
-                      >
-                        {m.status === "ACTIVE"
-                          ? "Đã duyệt bán"
-                          : "Đang chờ duyệt"}
-                      </Badge>
+              <>
+                <div className="ml-stall-items-list">
+                  {paginatedAssignedMarkets.map((m) => (
+                    <div
+                      key={m.assignmentId || m.marketId}
+                      className="ml-assigned-stall-item"
+                    >
+                      <div className="ml-stall-badge-top">
+                        <span className="ml-stall-num-pill">
+                          {m.stallNumber || "Sạp Chính"}
+                        </span>
+                        <Badge
+                          variant={m.status === "ACTIVE" ? "ready" : "pending"}
+                          size="sm"
+                        >
+                          {m.status === "ACTIVE"
+                            ? "Đã duyệt bán"
+                            : "Đang chờ duyệt"}
+                        </Badge>
+                      </div>
+                      <h4 className="ml-assigned-mname">
+                        {m.marketName || `Chợ Nông Sản #${m.marketId}`}
+                      </h4>
+                      <div className="ml-assigned-maddr">
+                        Mã chợ: #{m.marketId}
+                      </div>
+                      <div className="ml-assigned-sched">
+                        🕒 Trạng thái hoạt động: {m.status}
+                      </div>
                     </div>
-                    <h4 className="ml-assigned-mname">
-                      {m.marketName || `Chợ Nông Sản #${m.marketId}`}
-                    </h4>
-                    <div className="ml-assigned-maddr">
-                      Mã chợ: #{m.marketId}
-                    </div>
-                    <div className="ml-assigned-sched">
-                      🕒 Trạng thái hoạt động: {m.status}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                <Pagination
+                  currentPage={marketsPage}
+                  totalItems={assignedMarkets.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={setMarketsPage}
+                />
+              </>
             )}
           </div>
         )}

@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import "@/assets/styles/pages/farmer/FarmerInventoryPage.css";
 import Button from "../../components/common/Button";
 import Badge from "../../components/common/Badge";
+import Pagination from "../../components/common/Pagination";
 import FarmerProductModal from "../../components/farmer/FarmerProductModal";
 import farmerService from "../../services/farmerService";
 const DAY_OF_WEEK_NAMES = {
@@ -30,6 +31,9 @@ export default function FarmerInventoryPage({ onNavigate }) {
   const [editingProduct, setEditingProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [actionSuccessMsg, setActionSuccessMsg] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [templatePage, setTemplatePage] = useState(1);
+  const PAGE_SIZE = 15;
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [templateForm, setTemplateForm] = useState({
@@ -38,6 +42,11 @@ export default function FarmerInventoryPage({ onNavigate }) {
     dayOfWeek: "",
     recurringQuantity: "",
   });
+
+  const paginatedTemplates = useMemo(() => {
+    const start = (templatePage - 1) * PAGE_SIZE;
+    return stockTemplates.slice(start, start + PAGE_SIZE);
+  }, [stockTemplates, templatePage]);
 
   useEffect(() => {
     const handleKycChange = () => {
@@ -99,14 +108,14 @@ export default function FarmerInventoryPage({ onNavigate }) {
             categoryName: p.categoryName || "Nông sản sạch",
             price: p.price,
             unit: p.unit || "kg",
-            stockQuantity: p.currentStock != null ? p.currentStock : 20,
+            stockQuantity: p.currentStock != null ? p.currentStock : (p.stockQuantity ?? 0),
             inStock:
               p.status === "AVAILABLE" ||
               (p.currentStock != null && p.currentStock > 0),
-            harvestTime: "Thu hoạch sáng sớm",
-            cutoffTime: "Chốt 20:00 trước phiên",
+            harvestTime: p.harvestTime || "",
+            cutoffTime: p.cutoffTime || "",
             imageUrl: p.imageUrl,
-            organicCertified: true,
+            organicCertified: p.organicCertified ?? p.isOrganic ?? false,
           })),
         );
       } else {
@@ -304,8 +313,16 @@ export default function FarmerInventoryPage({ onNavigate }) {
       }
     }
   };
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchKeyword, selectedCategory, selectedStallFilter, activeMainTab]);
+
   const isVerified = kycStatus === "VERIFIED";
   const filteredProducts = products;
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
   return (
     <div className="ml-farmer-inv-page">
       <div className="ml-farmer-inv-banner">
@@ -546,8 +563,9 @@ export default function FarmerInventoryPage({ onNavigate }) {
                 )}
               </div>
             ) : (
-              <div className="ml-inv-grid">
-                {filteredProducts.map((p) => (
+              <>
+                <div className="ml-inv-grid">
+                  {paginatedProducts.map((p) => (
                   <div
                     key={p.id}
                     className={`ml-card ml-inv-card ${!p.inStock ? "out-of-stock" : ""}`}
@@ -680,6 +698,16 @@ export default function FarmerInventoryPage({ onNavigate }) {
                   </div>
                 ))}
               </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={filteredProducts.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={(p) => {
+                    setCurrentPage(p);
+                    window.scrollTo({ top: 320, behavior: "smooth" });
+                  }}
+                />
+              </>
             )}
           </>
         )}
@@ -757,71 +785,79 @@ export default function FarmerInventoryPage({ onNavigate }) {
                 </Button>
               </div>
             ) : (
-              <div className="ml-templates-table-wrap">
-                <table className="ml-templates-table">
-                  <thead>
-                    <tr>
-                      <th>Thứ trong tuần</th>
-                      <th>Nông sản</th>
-                      <th>Chợ phiên áp dụng</th>
-                      <th>Định mức mở bán</th>
-                      <th>Trạng thái</th>
-                      <th className="text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stockTemplates.map((t) => (
-                      <tr key={t.templateId}>
-                        <td>
-                          <span className="ml-day-badge">
-                            {DAY_OF_WEEK_NAMES[t.dayOfWeek] ||
-                              `Thứ ${t.dayOfWeek}`}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="ml-tbl-prod">
-                            <strong>
-                              {t.productName || `Sản phẩm #${t.productId}`}
-                            </strong>
-                            <span className="ml-tbl-unit">
-                              {formatCurrency(t.productPrice)} /{" "}
-                              {t.productUnit || "kg"}
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="ml-tbl-market">
-                            🎪 {t.marketName || `Chợ #${t.marketId}`}
-                          </span>
-                        </td>
-                        <td>
-                          <strong className="ml-tbl-qty">
-                            {t.recurringQuantity} {t.productUnit || "kg"}
-                          </strong>
-                        </td>
-                        <td>
-                          <Badge
-                            variant={t.isActive ? "ready" : "cancelled"}
-                            size="sm"
-                          >
-                            {t.isActive ? "Đang kích hoạt" : "Tạm ngưng"}
-                          </Badge>
-                        </td>
-                        <td className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="btn-danger-text"
-                            onClick={() => handleDeleteTemplate(t.templateId)}
-                          >
-                            🗑️ Xóa
-                          </Button>
-                        </td>
+              <>
+                <div className="ml-templates-table-wrap">
+                  <table className="ml-templates-table">
+                    <thead>
+                      <tr>
+                        <th>Thứ trong tuần</th>
+                        <th>Nông sản</th>
+                        <th>Chợ phiên áp dụng</th>
+                        <th>Định mức mở bán</th>
+                        <th>Trạng thái</th>
+                        <th className="text-right">Thao tác</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {paginatedTemplates.map((t) => (
+                        <tr key={t.templateId}>
+                          <td>
+                            <span className="ml-day-badge">
+                              {DAY_OF_WEEK_NAMES[t.dayOfWeek] ||
+                                `Thứ ${t.dayOfWeek}`}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="ml-tbl-prod">
+                              <strong>
+                                {t.productName || `Sản phẩm #${t.productId}`}
+                              </strong>
+                              <span className="ml-tbl-unit">
+                                {formatCurrency(t.productPrice)} /{" "}
+                                {t.productUnit || "kg"}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <span className="ml-tbl-market">
+                              🎪 {t.marketName || `Chợ #${t.marketId}`}
+                            </span>
+                          </td>
+                          <td>
+                            <strong className="ml-tbl-qty">
+                              {t.recurringQuantity} {t.productUnit || "kg"}
+                            </strong>
+                          </td>
+                          <td>
+                            <Badge
+                              variant={t.isActive ? "ready" : "cancelled"}
+                              size="sm"
+                            >
+                              {t.isActive ? "Đang kích hoạt" : "Tạm ngưng"}
+                            </Badge>
+                          </td>
+                          <td className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="btn-danger-text"
+                              onClick={() => handleDeleteTemplate(t.templateId)}
+                            >
+                              🗑️ Xóa
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <Pagination
+                  currentPage={templatePage}
+                  totalItems={stockTemplates.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={setTemplatePage}
+                />
+              </>
             )}
           </div>
         )}

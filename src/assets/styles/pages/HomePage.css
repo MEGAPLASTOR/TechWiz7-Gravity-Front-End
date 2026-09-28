@@ -649,7 +649,7 @@
 }
 
 .ml-step-card:hover .ml-step-icon-wrap {
-  transform: scale(1.08) rotate(3deg);
+  transform: scale(1.06);
 }
 
 .ml-step-badge {

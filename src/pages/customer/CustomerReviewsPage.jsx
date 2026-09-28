@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "@/assets/styles/pages/customer/CustomerReviewsPage.css";
 import customerService from "../../services/customerService";
 import Button from "../../components/common/Button";
+import Pagination from "../../components/common/Pagination";
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function CustomerReviewsPage({ onNavigate }) {
   const { isEn, localizeProduceName } = useLanguage();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
 
   const loadReviews = async () => {
     setLoading(true);
@@ -50,6 +53,11 @@ export default function CustomerReviewsPage({ onNavigate }) {
     const full = Math.min(Math.max(Math.round(rating), 1), 5);
     return "★".repeat(full) + "☆".repeat(5 - full);
   };
+
+  const paginatedReviews = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return reviews.slice(start, start + PAGE_SIZE);
+  }, [reviews, currentPage]);
 
   return (
     <div className="ml-my-reviews-page">
@@ -108,7 +116,7 @@ export default function CustomerReviewsPage({ onNavigate }) {
               </span>
             </div>
 
-            {reviews.map((rev) => (
+            {paginatedReviews.map((rev) => (
               <div
                 key={rev.reviewId}
                 className={`ml-card ml-my-rev-card ${rev.isHidden ? "hidden-review" : ""}`}
@@ -166,6 +174,13 @@ export default function CustomerReviewsPage({ onNavigate }) {
                 )}
               </div>
             ))}
+
+            <Pagination
+              currentPage={currentPage}
+              totalItems={reviews.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setCurrentPage}
+            />
           </div>
         )}
       </div>

@@ -62,15 +62,30 @@ export default function CartDrawer({
     async function fetchSlots() {
       setLoadingSlots(true);
       try {
-        const farmerId = cartItems[0]?.farmerId || null;
+        const itemFarmerId =
+          cartItems[0]?.farmerId ||
+          cartItems[0]?.farmer?.id ||
+          cartItems[0]?.farmerUserId ||
+          null;
         const slotsData = await marketService.getPickupSlots(
           selectedMarketId,
-          farmerId,
+          itemFarmerId,
         );
         if (isMounted) {
           if (slotsData && slotsData.length > 0) {
-            setSlots(slotsData);
-            setSelectedSlotId(String(slotsData[0].slotId || slotsData[0].id));
+            let filtered = slotsData;
+            if (itemFarmerId != null) {
+              const matched = slotsData.filter(
+                (s) =>
+                  s.farmerId != null &&
+                  Number(s.farmerId) === Number(itemFarmerId),
+              );
+              if (matched.length > 0) {
+                filtered = matched;
+              }
+            }
+            setSlots(filtered);
+            setSelectedSlotId(String(filtered[0]?.slotId || filtered[0]?.id || ""));
           } else {
             setSlots([]);
             setSelectedSlotId("");
@@ -307,6 +322,20 @@ export default function CartDrawer({
                     )}
                   </label>
                   <div className="ml-slot-options">
+                    {slots.length === 0 && !loadingSlots && (
+                      <div
+                        style={{
+                          padding: "12px",
+                          color: "var(--color-text-muted)",
+                          fontSize: "13px",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        {isEn
+                          ? "No pickup slots available for this stall."
+                          : "Chưa có khung giờ nhận hàng nào cho sạp này."}
+                      </div>
+                    )}
                     {slots.map((slot) => {
                       const sid = String(slot.slotId || slot.id);
                       return (

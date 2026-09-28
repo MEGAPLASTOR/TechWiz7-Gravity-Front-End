@@ -18,18 +18,18 @@ export default function ProductDetailModal({
   const {
     id,
     name,
-    categoryName = "Rau hữu cơ",
-    price = 25000,
+    categoryName = "",
+    price = 0,
     unit = "kg",
-    farmerName = "Nông Trại Xanh Ba Vì",
-    stallCode = "Sạp A-04",
-    marketName = "Chợ Tây Hồ",
-    stockQuantity = 20,
-    harvestTime = "Thu hoạch sáng nay lúc 04:30",
-    description = "Được canh tác tự nhiên không sử dụng thuốc trừ sâu hóa học, tưới bằng nguồn nước suối nguồn sạch. Thu hoạch sớm tinh sương và vận chuyển thẳng tới sạp chợ để giữ nguyên vị ngọt tự nhiên và độ giòn tươi.",
+    farmerName = "",
+    stallCode = "",
+    marketName = "",
+    stockQuantity = 0,
+    harvestTime = "",
+    description = "",
     imageUrl,
-    organicCertified = true,
-    cutoffTime = "Chốt đơn lúc 20:00 tối nay",
+    organicCertified = false,
+    cutoffTime = "",
   } = product || {};
   const fallbackImg =
     "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80";

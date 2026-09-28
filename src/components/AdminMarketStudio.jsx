@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import ImageUploadInput from "./ImageUploadInput";
+import Pagination from "./common/Pagination";
 export default function AdminMarketStudio({ callApi, role, token }) {
   const [markets, setMarkets] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -51,9 +54,16 @@ export default function AdminMarketStudio({ callApi, role, token }) {
       setLoading(false);
     }
   };
+
   useEffect(() => {
+    setCurrentPage(1);
     loadMarkets();
   }, [statusFilter]);
+
+  const paginatedMarkets = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return markets.slice(start, start + PAGE_SIZE);
+  }, [markets, currentPage]);
   const openCreateModal = () => {
     setIsEditing(false);
     setCurrentMarketId(null);
@@ -72,8 +82,8 @@ export default function AdminMarketStudio({ callApi, role, token }) {
     setCurrentMarketId(market.marketId);
     setFormName(market.name || "");
     setFormAddress(market.address || "");
-    setFormLat(market.latitude ? String(market.latitude) : "21.038234");
-    setFormLng(market.longitude ? String(market.longitude) : "105.817456");
+    setFormLat(market.latitude ? String(market.latitude) : "");
+    setFormLng(market.longitude ? String(market.longitude) : "");
     setFormDesc(market.description || "");
     setFormImage(market.imageUrl || "");
     setFormStatus(market.status || "ACTIVE");
@@ -81,18 +91,12 @@ export default function AdminMarketStudio({ callApi, role, token }) {
       setFormSchedules(
         market.schedules.map((s) => ({
           dayOfWeek: s.dayOfWeek,
-          openTime: s.openTime ? s.openTime.substring(0, 5) : "06:30",
-          closeTime: s.closeTime ? s.closeTime.substring(0, 5) : "11:30",
+          openTime: s.openTime ? s.openTime.substring(0, 5) : "",
+          closeTime: s.closeTime ? s.closeTime.substring(0, 5) : "",
         })),
       );
     } else {
-      setFormSchedules([
-        {
-          dayOfWeek: 7,
-          openTime: "06:30",
-          closeTime: "11:30",
-        },
-      ]);
+      setFormSchedules([]);
     }
     setShowModal(true);
   };
@@ -428,9 +432,20 @@ export default function AdminMarketStudio({ callApi, role, token }) {
               placeholder="🔍 Tìm kiếm theo tên chợ, quận huyện, địa chỉ..."
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && loadMarkets()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setCurrentPage(1);
+                  loadMarkets();
+                }
+              }}
             />
-            <button className="btn btn-outline" onClick={loadMarkets}>
+            <button
+              className="btn btn-outline"
+              onClick={() => {
+                setCurrentPage(1);
+                loadMarkets();
+              }}
+            >
               Tìm
             </button>
           </div>
@@ -501,14 +516,15 @@ export default function AdminMarketStudio({ callApi, role, token }) {
           </p>
         </div>
       ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
-            gap: 18,
-          }}
-        >
-          {markets.map((m) => (
+        <>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
+              gap: 18,
+            }}
+          >
+            {paginatedMarkets.map((m) => (
             <div
               key={m.marketId}
               className="card"
@@ -783,7 +799,17 @@ export default function AdminMarketStudio({ callApi, role, token }) {
             </div>
           ))}
         </div>
-      )}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={markets.length}
+          pageSize={PAGE_SIZE}
+          onPageChange={(p) => {
+            setCurrentPage(p);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
+      </>
+    )}
 
       {showModal && (
         <div

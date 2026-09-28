@@ -13,86 +13,8 @@ export default function AdminDashboardPage({ onNavigate }) {
     pendingKycCount: 0,
   });
   const [pendingApprovals, setPendingApprovals] = useState([]);
-  /*
-    {
-      id: 119,
-      farmerName: "Nông Trại Ba Vì",
-      repName: "Nong Dan Ba Vi",
-      phone: "0987654321",
-      marketApplied: "Phiên Chợ Xanh Nông Sản Ba Đình",
-      certType: "VietGAP & Hữu cơ PGS",
-      appliedAt: "Hôm nay, 08:30",
-      status: "PENDING",
-    },
-    {
-      id: 120,
-      farmerName: "Rau Sạch Ba Vì",
-      repName: "NNong Dan Ba Vi",
-      phone: "0912345678",
-      marketApplied: "Hội Chợ Nông Sản Tây Hồ",
-      certType: "GlobalGAP",
-      appliedAt: "Hôm nay, 09:15",
-      status: "PENDING",
-    },
-  ]); */
   const [marketReports, setMarketReports] = useState([]);
-  /*
-    {
-      marketName: "Phiên Chợ Xanh Nông Sản Ba Đình (Hà Nội)",
-      totalRevenue: 180000,
-      totalOrders: 4,
-      activeFarmers: 3,
-    },
-    {
-      marketName: "Phiên Chợ Hữu Cơ Thảo Điền EcoMarket (TP.HCM)",
-      totalRevenue: 125000,
-      totalOrders: 2,
-      activeFarmers: 2,
-    },
-    {
-      marketName: "Hội Chợ Nông Sản Vùng Miền Tây Hồ (Hà Nội)",
-      totalRevenue: 98000,
-      totalOrders: 2,
-      activeFarmers: 2,
-    },
-    {
-      marketName: "Chợ Phiên Nông Nghiệp Xanh Ecopark (Hưng Yên)",
-      totalRevenue: 75000,
-      totalOrders: 1,
-      activeFarmers: 2,
-    },
-  ]); */
   const [topProduce, setTopProduce] = useState([]);
-  /*
-    {
-      name: "Cải Bó Xôi Hữu Cơ Ba Vì",
-      farmer: "Bác Ba Ba Vì",
-      preorders: 6,
-      market: "Ba Đình",
-      tag: "Rau ăn lá",
-    },
-    {
-      name: "Dâu Tây Hana Đà Lạt Tuyển Chọn",
-      farmer: "Đà Lạt Farm",
-      preorders: 4,
-      market: "Thảo Điền",
-      tag: "Trái cây",
-    },
-    {
-      name: "Nấm Hương Rừng Sa Pa Tươi",
-      farmer: "HTX Sa Pa",
-      preorders: 3,
-      market: "Tây Hồ",
-      tag: "Nấm sạch",
-    },
-    {
-      name: "Cà Chua Cherry Mộc Châu",
-      farmer: "Vườn Mộc Châu",
-      preorders: 2,
-      market: "Ba Đình",
-      tag: "Củ quả",
-    },
-  ]); */
   const formatCurrency = (val) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -119,23 +41,29 @@ export default function AdminDashboardPage({ onNavigate }) {
             setPendingApprovals(
               realKyc.map((k) => ({
                 id: k.farmerId,
-                farmerName: k.stallName || "Nông Trại Đăng Ký",
-                repName: k.fullName || "Nông dân",
-                phone: k.phoneNumber || "0900000000",
-                marketApplied: k.farmAddress || "Chợ trung tâm",
-                certType: "VietGAP / Hồ sơ đính kèm",
+                farmerName: k.stallName || k.farmName || "",
+                repName: k.fullName || "",
+                phone: k.phoneNumber || "",
+                marketApplied: k.farmAddress || "",
+                certType: k.certificationType || "VietGAP",
                 appliedAt: k.lastSubmittedAt
                   ? k.lastSubmittedAt.replace("T", " ").substring(0, 16)
-                  : "Mới nộp",
+                  : "",
                 status: k.kycStatus || "PENDING",
               })),
             );
+          } else {
+            setPendingApprovals([]);
           }
           if (realMarkets && realMarkets.length > 0) {
             setMarketReports(realMarkets);
+          } else {
+            setMarketReports([]);
           }
           if (realActiveFarmers && realActiveFarmers.length > 0) {
             setActiveFarmers(realActiveFarmers);
+          } else {
+            setActiveFarmers([]);
           }
         }
       } catch (err) {
@@ -150,19 +78,19 @@ export default function AdminDashboardPage({ onNavigate }) {
   const kpis = [
     {
       title: "Chợ phiên hoạt động",
-      value: `${metrics.totalMarkets || 5} Chợ`,
+      value: `${metrics.totalMarkets || 0} Chợ`,
       trend: "Đang mở nhận đặt",
       trendType: "positive",
       icon: "🎪",
-      hint: "Hà Nội, TP.HCM, Hưng Yên",
+      hint: metrics.totalMarkets ? "Các điểm chợ đang mở" : "Chưa có chợ hoạt động",
     },
     {
       title: "Nhà vườn & Nông hộ",
-      value: `${metrics.totalFarmers || 9} Sạp`,
+      value: `${metrics.totalFarmers || 0} Sạp`,
       trend: `${metrics.pendingKycCount || 0} hồ sơ chờ duyệt`,
       trendType: "warning",
       icon: "👨‍🌾",
-      hint: "100% chứng nhận VietGAP",
+      hint: `${metrics.totalFarmers || 0} nông hộ trong hệ thống`,
     },
     {
       title: "Đơn đặt trước toàn sàn",
@@ -276,30 +204,43 @@ export default function AdminDashboardPage({ onNavigate }) {
             </div>
 
             <div className="ml-op-list">
-              {pendingApprovals.map((item) => (
-                <div key={item.id} className="ml-op-item">
-                  <div className="ml-op-avatar">🏡</div>
-                  <div className="ml-op-info">
-                    <div className="ml-op-name">{item.farmerName}</div>
-                    <div className="ml-op-meta">
-                      Đại diện: <strong>{item.repName}</strong> ({item.phone})
-                    </div>
-                    <div className="ml-op-applied">
-                      <span>📍 {item.marketApplied}</span>
-                      <span>📜 {item.certType}</span>
-                    </div>
-                  </div>
-                  <div className="ml-op-actions">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => onNavigate && onNavigate("admin-users")}
-                    >
-                      Kiểm duyệt hồ sơ
-                    </Button>
-                  </div>
+              {pendingApprovals.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "28px",
+                    color: "var(--color-text-muted)",
+                    fontSize: "14px",
+                  }}
+                >
+                  ✓ Hiện không có hồ sơ KYC nào chờ thẩm định
                 </div>
-              ))}
+              ) : (
+                pendingApprovals.map((item) => (
+                  <div key={item.id} className="ml-op-item">
+                    <div className="ml-op-avatar">🏡</div>
+                    <div className="ml-op-info">
+                      <div className="ml-op-name">{item.farmerName}</div>
+                      <div className="ml-op-meta">
+                        Đại diện: <strong>{item.repName}</strong> ({item.phone})
+                      </div>
+                      <div className="ml-op-applied">
+                        <span>📍 {item.marketApplied}</span>
+                        <span>📜 {item.certType}</span>
+                      </div>
+                    </div>
+                    <div className="ml-op-actions">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => onNavigate && onNavigate("admin-users")}
+                      >
+                        Kiểm duyệt hồ sơ
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             <div className="ml-op-card-footer">
@@ -328,29 +269,42 @@ export default function AdminDashboardPage({ onNavigate }) {
             </div>
 
             <div className="ml-occupancy-list">
-              {marketReports.map((m, idx) => (
-                <div key={idx} className="ml-occupancy-item">
-                  <div className="ml-occ-top">
-                    <span className="ml-occ-name">🎪 {m.marketName}</span>
-                    <span className="ml-occ-rate">
-                      {formatCurrency(m.totalRevenue || 0)}
-                    </span>
-                  </div>
-                  <div className="ml-occ-bar-track">
-                    <div
-                      className="ml-occ-bar-fill"
-                      style={{
-                        width: `${Math.min(100, Math.max(20, (m.totalOrders || 1) * 25))}%`,
-                      }}
-                    ></div>
-                  </div>
-                  <div className="ml-occ-session">
-                    Đã hoàn thành:{" "}
-                    <strong>{m.totalOrders || 0} đơn đặt trước</strong> •{" "}
-                    {m.activeFarmers || 2} sạp hoạt động
-                  </div>
+              {marketReports.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "28px",
+                    color: "var(--color-text-muted)",
+                    fontSize: "14px",
+                  }}
+                >
+                  Chưa có báo cáo hoạt động chợ phiên
                 </div>
-              ))}
+              ) : (
+                marketReports.map((m, idx) => (
+                  <div key={idx} className="ml-occupancy-item">
+                    <div className="ml-occ-top">
+                      <span className="ml-occ-name">🎪 {m.marketName}</span>
+                      <span className="ml-occ-rate">
+                        {formatCurrency(m.totalRevenue || 0)}
+                      </span>
+                    </div>
+                    <div className="ml-occ-bar-track">
+                      <div
+                        className="ml-occ-bar-fill"
+                        style={{
+                          width: `${Math.min(100, Math.max(20, (m.totalOrders || 1) * 25))}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="ml-occ-session">
+                      Đã hoàn thành:{" "}
+                      <strong>{m.totalOrders || 0} đơn đặt trước</strong> •{" "}
+                      {m.activeFarmers || 2} sạp hoạt động
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -376,23 +330,37 @@ export default function AdminDashboardPage({ onNavigate }) {
           </div>
 
           <div className="ml-produce-rank-grid">
-            {topProduce.map((p, idx) => (
-              <div key={idx} className="ml-produce-rank-item">
-                <div className="ml-rank-num">#{idx + 1}</div>
-                <div className="ml-rank-info">
-                  <div className="ml-rank-name">{p.name}</div>
-                  <div className="ml-rank-farmer">
-                    👨‍🌾 {p.farmer} • Chợ {p.market}
+            {topProduce.length === 0 ? (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "28px",
+                  color: "var(--color-text-muted)",
+                  fontSize: "14px",
+                  gridColumn: "1 / -1",
+                }}
+              >
+                Chưa có dữ liệu nông sản được đặt trước trong tuần
+              </div>
+            ) : (
+              topProduce.map((p, idx) => (
+                <div key={idx} className="ml-produce-rank-item">
+                  <div className="ml-rank-num">#{idx + 1}</div>
+                  <div className="ml-rank-info">
+                    <div className="ml-rank-name">{p.name}</div>
+                    <div className="ml-rank-farmer">
+                      👨‍🌾 {p.farmer} • Chợ {p.market}
+                    </div>
+                  </div>
+                  <div className="ml-rank-stat">
+                    <span className="ml-rank-count">{p.preorders} lượt</span>
+                    <Badge variant="organic" size="sm">
+                      {p.tag}
+                    </Badge>
                   </div>
                 </div>
-                <div className="ml-rank-stat">
-                  <span className="ml-rank-count">{p.preorders} lượt</span>
-                  <Badge variant="organic" size="sm">
-                    {p.tag}
-                  </Badge>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

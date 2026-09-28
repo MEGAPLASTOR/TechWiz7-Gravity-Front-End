@@ -15,16 +15,16 @@ export default function ProductCard({
   const {
     id,
     name,
-    categoryName = "Rau hữu cơ",
-    price = 25000,
+    categoryName = "",
+    price = 0,
     unit = "kg",
-    farmerName = "Nông Trại Xanh Ba Vì",
-    stallCode = "Sạp A-04",
-    marketName = "Chợ Tây Hồ",
-    stockQuantity = 20,
-    harvestTime = "Thu hoạch sáng nay",
+    farmerName = "",
+    stallCode = "",
+    marketName = "",
+    stockQuantity = 0,
+    harvestTime = "",
     imageUrl,
-    organicCertified = true,
+    organicCertified = false,
   } = product;
 
   const displayName = localizeProduceName(name);
@@ -91,22 +91,28 @@ export default function ProductCard({
       </div>
 
       <div className="ml-product-body">
-        <div className="ml-product-origin">
-          <span className="ml-farmer-name">🏡 {displayFarmer}</span>
-          <span className="ml-stall-code">
-            {isEn ? stallCode.replace(/Sạp/gi, "Stall") : stallCode}
-          </span>
-        </div>
+        {(displayFarmer || stallCode) && (
+          <div className="ml-product-origin">
+            {displayFarmer && <span className="ml-farmer-name">🏡 {displayFarmer}</span>}
+            {stallCode && (
+              <span className="ml-stall-code">
+                {isEn ? stallCode.replace(/Sạp/gi, "Stall") : stallCode}
+              </span>
+            )}
+          </div>
+        )}
 
         <h4 className="ml-product-title" title={displayName}>
           {displayName}
         </h4>
 
-        <div className="ml-product-market-hint">
-          <span>
-            🎪 {t("pickupAt", "Nhận tại:")} <strong>{displayMarket}</strong>
-          </span>
-        </div>
+        {displayMarket && (
+          <div className="ml-product-market-hint">
+            <span>
+              🎪 {t("pickupAt", "Nhận tại:")} <strong>{displayMarket}</strong>
+            </span>
+          </div>
+        )}
 
         <div className="ml-product-stock-wrap">
           {!isOutOfStock ? (

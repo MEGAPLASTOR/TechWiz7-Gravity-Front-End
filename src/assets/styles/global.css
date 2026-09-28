@@ -1243,71 +1243,101 @@ html[data-theme='dark'] .ml-page-transition__label { color: #e8f0df !important; 
 .ml-login-action-btn:hover,
 .ml-register-action-btn:hover,
 .ml-cart-trigger:hover {
-  transform: translateY(-4px) rotateX(5deg) !important;
-  filter: saturate(1.08) !important;
+  transform: translateY(-2px) !important;
+  filter: saturate(1.06) !important;
   box-shadow:
-    0 7px 0 #243b29,
-    0 15px 24px rgba(49, 76, 47, 0.22) !important;
+    0 4px 12px rgba(49, 76, 47, 0.18) !important;
 }
 .ml-btn:active,
 .ml-login-action-btn:active,
 .ml-register-action-btn:active,
 .ml-cart-trigger:active {
-  transform: translateY(2px) !important;
+  transform: translateY(1px) !important;
   box-shadow:
-    0 2px 0 #243b29,
-    0 4px 8px rgba(49, 76, 47, 0.16) !important;
+    0 2px 4px rgba(49, 76, 47, 0.12) !important;
 }
+
+/* Loại bỏ hoàn toàn hiệu ứng nghiêng (perspective / rotate) khi hover vào card và bảng */
 .ml-card,
 .ml-product-card,
 .ml-step-card,
-.ml-market-card {
-  transform: perspective(900px) translateZ(0);
+.ml-market-card,
+.ml-table-card,
+.ml-kpi-card,
+.ml-admin-kpi-card,
+.ml-inv-card {
+  transform: none !important;
   transition:
-    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 0.3s ease,
-    border-color 0.3s ease !important;
+    box-shadow 0.2s ease,
+    border-color 0.2s ease !important;
 }
+
 .ml-card:hover,
 .ml-product-card:hover,
 .ml-step-card:hover,
-.ml-market-card:hover {
-  transform: perspective(900px) translateY(-8px) rotateX(1.5deg) rotateY(-1deg) !important;
-  box-shadow:
-    9px 12px 0 #b8cda9,
-    0 22px 30px rgba(42, 72, 45, 0.18) !important;
+.ml-market-card:hover,
+.ml-table-card:hover,
+.ml-kpi-card:hover,
+.ml-admin-kpi-card:hover,
+.ml-inv-card:hover {
+  transform: none !important;
+  box-shadow: 0 8px 24px rgba(42, 72, 45, 0.08) !important;
 }
+
+/* Các bảng dữ liệu (table) và container chứa bảng: hoàn toàn cố định, không nghiêng lệch */
+.ml-table,
+.ml-table tr,
+.ml-table-wrap,
+.ml-table-responsive,
+.ml-table-container,
+.ml-orders-table,
+.ml-card:has(table),
+.ml-card:has(.ml-table),
+.ml-card:has(.ml-table-wrap),
+.ml-card:has(.ml-orders-table) {
+  transform: none !important;
+}
+.ml-table:hover,
+.ml-table tr:hover,
+.ml-table-wrap:hover,
+.ml-table-responsive:hover,
+.ml-table-container:hover,
+.ml-orders-table:hover,
+.ml-card:has(table):hover,
+.ml-card:has(.ml-table):hover,
+.ml-card:has(.ml-table-wrap):hover,
+.ml-card:has(.ml-orders-table):hover {
+  transform: none !important;
+}
+
 .ml-product-img-wrap,
 .ml-market-card-img-wrap {
   overflow: hidden;
-  perspective: 700px;
 }
 .ml-product-img,
 .ml-market-card-img {
   transition:
-    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
-    filter 0.35s ease !important;
+    transform 0.3s ease,
+    filter 0.3s ease !important;
 }
 .ml-product-card:hover .ml-product-img,
 .ml-market-card:hover .ml-market-card-img {
-  transform: scale(1.08) rotate(1deg) !important;
-  filter: saturate(1.12) contrast(1.03) !important;
+  transform: scale(1.04) !important;
+  filter: saturate(1.06) !important;
 }
 .ml-product-card:hover .ml-product-badge,
 .ml-market-card:hover .ml-market-card-badge {
-  transform: translateY(-2px) rotate(-2deg);
-  box-shadow: 0 4px 8px rgba(34, 65, 38, 0.18);
+  transform: none !important;
+  box-shadow: none !important;
 }
 .ml-hero-img-frame {
   transition:
-    transform 0.35s ease,
     box-shadow 0.35s ease !important;
 }
 .ml-hero-img-frame:hover {
-  transform: rotate(0deg) translateY(-5px) !important;
+  transform: none !important;
   box-shadow:
-    15px 17px 0 var(--market-clay),
-    25px 28px 0 rgba(21, 46, 32, 0.22) !important;
+    0 12px 28px rgba(21, 46, 32, 0.16) !important;
 }
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -3,6 +3,7 @@ import "@/assets/styles/pages/customer/ProductsPage.css";
 import ProductCard from "../../components/customer/ProductCard";
 import ProductDetailModal from "../../components/customer/ProductDetailModal";
 import Button from "../../components/common/Button";
+import Pagination from "../../components/common/Pagination";
 import productService from "../../services/productService";
 import marketService from "../../services/marketService";
 import { matchSearch, POPULAR_PRODUCT_KEYWORDS } from "../../utils/searchUtils";
@@ -22,168 +23,16 @@ export default function ProductsPage({
   const [sortBy, setSortBy] = useState("popular");
   const [priceMax, setPriceMax] = useState(200000);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
   useEffect(() => {
     if (initialMarket && initialMarket !== "all") {
       setSelectedMarket(initialMarket);
     }
   }, [initialMarket]);
   const [categories, setCategories] = useState([]);
-  /*
-    {
-      categoryId: 1,
-      name: "Rau Lá Hữu Cơ",
-      slug: "rau-la-huu-co",
-      icon: "🥬",
-    },
-    {
-      categoryId: 2,
-      name: "Củ & Quả Tươi Sạch",
-      slug: "cu-qua-tuoi-sach",
-      icon: "🥕",
-    },
-    {
-      categoryId: 3,
-      name: "Trái Cây Bản Địa",
-      slug: "trai-cay-ban-dia",
-      icon: "🍓",
-    },
-    {
-      categoryId: 4,
-      name: "Nấm & Thảo Dược",
-      slug: "nam-thao-duoc",
-      icon: "🍄",
-    },
-  ]); */
   const [markets, setMarkets] = useState([]);
-  /*
-    {
-      id: 101,
-      name: "Phiên Chợ Xanh Nông Sản Ba Đình",
-    },
-    {
-      id: 103,
-      name: "Phiên Chợ Hữu Cơ Thảo Điền EcoMarket",
-    },
-    {
-      id: 104,
-      name: "Hội Chợ Nông Sản Vùng Miền Tây Hồ",
-    },
-    {
-      id: 105,
-      name: "Chợ Phiên Nông Nghiệp Xanh Ecopark",
-    },
-  ]); */
   const [products, setProducts] = useState([]);
-  /*
-    {
-      id: 101,
-      name: "Cải Bó Xôi Hữu Cơ Ba Vì",
-      categoryId: 1,
-      categoryName: "Rau Lá Hữu Cơ",
-      price: 45000,
-      unit: "kg",
-      farmerName: "Nông Trại Hữu Cơ Ba Vì",
-      stallCode: "Sạp A-01",
-      marketName: "Phiên Chợ Xanh Nông Sản Ba Đình",
-      stockQuantity: 35,
-      harvestTime: "Thu hoạch 5h sáng",
-      imageUrl:
-        "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=600&q=80",
-      organicCertified: true,
-      description:
-        "Rau bina trồng hữu cơ vi sinh, lá dày xanh thẫm, giàu sắt và vitamin.",
-    },
-    {
-      id: 106,
-      name: "Nấm Hương Rừng Sa Pa Tươi",
-      categoryId: 4,
-      categoryName: "Nấm & Thảo Dược",
-      price: 98000,
-      unit: "kg",
-      farmerName: "Hợp Tác Xã Dược Liệu & Nấm Sạch Sa Pa",
-      stallCode: "Sạp D-02",
-      marketName: "Hội Chợ Nông Sản Tây Hồ",
-      stockQuantity: 20,
-      harvestTime: "Hái tự nhiên trên núi",
-      imageUrl:
-        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80",
-      organicCertified: true,
-      description:
-        "Nấm hương sinh trưởng tự nhiên trên gỗ mục vùng núi Tả Phìn, thơm nồng.",
-    },
-    {
-      id: 104,
-      name: "Dâu Tây Hana Đà Lạt Tuyển Chọn",
-      categoryId: 3,
-      categoryName: "Trái Cây Bản Địa",
-      price: 125000,
-      unit: "hộp 500g",
-      farmerName: "Nông Sản Sạch Đà Lạt Farm",
-      stallCode: "Sạp C-05",
-      marketName: "Phiên Chợ Thảo Điền",
-      stockQuantity: 30,
-      harvestTime: "Thu hái sáng sớm",
-      imageUrl:
-        "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=600&q=80",
-      organicCertified: true,
-      description:
-        "Dâu tây giống Hana hái tại vườn Đà Lạt lúc sáng sớm, thơm lừng vị ngọt.",
-    },
-    {
-      id: 103,
-      name: "Cà Chua Cherry Mộc Châu Ngọt Giòn",
-      categoryId: 2,
-      categoryName: "Củ & Quả Tươi Sạch",
-      price: 35000,
-      unit: "hộp 500g",
-      farmerName: "Vườn Rau Sinh Thái Mộc Châu",
-      stallCode: "Sạp A-02",
-      marketName: "Phiên Chợ Xanh Ba Đình",
-      stockQuantity: 45,
-      harvestTime: "Chín cây tự nhiên",
-      imageUrl:
-        "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=600&q=80",
-      organicCertified: true,
-      description:
-        "Cà chua bi giống Socola Mộc Châu vỏ mỏng mọng nước, vị ngọt đậm đà.",
-    },
-    {
-      id: 102,
-      name: "Rau Muống Tiến Vua Sạch",
-      categoryId: 1,
-      categoryName: "Rau Lá Hữu Cơ",
-      price: 15000,
-      unit: "bó",
-      farmerName: "Nông Trại Hữu Cơ Ba Vì",
-      stallCode: "Sạp A-01",
-      marketName: "Phiên Chợ Xanh Ba Đình",
-      stockQuantity: 60,
-      harvestTime: "Cắt 4h30 sáng",
-      imageUrl:
-        "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
-      organicCertified: true,
-      description:
-        "Thu hoạch sớm từ ngọn non, thân giòn xào tỏi hoặc nấu canh thanh mát.",
-    },
-    {
-      id: 105,
-      name: "Vải Thiều Thanh Hà Chính Gốc",
-      categoryId: 3,
-      categoryName: "Trái Cây Bản Địa",
-      price: 65000,
-      unit: "kg",
-      farmerName: "Hợp Tác Xã Vải & Cây Ăn Trái Hải Dương",
-      stallCode: "Sạp B-03",
-      marketName: "Hội Chợ Nông Sản Tây Hồ",
-      stockQuantity: 80,
-      harvestTime: "Hái đúng độ chín",
-      imageUrl:
-        "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=600&q=80",
-      organicCertified: true,
-      description:
-        "Cùi dày hạt tiêu mọng nước, ngọt sắc hương thơm đặc trưng vùng Thanh Hà.",
-    },
-  ]); */
   useEffect(() => {
     let isMounted = true;
     async function loadMetadata() {
@@ -257,6 +106,7 @@ export default function ProductsPage({
               prods.map((p) => ({
                 ...p,
                 id: p.productId || p.id,
+                farmerId: p.farmerId || p.farmer?.id || p.farmerUserId || p.userId,
                 name: p.name,
                 categoryId: p.categoryId,
                 categoryName: p.categoryName || "Nông sản mùa vụ",
@@ -266,13 +116,12 @@ export default function ProductsPage({
                   p.farmerStallName || p.farmerName || "Nông Trại Thành Viên",
                 stallCode: p.stallCode || "Sạp Tiêu Chuẩn",
                 marketName: p.marketName || "Phiên Chợ Nông Sản",
-                stockQuantity: p.currentStock || p.stockQuantity || 25,
-                harvestTime: "Thu hoạch sáng sớm",
+                stockQuantity: p.currentStock ?? p.stockQuantity ?? 0,
+                harvestTime: p.harvestTime || "Thu hoạch sáng sớm",
                 imageUrl: p.imageUrl,
-                organicCertified: true,
+                organicCertified: Boolean(p.isOrganic || p.organicCertified),
                 description:
-                  p.description ||
-                  "Nông sản canh tác tự nhiên đạt chuẩn an toàn.",
+                  p.description || "",
               })),
             );
           } else {
@@ -288,6 +137,10 @@ export default function ProductsPage({
       clearTimeout(timer);
     };
   }, [searchTerm, selectedCategory, selectedMarket, markets]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory, selectedMarket, priceMax, sortBy]);
+
   const filteredProducts = useMemo(() => {
     return products
       .filter((p) => p.price <= priceMax)
@@ -297,6 +150,11 @@ export default function ProductsPage({
         return (b.stockQuantity || 0) - (a.stockQuantity || 0);
       });
   }, [products, sortBy, priceMax]);
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredProducts.slice(start, start + PAGE_SIZE);
+  }, [filteredProducts, currentPage]);
   const getCartQty = (prodId) => {
     const found = cartItems.find((item) => item.id === prodId);
     return found ? found.quantity : 0;
@@ -596,19 +454,30 @@ export default function ProductsPage({
               </div>
             </div>
           ) : (
-            <div className="ml-products-grid">
-              {filteredProducts.map((product) => (
-                <div key={product.id} className="ml-prod-card-wrap">
-                  <ProductCard
-                    product={product}
-                    cartQuantity={getCartQty(product.id)}
-                    onAddToCart={onAddToCart}
-                    onUpdateQty={onUpdateCartQty}
-                    onClick={() => setSelectedProduct(product)}
-                  />
-                </div>
-              ))}
-            </div>
+            <>
+              <div className="ml-products-grid">
+                {paginatedProducts.map((product) => (
+                  <div key={product.id} className="ml-prod-card-wrap">
+                    <ProductCard
+                      product={product}
+                      cartQuantity={getCartQty(product.id)}
+                      onAddToCart={onAddToCart}
+                      onUpdateQty={onUpdateCartQty}
+                      onClick={() => setSelectedProduct(product)}
+                    />
+                  </div>
+                ))}
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalItems={filteredProducts.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={(p) => {
+                  setCurrentPage(p);
+                  window.scrollTo({ top: 380, behavior: "smooth" });
+                }}
+              />
+            </>
           )}
         </section>
       </div>

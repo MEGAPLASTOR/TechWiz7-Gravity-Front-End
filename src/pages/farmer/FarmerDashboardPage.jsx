@@ -53,22 +53,7 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
           if (bestData && bestData.length > 0) {
             setBestSellers(bestData);
           } else {
-            setBestSellers([
-              {
-                name: "Cải Bó Xôi Hữu Cơ Ba Vì",
-                salesCount: 14,
-                unit: "kg",
-                revenue: 630000,
-                category: "Rau ăn lá",
-              },
-              {
-                name: "Rau Muống Tiến Vua Sạch",
-                salesCount: 22,
-                unit: "bó",
-                revenue: 330000,
-                category: "Rau ăn lá",
-              },
-            ]);
+            setBestSellers([]);
           }
           if (ordersData && ordersData.length > 0) {
             const packingList = ordersData.filter(
@@ -98,9 +83,9 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
     }).format(val || 0);
   };
   const farmStallTitle =
-    profile?.stallName || profile?.fullName || "Nông Trại Hữu Cơ Ba Vì";
+    profile?.stallName || profile?.fullName || "Chưa thiết lập sạp";
   const farmAddress =
-    profile?.farmAddress || "Thôn 2, Xã Vân Hòa, Ba Vì, Hà Nội";
+    profile?.farmAddress || "Chưa cập nhật địa chỉ trang trại";
   return (
     <div className="ml-farmer-dashboard">
       <div className="ml-farmer-dash-banner">
@@ -334,27 +319,40 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
               </p>
 
               <div className="ml-bestseller-list">
-                {bestSellers.map((item, idx) => (
-                  <div key={idx} className="ml-bestseller-item">
-                    <span className="ml-rank-num">#{idx + 1}</span>
-                    <div className="ml-bestseller-info">
-                      <div className="ml-bs-name">
-                        {item.productName || item.name}
-                      </div>
-                      <div className="ml-bs-meta">
-                        {item.categoryName || item.category || "Nông sản sạch"}{" "}
-                        • Đã bán{" "}
-                        <strong>
-                          {item.totalQuantitySold || item.salesCount || 1}{" "}
-                          {item.unit || "kg"}
-                        </strong>
-                      </div>
-                    </div>
-                    <div className="ml-bs-revenue">
-                      {formatCurrency(item.totalRevenue || item.revenue)}
-                    </div>
+                {bestSellers.length === 0 ? (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "24px",
+                      color: "var(--color-text-muted)",
+                      fontSize: "14px",
+                    }}
+                  >
+                    Chưa có dữ liệu nông sản bán chạy
                   </div>
-                ))}
+                ) : (
+                  bestSellers.map((item, idx) => (
+                    <div key={idx} className="ml-bestseller-item">
+                      <span className="ml-rank-num">#{idx + 1}</span>
+                      <div className="ml-bestseller-info">
+                        <div className="ml-bs-name">
+                          {item.productName || item.name}
+                        </div>
+                        <div className="ml-bs-meta">
+                          {item.categoryName || item.category || "Nông sản sạch"}{" "}
+                          • Đã bán{" "}
+                          <strong>
+                            {item.totalQuantitySold || item.salesCount || 1}{" "}
+                            {item.unit || "kg"}
+                          </strong>
+                        </div>
+                      </div>
+                      <div className="ml-bs-revenue">
+                        {formatCurrency(item.totalRevenue || item.revenue)}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
 
               <div className="ml-bestseller-footer">
