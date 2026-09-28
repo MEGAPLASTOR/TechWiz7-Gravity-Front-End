@@ -3,6 +3,7 @@ import "@/assets/styles/pages/admin/AdminDashboardPage.css";
 import Button from "../../components/common/Button";
 import Badge from "../../components/common/Badge";
 import adminService from "../../services/adminService";
+import { SWAGGER_DOCS_URL } from "../../services/apiClient";
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function AdminDashboardPage({ onNavigate }) {
@@ -180,7 +181,7 @@ export default function AdminDashboardPage({ onNavigate }) {
                 : `Duyệt ${pendingApprovals.length} hồ sơ KYC →`}
             </Button>
             <a
-              href="http://172.16.2.89:8081/swagger-ui/index.html"
+              href={SWAGGER_DOCS_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="ml-btn ml-btn--outline ml-btn--md"

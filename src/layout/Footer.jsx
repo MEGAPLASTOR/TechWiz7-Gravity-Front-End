@@ -1,6 +1,7 @@
 import React from "react";
 import "@/assets/styles/layout/Footer.css";
 import { useLanguage } from "@/context";
+import { SWAGGER_DOCS_URL } from "@/services/apiClient";
 
 export default function Footer({ onNavigate }) {
   const { isEn, t } = useLanguage();
@@ -202,7 +203,7 @@ export default function Footer({ onNavigate }) {
             <a href="#privacy">{t("footerPrivacy", "Chính sách bảo mật")}</a>
             <a href="#terms">{t("footerTerms", "Điều khoản sử dụng")}</a>
             <a
-              href="http://172.16.2.89:8081/swagger-ui/index.html"
+              href={SWAGGER_DOCS_URL}
               target="_blank"
               rel="noopener noreferrer"
               title="Swagger UI API Documentation"

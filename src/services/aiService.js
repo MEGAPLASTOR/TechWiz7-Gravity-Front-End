@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import apiClient, { BACKEND_URL } from "./apiClient";
 import { marketService } from "./marketService";
 import { productService } from "./productService";
 
@@ -141,7 +141,7 @@ export const aiService = {
       } catch (errChat) {
         console.warn("apiClient /ai/chat failed, falling back to direct server call:", errChat.message);
         try {
-          const directFetch = await fetch("http://172.16.2.89:8081/api/ai/assistant/chat", {
+          const directFetch = await fetch(`${BACKEND_URL}/api/ai/assistant/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
