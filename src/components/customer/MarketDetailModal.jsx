@@ -15,7 +15,6 @@ export default function MarketDetailModal({
   onViewStalls,
   initialTab = "schedule",
 }) {
-  if (!market) return null;
   const [activeTab, setActiveTab] = useState(initialTab);
   const mapRef = useRef(null);
   const leafletMap = useRef(null);
@@ -43,7 +42,7 @@ export default function MarketDetailModal({
     ],
     latitude = 21.0312,
     longitude = 105.8189,
-  } = market;
+  } = market || {};
   const mLat = Number(market.latitude || latitude || 21.0312);
   const mLon = Number(market.longitude || longitude || 105.8189);
   const [userPos, setUserPos] = useState({
@@ -286,6 +285,7 @@ export default function MarketDetailModal({
       (err) => alert("Không lấy được toạ độ GPS: " + err.message),
     );
   };
+  if (!market) return null;
   return (
     <Modal
       isOpen={isOpen}

@@ -428,6 +428,33 @@ export default function StallsPage({
     }
   };
   const filteredStalls = stalls.filter((stall) => {
+    const q = (searchKeyword || "").trim();
+    const matchesKeyword =
+      !q ||
+      matchSearch(
+        [
+          stall.stallName,
+          stall.farmName,
+          stall.farmerName,
+          stall.stallCode,
+          stall.specialty,
+          stall.specialtyName,
+          stall.marketName,
+          stall.marketCity,
+          stall.marketAddress,
+          stall.farmAddress,
+          ...(stall.specialtyTags || []),
+          ...(stall.certifications || []),
+        ].filter(Boolean),
+        q,
+      );
+
+    const matchesMarket =
+      selectedMarketId === "all" ||
+      (stall.marketName || "")
+        .toLowerCase()
+        .includes(selectedMarketId.toLowerCase());
+
     const matchesCity =
       selectedCity === "all" ||
       (selectedCity === "hanoi" &&
@@ -441,7 +468,13 @@ export default function StallsPage({
       (selectedCert === "vietgap" && stall.certification === "VietGAP") ||
       (selectedCert === "organic" && stall.certification === "Organic") ||
       (selectedCert === "ocop" && stall.certification === "OCOP");
-    return matchesCity && matchesSpecialty && matchesCert;
+    return (
+      matchesKeyword &&
+      matchesMarket &&
+      matchesCity &&
+      matchesSpecialty &&
+      matchesCert
+    );
   });
   const sortedStalls = [...filteredStalls].sort((a, b) => {
     if (sortBy === "rating_desc") {
@@ -972,7 +1005,7 @@ export default function StallsPage({
           </div>
 
           <div className="ml-quick-search-chips">
-            <span className="ml-quick-search-label">💡 Gợi ý nhanh:</span>
+            <span className="ml-quick-search-label">Gợi ý:</span>
             {POPULAR_STALL_KEYWORDS.map((kw, idx) => (
               <button
                 key={idx}

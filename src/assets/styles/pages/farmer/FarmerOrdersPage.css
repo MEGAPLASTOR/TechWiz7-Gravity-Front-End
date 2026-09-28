@@ -3,6 +3,27 @@
   background-color: var(--color-bg-base);
   min-height: calc(100vh - 72px);
 }
+
+.ml-farmer-orders-page .ml-container {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+@media (min-width: 768px) {
+  .ml-farmer-orders-page .ml-container {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .ml-farmer-orders-page .ml-container {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+}
 .ml-farmer-orders-banner {
   background: linear-gradient(
     180deg,
@@ -107,33 +128,116 @@
   }
 }
 
+.ml-farmer-search-box-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 460px;
+}
+
 .ml-farmer-search-field,
 .ml-fo-search {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background-color: var(--color-bg-base);
-  border: 1px solid var(--color-border);
+  border: 1.5px solid var(--color-border);
   border-radius: var(--radius-full);
-  padding: 8px 14px;
+  padding: 8px 16px;
   width: 100%;
-  max-width: 380px;
+  min-height: 44px;
+  transition: all var(--transition-fast);
+}
+
+.ml-farmer-search-field:focus-within,
+.ml-fo-search:focus-within {
+  border-color: var(--color-primary);
+  background-color: var(--color-bg-surface);
+  box-shadow: 0 0 0 3.5px var(--color-primary-focus);
 }
 
 .ml-farmer-search-icon {
-  font-size: 15px;
+  font-size: 16px;
   color: var(--color-text-muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 .ml-farmer-search-input,
 .ml-fo-search input {
-  border: none;
-  background: transparent;
-  font-size: var(--font-size-sm);
+  border: none !important;
+  background: transparent !important;
+  font-size: 14px;
   color: var(--color-text-main);
   width: 100%;
-  outline: none;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 2px 4px !important;
 }
+
+.ml-farmer-search-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.85;
+}
+
+.ml-clear-search-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.ml-clear-search-btn:hover {
+  color: var(--color-text-main);
+}
+
+.ml-farmer-quick-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ml-farmer-quick-label {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+.ml-farmer-tag-chip {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-body);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ml-farmer-tag-chip:hover {
+  border-color: var(--color-primary-light);
+  background-color: var(--color-primary-surface);
+  color: var(--color-primary-dark);
+}
+
+.ml-farmer-tag-chip.active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 600;
+}
+
 
 .ml-farmer-tabs-row {
   display: flex;
@@ -603,3 +707,23 @@ html[data-theme="dark"] .ml-cancelled-label {
   color: var(--status-cancelled);
   border-color: rgba(248, 113, 113, 0.3);
 }
+
+html[data-theme="dark"] .ml-farmer-tag-chip {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-body);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-farmer-tag-chip:hover {
+  background-color: var(--color-primary-surface);
+  color: var(--color-primary-dark);
+  border-color: var(--color-primary);
+}
+
+html[data-theme="dark"] .ml-farmer-tag-chip.active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #0d1a12;
+  font-weight: 700;
+}
+

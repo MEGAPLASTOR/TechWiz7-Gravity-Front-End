@@ -1,0 +1,606 @@
+/* Shared responsive behavior for phones and narrow tablets. */
+@media (max-width: 767px) {
+  :root {
+    --mobile-gutter: 12px;
+    --mobile-section-space: 32px;
+  }
+
+  html,
+  body,
+  #root,
+  .ml-app {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .ml-container {
+    width: 100%;
+    max-width: 100% !important;
+    padding-left: var(--mobile-gutter) !important;
+    padding-right: var(--mobile-gutter) !important;
+  }
+
+  .ml-page-view,
+  .ml-section {
+    padding-top: var(--mobile-section-space);
+    padding-bottom: var(--mobile-section-space);
+  }
+
+  .ml-section-header {
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+  }
+
+  .ml-section-title,
+  .ml-hero-title,
+  .ml-markets-title,
+  .ml-products-title,
+  .ml-stalls-hero-title,
+  .ml-admin-dash-title,
+  .ml-admin-orders-title,
+  .ml-mod-title,
+  .ml-dashboard-title,
+  .ml-orders-title,
+  .ml-inv-title,
+  .ml-fo-title,
+  .ml-stall-page-title,
+  .ml-rev-page-title,
+  .ml-my-reviews-title {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: 1.75rem !important;
+    line-height: 1.16 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .ml-hero-desc,
+  .ml-products-desc,
+  .ml-products-subtitle,
+  .ml-markets-desc,
+  .ml-stalls-hero-desc,
+  .ml-admin-dash-desc,
+  .ml-admin-orders-desc,
+  .ml-mod-desc,
+  .ml-dashboard-desc,
+  .ml-orders-subtitle,
+  .ml-inv-desc,
+  .ml-fo-desc,
+  .ml-stall-page-desc,
+  .ml-rev-page-desc,
+  .ml-my-reviews-subtitle {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .ml-hero,
+  .ml-markets-banner,
+  .ml-products-banner,
+  .ml-stalls-hero,
+  .ml-dashboard-banner,
+  .ml-farmer-dash-banner,
+  .ml-farmer-inv-banner,
+  .ml-inventory-banner,
+  .ml-farmer-orders-banner,
+  .ml-orders-banner,
+  .ml-reviews-banner,
+  .ml-my-reviews-banner,
+  .ml-stall-banner,
+  .ml-admin-dash-banner,
+  .ml-admin-orders-banner,
+  .ml-mod-banner,
+  .ml-mod-header,
+  .ml-content-mod-header {
+    overflow: hidden;
+  }
+
+  .ml-hero-container,
+  .ml-markets-banner-inner,
+  .ml-products-banner-inner,
+  .ml-dashboard-banner-inner,
+  .ml-dash-banner-inner,
+  .ml-inv-banner-inner,
+  .ml-admin-banner-inner,
+  .ml-admin-orders-banner-inner,
+  .ml-mod-banner-inner,
+  .ml-content-mod-header {
+    width: 100%;
+    min-width: 0;
+    gap: 20px;
+  }
+
+  .ml-hero-content,
+  .ml-hero-visual,
+  .ml-dashboard-user-profile,
+  .ml-dashboard-user-greeting,
+  .ml-profile-hero-text,
+  .ml-inv-info,
+  .ml-op-info,
+  .ml-customer-details,
+  .ml-rev-user-meta {
+    min-width: 0;
+  }
+
+  .ml-hero-actions,
+  .ml-farmer-cta-actions,
+  .ml-admin-quick-actions,
+  .ml-dashboard-quick-actions,
+  .ml-dash-quick-btns,
+  .ml-inv-banner-actions,
+  .ml-kyc-actions,
+  .ml-review-actions,
+  .ml-prod-actions,
+  .ml-order-actions,
+  .ml-farmer-action-buttons,
+  .ml-fo-action-buttons,
+  .ml-reply-btns,
+  .ml-stall-card-actions {
+    width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .ml-hero-actions > .ml-btn,
+  .ml-farmer-cta-actions > .ml-btn,
+  .ml-admin-quick-actions > .ml-btn,
+  .ml-dashboard-quick-actions > .ml-btn,
+  .ml-dash-quick-btns > .ml-btn,
+  .ml-inv-banner-actions > .ml-btn {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .ml-products-layout,
+  .ml-grid-2,
+  .ml-grid-3,
+  .ml-grid-4,
+  .ml-farmer-main-grid,
+  .ml-admin-op-grid,
+  .ml-admin-two-col,
+  .ml-reviews-layout,
+  .ml-farmer-body-grid,
+  .ml-profile-body-grid,
+  .ml-stall-layout,
+  .ml-family-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .ml-kpi-grid,
+  .ml-admin-kpi-grid,
+  .ml-farmer-kpis-grid,
+  .ml-dashboard-metrics,
+  .ml-profile-metrics-row,
+  .ml-fav-farmers-grid,
+  .ml-quick-nav-cards,
+  .ml-steps-grid,
+  .ml-markets-grid,
+  .ml-markets-cards-grid,
+  .ml-products-grid,
+  .ml-stalls-grid,
+  .ml-inv-grid,
+  .ml-farmer-orders-grid,
+  .ml-fo-list,
+  .ml-flagged-products-grid,
+  .ml-detail-products-grid,
+  .ml-fav-prods-grid,
+  .ml-cert-grid,
+  .ml-cert-dossier-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px;
+  }
+
+  .ml-filter-card-header,
+  .ml-filters-header,
+  .ml-pane-title-row,
+  .ml-op-card-header,
+  .ml-col-header,
+  .ml-upcoming-header,
+  .ml-stall-stalls-header,
+  .ml-templates-header,
+  .ml-packing-header,
+  .ml-order-header,
+  .ml-order-card-header,
+  .ml-review-mod-header,
+  .ml-rev-feed-top,
+  .ml-my-rev-header,
+  .ml-kyc-card-header,
+  .ml-fo-card-top,
+  .ml-farmer-card-top,
+  .ml-content-mod-header,
+  .ml-profile-title-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .ml-filter-card-actions,
+  .ml-mod-controls,
+  .ml-mod-toolbar,
+  .ml-markets-filters,
+  .ml-markets-filter-bar,
+  .ml-inv-controls,
+  .ml-fo-controls,
+  .ml-order-filter-grid,
+  .ml-user-filter-grid,
+  .ml-stalls-filter-row-top,
+  .ml-stalls-filter-row-bottom {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ml-filter-card-actions,
+  .ml-mod-controls,
+  .ml-mod-toolbar,
+  .ml-markets-filters,
+  .ml-markets-filter-bar,
+  .ml-inv-controls,
+  .ml-fo-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ml-filter-card-actions > *,
+  .ml-mod-controls > *,
+  .ml-mod-toolbar > *,
+  .ml-markets-filters > *,
+  .ml-markets-filter-bar > *,
+  .ml-inv-controls > *,
+  .ml-fo-controls > *,
+  .ml-search-box,
+  .ml-filter-search-box,
+  .ml-products-search-container,
+  .ml-inv-search-box-wrap,
+  .ml-farmer-search-box-wrap,
+  .ml-searchbox-btn {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ml-search-status-bar,
+  .ml-status-bar,
+  .ml-stalls-status-bar,
+  .ml-order-card-footer,
+  .ml-order-footer,
+  .ml-farmer-card-footer,
+  .ml-fo-card-footer,
+  .ml-kyc-modal-footer,
+  .ml-dossier-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ml-search-status-bar > *,
+  .ml-order-card-footer > *,
+  .ml-order-footer > *,
+  .ml-farmer-card-footer > *,
+  .ml-fo-card-footer > *,
+  .ml-dossier-actions > * {
+    width: 100%;
+  }
+
+  .ml-dashboard-tabs,
+  .ml-orders-tabs,
+  .ml-order-tabs,
+  .ml-user-mod-tabs,
+  .ml-inv-main-tabs,
+  .ml-farmer-tabs-row,
+  .ml-farmer-status-tabs,
+  .ml-fo-status-tabs,
+  .ml-stalls-chip-tabs,
+  .ml-stalls-tab-nav,
+  .ml-mod-tabs,
+  .ml-filter-tabs,
+  .ml-modal-tab-nav {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+  }
+
+  .ml-dashboard-tabs::-webkit-scrollbar,
+  .ml-orders-tabs::-webkit-scrollbar,
+  .ml-order-tabs::-webkit-scrollbar,
+  .ml-user-mod-tabs::-webkit-scrollbar,
+  .ml-inv-main-tabs::-webkit-scrollbar,
+  .ml-farmer-tabs-row::-webkit-scrollbar,
+  .ml-mod-tabs::-webkit-scrollbar,
+  .ml-filter-tabs::-webkit-scrollbar,
+  .ml-modal-tab-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ml-dash-tab,
+  .ml-order-tab,
+  .ml-user-mod-tab,
+  .ml-inv-main-tab,
+  .ml-farmer-tab,
+  .ml-fo-tab,
+  .ml-stalls-tab,
+  .ml-mod-tab,
+  .ml-filter-tab,
+  .ml-modal-tab-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .ml-card,
+  .ml-product-card,
+  .ml-market-card,
+  .ml-stall-card,
+  .ml-inv-card,
+  .ml-order-card,
+  .ml-fo-card,
+  .ml-farmer-order-card,
+  .ml-farmer-kyc-card,
+  .ml-review-mod-item,
+  .ml-rev-feed-card,
+  .ml-my-rev-card {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ml-product-title,
+  .ml-market-name,
+  .ml-stall-title,
+  .ml-stall-farm-name,
+  .ml-farmer-name,
+  .ml-fav-name,
+  .ml-inv-name,
+  .ml-op-name,
+  .ml-customer-name,
+  .ml-fo-cust-name,
+  .ml-order-code,
+  .ml-kyc-farm-name,
+  .ml-bs-name {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .ml-table-responsive,
+  .ml-table-wrap,
+  .ml-table-container,
+  .ml-templates-table-wrap,
+  .ml-order-items-table {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ml-modal-overlay,
+  .ml-cart-overlay {
+    padding: max(8px, env(safe-area-inset-top)) 8px
+      max(8px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .ml-modal-content,
+  .ml-modal-box,
+  .ml-auth-modal-content,
+  .ml-customer-edit-modal-box {
+    width: min(100%, 560px) !important;
+    max-width: 100% !important;
+    max-height: calc(100dvh - 16px) !important;
+    border-radius: 14px !important;
+  }
+
+  .ml-modal-actions,
+  .ml-modal-footer,
+  .ml-modify-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .ml-modal-actions > *,
+  .ml-modal-footer > *,
+  .ml-modify-actions > *,
+  .ml-auth-submit-btn {
+    width: 100%;
+  }
+
+  .ml-cart-panel {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .ml-notif-dropdown {
+    position: fixed;
+    top: calc(58px + env(safe-area-inset-top));
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-width: none;
+  }
+
+  .ml-chatbot-container {
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  .ml-chat-window {
+    right: 0;
+    width: min(360px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+  }
+
+  .ml-drawer {
+    width: min(88vw, 360px);
+    max-width: 360px;
+  }
+
+  .ml-footer-grid {
+    gap: 24px;
+  }
+
+  .ml-footer-bottom,
+  .ml-footer-bottom-links {
+    align-items: flex-start;
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .ml-footer-bottom p {
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .ml-hero-floating-badge {
+    max-width: calc(100% - 16px);
+  }
+
+  .ml-inv-card-body {
+    flex-wrap: wrap;
+  }
+
+  .ml-inv-img {
+    flex: 0 0 76px;
+    width: 76px;
+    height: 76px;
+  }
+
+  .ml-inv-info {
+    flex: 1 1 calc(100% - 92px);
+  }
+
+  .ml-stock-control,
+  .ml-inv-stock-control,
+  .ml-inv-action-buttons,
+  .ml-stall-card-actions,
+  .ml-order-actions,
+  .ml-farmer-action-buttons,
+  .ml-fo-action-buttons {
+    width: 100%;
+  }
+
+  .ml-stock-control > *,
+  .ml-inv-stock-control > *,
+  .ml-inv-action-buttons > *,
+  .ml-order-actions > *,
+  .ml-farmer-action-buttons > *,
+  .ml-fo-action-buttons > * {
+    flex: 1 1 auto;
+  }
+
+  .ml-profile-hero-content,
+  .ml-farmer-profile-card,
+  .ml-user-profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ml-profile-hero-actions,
+  .ml-farmer-title-row,
+  .ml-farmer-badges-row,
+  .ml-profile-tags-row,
+  .ml-dashboard-user-meta {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .ml-profile-hero-actions > *,
+  .ml-dashboard-quick-actions > * {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .ml-header-inner {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    gap: 4px;
+  }
+
+  .ml-header-left,
+  .ml-header-right {
+    gap: 4px;
+  }
+
+  .ml-brand-title {
+    font-size: 0.96rem;
+  }
+
+  .ml-brand-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .ml-theme-toggle,
+  .ml-cart-trigger,
+  .ml-notif-bell-btn {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0;
+  }
+
+  .ml-cart-label {
+    display: none;
+  }
+
+  .ml-login-action-btn {
+    padding: 6px 9px;
+    font-size: 11px;
+  }
+
+  .ml-section-title,
+  .ml-hero-title,
+  .ml-markets-title,
+  .ml-products-title,
+  .ml-stalls-hero-title,
+  .ml-admin-dash-title,
+  .ml-admin-orders-title,
+  .ml-mod-title,
+  .ml-dashboard-title,
+  .ml-orders-title,
+  .ml-inv-title,
+  .ml-fo-title,
+  .ml-stall-page-title,
+  .ml-rev-page-title,
+  .ml-my-reviews-title {
+    font-size: 1.55rem !important;
+  }
+
+  .ml-card,
+  .ml-product-card,
+  .ml-market-card,
+  .ml-stall-card,
+  .ml-inv-card,
+  .ml-order-card,
+  .ml-fo-card {
+    border-radius: 12px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .ml-card:hover,
+  .ml-product-card:hover,
+  .ml-market-card:hover,
+  .ml-stall-card:hover,
+  .ml-inv-card:hover,
+  .ml-order-card:hover,
+  .ml-fo-card:hover,
+  .ml-btn:hover {
+    transform: none !important;
+  }
+
+  .ml-btn,
+  .ml-login-action-btn,
+  .ml-register-action-btn,
+  .ml-cart-trigger,
+  .ml-nav-link,
+  .ml-drawer-nav-item,
+  .ml-qty-btn,
+  .ml-step-btn {
+    min-height: 42px;
+  }
+}

@@ -2,6 +2,27 @@
   padding-bottom: var(--space-16);
 }
 
+.ml-farmer-dashboard .ml-container {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+@media (min-width: 768px) {
+  .ml-farmer-dashboard .ml-container {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .ml-farmer-dashboard .ml-container {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+}
+
 .ml-farmer-dash-banner {
   background: linear-gradient(180deg, #f5f1e8 0%, var(--color-bg-base) 100%);
   padding: var(--space-8) 0;

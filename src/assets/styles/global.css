@@ -333,6 +333,140 @@ html[data-theme="dark"] .ml-drawer {
   color: var(--color-text-main);
 }
 
+/* Keep every form modal firmly fixed, centered, and NEVER cut off at the top (chống mất gốc) */
+.ml-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  width: 100dvw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-start !important; /* Never push top out of bounds */
+  z-index: 99999 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: clamp(10px, 2.5vh, 24px) clamp(10px, 2vw, 20px) !important;
+  box-sizing: border-box !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ml-modal-box,
+.ml-modal-content,
+.ml-customer-edit-modal-box {
+  position: relative !important;
+  margin: auto !important; /* Centers vertically if fits, aligns to top if taller */
+  flex-shrink: 0 !important;
+  max-height: calc(100vh - 24px) !important;
+  max-height: calc(100dvh - 24px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Compact header across all modals - Không bị chiếm diện tích màn hình */
+.ml-modal-header {
+  padding: 12px 18px !important;
+  flex-shrink: 0 !important;
+}
+
+.ml-modal-title,
+.ml-modal-header h3 {
+  font-size: 1.05rem !important;
+  line-height: 1.3 !important;
+  margin: 0 !important;
+}
+
+.ml-modal-subtitle,
+.ml-modal-header p {
+  font-size: 11px !important;
+  line-height: 1.3 !important;
+  margin-top: 2px !important;
+}
+
+.ml-modal-close {
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 14px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Modal form container: holds body and actions sticky without clipping */
+.ml-modal-box > form,
+.ml-modal-box > .ml-modal-form,
+.ml-modal-content > form,
+.ml-modal-content > .ml-modal-form {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Scrollable form body that never cuts off header or actions */
+.ml-modal-body,
+.ml-modal-box .ml-modal-body,
+.ml-modal-content .ml-modal-body {
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 12px 18px !important;
+  box-sizing: border-box !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ml-modal-actions,
+.ml-modal-footer {
+  padding: 10px 18px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Compact input and form components inside all modals */
+.ml-modal-body .ml-form-group,
+.ml-modal-form .ml-form-group,
+.ml-auth-modal-content .ml-form-group {
+  margin-bottom: 8px !important;
+}
+
+.ml-modal-body .ml-form-label,
+.ml-modal-form .ml-form-label,
+.ml-auth-modal-content .ml-form-label {
+  font-size: 12px !important;
+  margin-bottom: 3px !important;
+  font-weight: 600 !important;
+  color: var(--color-text-main) !important;
+}
+
+.ml-modal-body .ml-form-input,
+.ml-modal-form .ml-form-input,
+.ml-modal-body select,
+.ml-modal-form select,
+.ml-auth-modal-content .ml-form-input {
+  height: 36px !important;
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+  border-radius: 8px !important;
+}
+
+.ml-modal-body textarea,
+.ml-modal-form textarea,
+.ml-modal-body .ml-form-textarea,
+.ml-modal-form .ml-form-textarea {
+  font-size: 13px !important;
+  padding: 6px 10px !important;
+  border-radius: 8px !important;
+  min-height: 56px !important;
+  max-height: 120px !important;
+}
+
 html[data-theme="dark"] .ml-dropdown-item,
 html[data-theme="dark"] .ml-user-dropdown-item {
   color: var(--color-text-body);
@@ -344,8 +478,8 @@ html[data-theme="dark"] .ml-user-dropdown-item:hover {
   background-color: var(--color-primary-surface);
   color: var(--color-primary-dark);
 }
-html[data-theme="dark"] input,
-html[data-theme="dark"] select,
+html[data-theme="dark"] input:not(.ml-markets-search-input):not(.ml-farmer-search-input):not(.ml-inv-search-input):not(.ml-filter-input):not(.ml-search-input),
+html[data-theme="dark"] select:not(.ml-filter-select),
 html[data-theme="dark"] textarea,
 html[data-theme="dark"] .ml-form-input,
 html[data-theme="dark"] .ml-form-select,
@@ -355,8 +489,8 @@ html[data-theme="dark"] .ml-form-textarea {
   border-color: var(--color-border);
 }
 
-html[data-theme="dark"] input:focus,
-html[data-theme="dark"] select:focus,
+html[data-theme="dark"] input:focus:not(.ml-markets-search-input):not(.ml-farmer-search-input):not(.ml-inv-search-input):not(.ml-filter-input):not(.ml-search-input),
+html[data-theme="dark"] select:focus:not(.ml-filter-select),
 html[data-theme="dark"] textarea:focus,
 html[data-theme="dark"] .ml-form-input:focus,
 html[data-theme="dark"] .ml-form-select:focus,
@@ -454,22 +588,35 @@ html[data-theme="dark"] .ml-benefit-item {
   }
   .ml-nav-desktop {
     flex: 1 1 auto;
-    justify-content: stretch;
-    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 16px;
     border-inline: 1px solid var(--color-border-light);
+    margin-left: 8px;
+    min-width: 0;
+    overflow: visible;
   }
   .ml-nav-inner {
-    width: 100%;
+    width: auto;
     margin: 0;
-    justify-content: space-between;
-    gap: clamp(8px, 1.5vw, 24px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    flex-wrap: nowrap;
   }
   .ml-nav-link {
-    flex: 1 1 auto;
-    text-align: center;
+    flex: 0 0 auto;
+    text-align: left;
+    white-space: nowrap;
+    padding: 7px 14px;
+    font-size: 13.5px;
+    font-weight: 600;
   }
   .ml-header-right {
     margin-left: auto;
+    flex-shrink: 0;
   }
 }
 h1,
@@ -986,6 +1133,60 @@ img {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+/* Unified form icon alignment across auth, profile and CRUD modals. */
+.ml-input-wrapper { position: relative !important; display: flex !important; align-items: center !important; width: 100%; min-height: 36px; }
+.ml-input-wrapper > .ml-input-icon { position: absolute !important; left: 12px !important; top: 50% !important; width: 20px !important; height: 20px !important; margin: 0 !important; transform: translateY(-50%) !important; display: grid !important; place-items: center !important; line-height: 1 !important; font-size: 15px !important; z-index: 2 !important; pointer-events: none !important; }
+.ml-input-wrapper > .ml-form-input.ml-form-input--icon { width: 100% !important; min-height: 36px !important; padding: 7px 12px 7px 42px !important; line-height: 1.25 !important; }
+.ml-input-wrapper > .ml-form-input.ml-form-input--pwd { padding-right: 44px !important; }
+.ml-input-wrapper > .ml-pwd-toggle-btn { position: absolute !important; top: 50% !important; right: 9px !important; width: 28px !important; height: 28px !important; padding: 0 !important; transform: translateY(-50%) !important; display: grid !important; place-items: center !important; line-height: 1 !important; z-index: 3 !important; }
+
+/* Human-scale market UI: calm surfaces, restrained motion, less synthetic polish. */
+:root {
+  --market-paper: #f3eee2;
+  --market-cream: #fffaf0;
+  --market-moss: #3d6545;
+  --market-ink: #26382c;
+  --market-clay: #b95f3d;
+  --market-sun: #d9a947;
+}
+body { background-image: none !important; }
+.ml-header { box-shadow: 0 1px 0 rgba(38,56,44,.16) !important; }
+.ml-hero { min-height: 0 !important; padding: 64px 0 72px !important; background: #e2ead8 !important; }
+.ml-hero::before { opacity: .08 !important; transform: none !important; }
+.ml-hero::after { display: none !important; }
+.ml-hero-title { font-size: clamp(2.4rem, 5vw, 4.4rem) !important; line-height: 1.02 !important; text-shadow: none !important; }
+.ml-hero-img-frame { transform: none !important; border-width: 5px !important; border-radius: 10px !important; box-shadow: 8px 8px 0 rgba(185,95,61,.26) !important; }
+.ml-hero-img-frame:hover { transform: translateY(-2px) !important; box-shadow: 9px 10px 0 rgba(185,95,61,.28) !important; }
+.ml-section, .ml-how-it-works, .ml-markets-section, .ml-products-section { padding-top: 64px !important; padding-bottom: 64px !important; }
+.ml-section-header::after { height: 3px !important; width: 52px !important; }
+.ml-card, .ml-product-card, .ml-step-card, .ml-market-card { transform: none !important; box-shadow: 0 3px 12px rgba(47,72,51,.11) !important; }
+.ml-card:hover, .ml-product-card:hover, .ml-step-card:hover, .ml-market-card:hover { transform: translateY(-3px) !important; box-shadow: 0 8px 18px rgba(47,72,51,.16) !important; }
+.ml-product-img, .ml-market-card-img { transition: transform .35s ease !important; }
+.ml-product-card:hover .ml-product-img, .ml-market-card:hover .ml-market-card-img { transform: scale(1.035) !important; filter: none !important; }
+.ml-btn, .ml-login-action-btn, .ml-register-action-btn, .ml-cart-trigger { box-shadow: 0 2px 0 rgba(38,56,44,.5) !important; }
+.ml-btn:hover, .ml-login-action-btn:hover, .ml-register-action-btn:hover, .ml-cart-trigger:hover { transform: translateY(-1px) !important; box-shadow: 0 3px 0 rgba(38,56,44,.5) !important; }
+.ml-btn:active, .ml-login-action-btn:active, .ml-register-action-btn:active, .ml-cart-trigger:active { transform: translateY(1px) !important; box-shadow: 0 1px 0 rgba(38,56,44,.5) !important; }
+.ml-farmer-cta-inner::before { display: none !important; }
+.ml-footer::before { opacity: .035 !important; }
+.ml-product-badge, .ml-market-card-badge { box-shadow: none !important; }
+@media (max-width: 767px) { .ml-hero { padding: 42px 0 52px !important; } .ml-section, .ml-how-it-works, .ml-markets-section, .ml-products-section { padding-top: 48px !important; padding-bottom: 48px !important; } }
+
+/* 3D farm-crate loading state. */
+.ml-page-transition { background: rgba(38,56,44,.34) !important; backdrop-filter: blur(8px) !important; }
+.ml-page-transition__panel { min-width: 238px !important; min-height: 218px; padding: 24px 30px 22px !important; gap: 11px !important; border: 2px solid #b8cda9 !important; border-radius: 14px !important; background: #fffaf0 !important; box-shadow: 0 18px 0 rgba(38,56,44,.16), 0 28px 48px rgba(27,55,35,.28) !important; }
+.ml-page-transition__mark { position: relative; z-index: 3; display: grid; place-items: center; width: 46px; height: 30px; margin-bottom: -8px; font-size: 29px !important; filter: drop-shadow(0 5px 3px rgba(38,56,44,.2)) !important; animation: ml-loader-leaf 1.5s ease-in-out infinite; }
+.ml-page-transition__spinner { position: relative; width: 58px !important; height: 58px !important; margin-top: -1px; border: 0 !important; border-radius: 5px !important; background: linear-gradient(135deg,#d9a947 0 48%,#b95f3d 49% 100%) !important; box-shadow: inset 7px 7px 0 rgba(255,250,240,.24), inset -7px -7px 0 rgba(38,56,44,.22), 0 10px 0 #26382c, 0 15px 15px rgba(38,56,44,.2) !important; transform-style: preserve-3d; animation: ml-loader-crate 2.2s cubic-bezier(.45,.05,.55,.95) infinite; }
+.ml-page-transition__spinner::before { content: ''; position: absolute; inset: 9px; border: 3px solid rgba(255,250,240,.75); border-radius: 3px; transform: translateZ(2px); }
+.ml-page-transition__spinner::after { content: ''; position: absolute; left: 50%; top: 8px; width: 5px; height: 42px; border-radius: 4px; background: rgba(38,56,44,.36); transform: translateX(-50%); }
+.ml-page-transition__label { font-size: 13px !important; color: #315b3f !important; letter-spacing: .02em; }
+.ml-page-transition__bar { width: 154px !important; height: 5px !important; background: #dce8d1 !important; border-radius: 99px !important; }
+.ml-page-transition__bar i { background: #b95f3d !important; box-shadow: 0 1px 0 #7e3f2b; }
+@keyframes ml-loader-crate { 0%,100% { transform: rotate(-8deg) translateY(0); } 25% { transform: rotate(0deg) translateY(-5px) rotateY(12deg); } 50% { transform: rotate(8deg) translateY(0) rotateY(0); } 75% { transform: rotate(0deg) translateY(-5px) rotateY(-12deg); } }
+@keyframes ml-loader-leaf { 0%,100% { transform: rotate(-5deg) translateY(0); } 50% { transform: rotate(7deg) translateY(-4px); } }
+html[data-theme='dark'] .ml-page-transition__panel { background: #20382b !important; border-color: #52745b !important; box-shadow: 0 18px 0 #0b1711, 0 28px 48px rgba(0,0,0,.38) !important; }
+html[data-theme='dark'] .ml-page-transition__label { color: #e8f0df !important; }
+@media (prefers-reduced-motion: reduce) { .ml-page-transition__spinner, .ml-page-transition__mark { animation: none !important; } }
 .ml-btn,
 .ml-login-action-btn,
 .ml-register-action-btn,

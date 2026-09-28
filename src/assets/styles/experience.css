@@ -9,22 +9,20 @@ body {
   background: var(--color-bg-base);
 }
 .ml-main-content {
-  isolation: isolate;
   padding-bottom: 32px;
 }
 .ml-main-content > :first-child {
-  animation: ml-view-arrive 360ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
-  transform-origin: center top;
+  animation: ml-view-arrive 280ms cubic-bezier(0.2, 0.75, 0.25, 1);
 }
 
 @keyframes ml-view-arrive {
   from {
     opacity: 0;
-    transform: perspective(1000px) translate3d(0, 10px, -18px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: perspective(1000px) translate3d(0, 0, 0);
+    transform: none;
   }
 }
 
@@ -158,8 +156,8 @@ body {
   animation-duration: 700ms;
 }
 
-input:focus-visible,
-select:focus-visible,
+input:focus-visible:not(.ml-markets-search-input):not(.ml-farmer-search-input):not(.ml-inv-search-input):not(.ml-filter-input):not(.ml-search-input):not(.ml-home-search-input),
+select:focus-visible:not(.ml-filter-select),
 textarea:focus-visible,
 .ml-form-input:focus,
 .ml-form-select:focus,
@@ -167,6 +165,7 @@ textarea:focus-visible,
   outline: 3px solid var(--color-primary-focus);
   outline-offset: 1px;
 }
+
 
 .ml-inv-loading,
 .ml-orders-loading,

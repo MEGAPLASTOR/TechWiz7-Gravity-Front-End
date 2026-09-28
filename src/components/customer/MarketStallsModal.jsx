@@ -15,14 +15,13 @@ export default function MarketStallsModal({
   onViewScheduleMap,
   onOpenFullProducts,
 }) {
-  if (!market) return null;
   const [activeTab, setActiveTab] = useState("products");
   const [selectedStallCode, setSelectedStallCode] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
-  const marketId = market.id || market.marketId || 101;
-  const marketName = market.name || "Phiên Chợ Nông Sản Sạch";
+  const marketId = market?.id || market?.marketId || "";
+  const marketName = market?.name || "";
   const defaultStalls = useMemo(() => {
     if (marketId === 101 || marketName.includes("Ba Đình")) {
       return [
@@ -311,7 +310,7 @@ export default function MarketStallsModal({
     return () => {
       isMounted = false;
     };
-  }, [marketId, marketName, market.city]);
+  }, [marketId, marketName, market?.city]);
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       let matchStall = selectedStallCode === "all";
@@ -370,6 +369,7 @@ export default function MarketStallsModal({
     setSelectedStallCode(stall.stallNumber || stall.stallName);
     setActiveTab("products");
   };
+  if (!market) return null;
   return (
     <Modal
       isOpen={isOpen}

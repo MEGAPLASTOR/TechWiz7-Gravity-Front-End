@@ -14,8 +14,8 @@ const DAY_OF_WEEK_NAMES = {
   6: "Thứ Bảy",
   7: "Chủ Nhật",
 };
-export default function FarmerStallProfilePage() {
-  const [activeTab, setActiveTab] = useState("profile");
+export default function FarmerStallProfilePage({ initialTab = "profile" }) {
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [loading, setLoading] = useState(false);
   const [alertSuccess, setAlertSuccess] = useState("");
   const [alertError, setAlertError] = useState("");
@@ -70,10 +70,12 @@ export default function FarmerStallProfilePage() {
   const [kycData, setKycData] = useState(null);
   const [isKycModalOpen, setIsKycModalOpen] = useState(false);
   const [kycForm, setKycForm] = useState({
-    documentUrl: "",
-    documentNumber: "",
-    issuedDate: "",
-    expiryDate: "",
+    citizenFrontUrl: "",
+    citizenBackUrl: "",
+    vietGapUrl: "",
+    vietGapNumber: "",
+    vietGapIssuedDate: "",
+    vietGapExpiryDate: "",
   });
   const notifySuccess = (msg) => {
     setAlertSuccess(msg);
@@ -82,6 +84,34 @@ export default function FarmerStallProfilePage() {
   const notifyError = (msg) => {
     setAlertError(msg);
     setTimeout(() => setAlertError(""), 4000);
+  };
+  const requireVerifiedKyc = () => {
+    if (kycData?.kycStatus === "VERIFIED") return true;
+    notifyError("Vui lòng hoàn tất và chờ duyệt KYC trước khi thực hiện thao tác bán hàng.");
+    setActiveTab("kyc");
+    return false;
+  };
+  const isAnyModalOpen = Boolean(
+    isCutoffModalOpen ||
+    isSlotModalOpen ||
+    isRegisterMarketModalOpen ||
+    isKycModalOpen ||
+    isEditProfileModalOpen
+  );
+
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isAnyModalOpen]);
+
+  const goToProtectedTab = (tab) => {
+    if (requireVerifiedKyc()) setActiveTab(tab);
   };
   const loadAllData = async () => {
     setLoading(true);
@@ -209,6 +239,7 @@ export default function FarmerStallProfilePage() {
   };
   const handleSaveCutoff = async (e) => {
     e.preventDefault();
+    if (!requireVerifiedKyc()) return;
     try {
       await farmerService.saveFarmerCutoffSetting({
         marketId: Number(cutoffForm.marketId),
@@ -242,6 +273,7 @@ export default function FarmerStallProfilePage() {
   };
   const handleSaveSlot = async (e) => {
     e.preventDefault();
+    if (!requireVerifiedKyc()) return;
     try {
       await farmerService.createFarmerPickupSlot({
         marketId: Number(slotForm.marketId),
@@ -282,6 +314,12 @@ export default function FarmerStallProfilePage() {
   };
   const handleRegisterMarket = async (e) => {
     e.preventDefault();
+    if (kycData?.kycStatus !== "VERIFIED") {
+      notifyError("Bạn chỉ có thể đăng ký sạp sau khi hồ sơ KYC được duyệt.");
+      setIsRegisterMarketModalOpen(false);
+      setActiveTab("kyc");
+      return;
+    }
     try {
       await farmerService.registerMarket({
         marketId: Number(registerMarketForm.marketId),
@@ -299,18 +337,36 @@ export default function FarmerStallProfilePage() {
   };
   const handleSubmitKyc = async (e) => {
     e.preventDefault();
-    if (!kycForm.documentUrl) {
-      alert("Vui lòng cung cấp ảnh giấy chứng nhận hoặc CCCD!");
+    if (
+      !kycForm.citizenFrontUrl ||
+      !kycForm.citizenBackUrl ||
+      !kycForm.vietGapUrl
+    ) {
+      notifyError("Vui lòng tải đủ 3 ảnh: CCCD mặt trước, CCCD mặt sau và VietGAP.");
+      return;
+    }
+    if (
+      !kycForm.vietGapNumber.trim() ||
+      !kycForm.vietGapIssuedDate ||
+      !kycForm.vietGapExpiryDate
+    ) {
+      notifyError("Vui lòng nhập đủ số giấy và ngày cấp, ngày hết hạn VietGAP.");
       return;
     }
     try {
       await farmerService.submitFarmerKyc({
         documents: [
           {
-            documentUrl: kycForm.documentUrl,
-            documentNumber: kycForm.documentNumber || "VG-2026-090",
-            issuedDate: kycForm.issuedDate || "2024-01-01",
-            expiryDate: kycForm.expiryDate || "2027-01-01",
+            documentUrl: kycForm.citizenFrontUrl,
+          },
+          {
+            documentUrl: kycForm.citizenBackUrl,
+          },
+          {
+            documentUrl: kycForm.vietGapUrl,
+            documentNumber: kycForm.vietGapNumber.trim(),
+            issuedDate: kycForm.vietGapIssuedDate,
+            expiryDate: kycForm.vietGapExpiryDate,
           },
         ],
       });
@@ -383,21 +439,27 @@ export default function FarmerStallProfilePage() {
           <button
             type="button"
             className={`ml-inv-main-tab ${activeTab === "cutoff" ? "active" : ""}`}
-            onClick={() => setActiveTab("cutoff")}
+            onClick={() => {
+              if (requireVerifiedKyc()) setActiveTab("cutoff");
+            }}
           >
             ⏰ Giờ chốt đơn ({cutoffSettings.length})
           </button>
           <button
             type="button"
             className={`ml-inv-main-tab ${activeTab === "slots" ? "active" : ""}`}
-            onClick={() => setActiveTab("slots")}
+            onClick={() => {
+              if (requireVerifiedKyc()) setActiveTab("slots");
+            }}
           >
             🕒 Ca đón khách ({pickupSlots.length})
           </button>
           <button
             type="button"
             className={`ml-inv-main-tab ${activeTab === "markets" ? "active" : ""}`}
-            onClick={() => setActiveTab("markets")}
+            onClick={() => {
+              if (requireVerifiedKyc()) setActiveTab("markets");
+            }}
           >
             🎪 Sạp chợ đã đăng ký ({assignedMarkets.length})
           </button>
@@ -485,7 +547,7 @@ export default function FarmerStallProfilePage() {
             <div className="ml-profile-metrics-row">
               <div
                 className="ml-profile-metric-card"
-                onClick={() => setActiveTab("markets")}
+                onClick={() => goToProtectedTab("markets")}
                 style={{
                   cursor: "pointer",
                 }}
@@ -504,7 +566,7 @@ export default function FarmerStallProfilePage() {
 
               <div
                 className="ml-profile-metric-card"
-                onClick={() => setActiveTab("cutoff")}
+                onClick={() => goToProtectedTab("cutoff")}
                 style={{
                   cursor: "pointer",
                 }}
@@ -523,7 +585,7 @@ export default function FarmerStallProfilePage() {
 
               <div
                 className="ml-profile-metric-card"
-                onClick={() => setActiveTab("slots")}
+                onClick={() => goToProtectedTab("slots")}
                 style={{
                   cursor: "pointer",
                 }}
@@ -613,7 +675,7 @@ export default function FarmerStallProfilePage() {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => setActiveTab("markets")}
+                      onClick={() => goToProtectedTab("markets")}
                     >
                       Quản lý sạp →
                     </Button>
@@ -626,7 +688,14 @@ export default function FarmerStallProfilePage() {
                         type="button"
                         variant="primary"
                         size="sm"
-                        onClick={() => setIsRegisterMarketModalOpen(true)}
+                        onClick={() => {
+                          if (kycData?.kycStatus !== "VERIFIED") {
+                            notifyError("Vui lòng hoàn tất và chờ duyệt KYC trước khi đăng ký sạp.");
+                            setActiveTab("kyc");
+                            return;
+                          }
+                          setIsRegisterMarketModalOpen(true);
+                        }}
                       >
                         + Đăng ký sạp chợ ngay
                       </Button>
@@ -773,7 +842,7 @@ export default function FarmerStallProfilePage() {
                     <button
                       type="button"
                       className="ml-profile-shortcut-btn"
-                      onClick={() => setActiveTab("cutoff")}
+                      onClick={() => goToProtectedTab("cutoff")}
                     >
                       <span>⏰ Cài đặt giờ chốt đơn trước phiên chợ</span>
                       <span>→</span>
@@ -781,7 +850,7 @@ export default function FarmerStallProfilePage() {
                     <button
                       type="button"
                       className="ml-profile-shortcut-btn"
-                      onClick={() => setActiveTab("slots")}
+                      onClick={() => goToProtectedTab("slots")}
                     >
                       <span>🕒 Cấu hình ca đón khách nhận hàng</span>
                       <span>→</span>
@@ -817,7 +886,9 @@ export default function FarmerStallProfilePage() {
               <Button
                 variant="primary"
                 size="md"
-                onClick={() => setIsCutoffModalOpen(true)}
+                onClick={() => {
+                  if (requireVerifiedKyc()) setIsCutoffModalOpen(true);
+                }}
               >
                 + Thêm giờ chốt đơn
               </Button>
@@ -834,7 +905,9 @@ export default function FarmerStallProfilePage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsCutoffModalOpen(true)}
+                  onClick={() => {
+                    if (requireVerifiedKyc()) setIsCutoffModalOpen(true);
+                  }}
                 >
                   Thiết lập hạn chốt đầu tiên
                 </Button>
@@ -904,7 +977,9 @@ export default function FarmerStallProfilePage() {
               <Button
                 variant="primary"
                 size="md"
-                onClick={() => setIsSlotModalOpen(true)}
+                onClick={() => {
+                  if (requireVerifiedKyc()) setIsSlotModalOpen(true);
+                }}
               >
                 + Thêm ca đón khách mới
               </Button>
@@ -921,7 +996,9 @@ export default function FarmerStallProfilePage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsSlotModalOpen(true)}
+                  onClick={() => {
+                    if (requireVerifiedKyc()) setIsSlotModalOpen(true);
+                  }}
                 >
                   Tạo ca nhận đầu tiên
                 </Button>
@@ -988,7 +1065,14 @@ export default function FarmerStallProfilePage() {
               <Button
                 variant="primary"
                 size="md"
-                onClick={() => setIsRegisterMarketModalOpen(true)}
+                onClick={() => {
+                  if (kycData?.kycStatus !== "VERIFIED") {
+                    notifyError("Vui lòng hoàn tất và chờ duyệt KYC trước khi đăng ký sạp.");
+                    setActiveTab("kyc");
+                    return;
+                  }
+                  setIsRegisterMarketModalOpen(true);
+                }}
               >
                 + Đăng ký tham gia chợ mới
               </Button>
@@ -1005,7 +1089,14 @@ export default function FarmerStallProfilePage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsRegisterMarketModalOpen(true)}
+                  onClick={() => {
+                    if (kycData?.kycStatus !== "VERIFIED") {
+                      notifyError("Vui lòng hoàn tất và chờ duyệt KYC trước khi đăng ký sạp.");
+                      setActiveTab("kyc");
+                      return;
+                    }
+                    setIsRegisterMarketModalOpen(true);
+                  }}
                 >
                   Đăng ký sạp chợ đầu tiên
                 </Button>
@@ -1172,8 +1263,8 @@ export default function FarmerStallProfilePage() {
                       </option>
                     ))}
                     {availableMarkets.length === 0 && (
-                      <option value="101">
-                        Chợ Nông Sản Tây Hồ Eco (Mặc định)
+                      <option value="" disabled>
+                        Chưa có chợ khả dụng
                       </option>
                     )}
                   </select>
@@ -1281,7 +1372,9 @@ export default function FarmerStallProfilePage() {
                       </option>
                     ))}
                     {availableMarkets.length === 0 && (
-                      <option value="101">Chợ Nông Sản Tây Hồ Eco</option>
+                      <option value="" disabled>
+                        Chưa có chợ khả dụng
+                      </option>
                     )}
                   </select>
                 </div>
@@ -1455,40 +1548,68 @@ export default function FarmerStallProfilePage() {
               <div className="ml-modal-body">
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Tải lên tài liệu chứng nhận / CCCD:
+                    CCCD mặt trước (*):
                   </label>
                   <ImageUploadInput
                     folder="kyc"
-                    value={kycForm.documentUrl}
+                    value={kycForm.citizenFrontUrl}
                     onChange={(url) =>
                       setKycForm((prev) => ({
                         ...prev,
-                        documentUrl: url,
+                        citizenFrontUrl: url,
                       }))
                     }
-                    onUploadSuccess={(url) =>
-                      setKycForm((prev) => ({
-                        ...prev,
-                        documentUrl: url,
-                      }))
-                    }
-                    helpText="Ảnh chụp rõ nét 2 mặt CCCD hoặc Giấy chứng nhận VietGAP / Hữu cơ"
+                    helpText="Tải ảnh mặt trước CCCD, rõ nét và không bị che khuất"
                   />
                 </div>
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Số giấy tờ / Mã chứng nhận VietGAP:
+                    CCCD mặt sau (*):
+                  </label>
+                  <ImageUploadInput
+                    folder="kyc"
+                    value={kycForm.citizenBackUrl}
+                    onChange={(url) =>
+                      setKycForm((prev) => ({
+                        ...prev,
+                        citizenBackUrl: url,
+                      }))
+                    }
+                    helpText="Tải ảnh mặt sau CCCD, rõ nét và không bị che khuất"
+                  />
+                </div>
+
+                <div className="ml-form-group">
+                  <label className="ml-form-label">
+                    Giấy chứng nhận VietGAP (*):
+                  </label>
+                  <ImageUploadInput
+                    folder="kyc"
+                    value={kycForm.vietGapUrl}
+                    onChange={(url) =>
+                      setKycForm((prev) => ({
+                        ...prev,
+                        vietGapUrl: url,
+                      }))
+                    }
+                    helpText="Tải ảnh giấy chứng nhận VietGAP, rõ đủ số giấy và thời hạn"
+                  />
+                </div>
+
+                <div className="ml-form-group">
+                  <label className="ml-form-label">
+                    Số giấy chứng nhận VietGAP (*):
                   </label>
                   <input
                     type="text"
                     placeholder="VD: VG-2024-HANOI-88"
                     className="ml-form-input"
-                    value={kycForm.documentNumber}
+                    value={kycForm.vietGapNumber}
                     onChange={(e) =>
                       setKycForm({
                         ...kycForm,
-                        documentNumber: e.target.value,
+                        vietGapNumber: e.target.value,
                       })
                     }
                     required
@@ -1497,15 +1618,15 @@ export default function FarmerStallProfilePage() {
 
                 <div className="ml-form-grid-2">
                   <div className="ml-form-group">
-                    <label className="ml-form-label">Ngày cấp:</label>
+                    <label className="ml-form-label">Ngày cấp VietGAP (*):</label>
                     <input
                       type="date"
                       className="ml-form-input"
-                      value={kycForm.issuedDate}
+                      value={kycForm.vietGapIssuedDate}
                       onChange={(e) =>
                         setKycForm({
                           ...kycForm,
-                          issuedDate: e.target.value,
+                          vietGapIssuedDate: e.target.value,
                         })
                       }
                       required
@@ -1513,17 +1634,20 @@ export default function FarmerStallProfilePage() {
                   </div>
 
                   <div className="ml-form-group">
-                    <label className="ml-form-label">Ngày hết hạn:</label>
+                    <label className="ml-form-label">
+                      Ngày hết hạn VietGAP (*):
+                    </label>
                     <input
                       type="date"
                       className="ml-form-input"
-                      value={kycForm.expiryDate}
+                      value={kycForm.vietGapExpiryDate}
                       onChange={(e) =>
                         setKycForm({
                           ...kycForm,
-                          expiryDate: e.target.value,
+                          vietGapExpiryDate: e.target.value,
                         })
                       }
+                      required
                     />
                   </div>
                 </div>

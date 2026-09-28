@@ -1,7 +1,18 @@
+.ml-modal-content:has(.ml-auth-modal-content) {
+  width: 100% !important;
+  max-width: 400px !important;
+}
+
+.ml-modal-content:has(.ml-auth-role-tabs) {
+  max-width: 460px !important;
+}
+
 .ml-auth-modal-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .ml-auth-alert {
   display: flex;

@@ -5,6 +5,9 @@ import Badge from "../../components/common/Badge";
 import farmerService from "../../services/farmerService";
 export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
   const [profile, setProfile] = useState(null);
+  const [kycStatus, setKycStatus] = useState(() => {
+    return localStorage.getItem("ml_kyc_status") || "UNVERIFIED";
+  });
   const [summary, setSummary] = useState({
     totalOrders: 0,
     totalRevenue: 0,
@@ -18,18 +21,33 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
   const [bestSellers, setBestSellers] = useState([]);
   const [pendingOrders, setPendingOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const handleKycChange = () => {
+      const stored = localStorage.getItem("ml_kyc_status");
+      if (stored) setKycStatus(stored);
+    };
+    window.addEventListener("ml_kyc_changed", handleKycChange);
+    window.addEventListener("storage", handleKycChange);
+    return () => {
+      window.removeEventListener("ml_kyc_changed", handleKycChange);
+      window.removeEventListener("storage", handleKycChange);
+    };
+  }, []);
   useEffect(() => {
     let isMounted = true;
     async function loadData() {
       setLoading(true);
       try {
-        const [profData, sumData, bestData, ordersData] = await Promise.all([
+        const [profData, sumData, bestData, ordersData, kycData] = await Promise.all([
           farmerService.getFarmerProfile(),
           farmerService.getFarmerSummary(),
           farmerService.getBestSellingProducts(5),
           farmerService.getFarmerOrders(),
+          farmerService.getFarmerKycStatus(),
         ]);
         if (isMounted) {
+          if (kycData?.kycStatus) setKycStatus(kycData.kycStatus);
           if (profData) setProfile(profData);
           if (sumData) setSummary(sumData);
           if (bestData && bestData.length > 0) {
@@ -100,12 +118,26 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
 
           <div className="ml-dash-quick-btns">
             <Button
-              variant="accent"
+              variant={kycStatus === "VERIFIED" ? "accent" : "secondary"}
               size="md"
-              onClick={onOpenAddProduct}
+              className={kycStatus !== "VERIFIED" ? "ml-btn-unverified" : ""}
+              title={
+                kycStatus !== "VERIFIED"
+                  ? "Cần duyệt KYC trước khi đăng món"
+                  : ""
+              }
+              onClick={() => {
+                if (kycStatus !== "VERIFIED") {
+                  if (onNavigate) onNavigate("farmer-stall", { tab: "kyc" });
+                  return;
+                }
+                onOpenAddProduct && onOpenAddProduct();
+              }}
               icon={<span>+</span>}
             >
-              Đăng nông sản mới
+              {kycStatus === "VERIFIED"
+                ? "Đăng nông sản mới"
+                : "🔒 Đăng nông sản (Chờ KYC)"}
             </Button>
             <Button
               variant="primary"

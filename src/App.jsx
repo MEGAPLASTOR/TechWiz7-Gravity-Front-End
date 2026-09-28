@@ -87,22 +87,7 @@ export default function App() {
   const [cartItems, setCartItems] = useState(() => {
     try {
       const saved = localStorage.getItem("ml_cart");
-      return saved
-        ? JSON.parse(saved)
-        : [
-            {
-              id: 101,
-              name: "Dâu Tây Mộc Châu Giống Hana (Hái Sớm)",
-              price: 65000,
-              unit: "hộp 500g",
-              farmerName: "HTX Dâu Tây Mộc Châu",
-              stallCode: "Sạp A-02",
-              marketName: "Chợ Nông Sản Tây Hồ",
-              imageUrl:
-                "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=600&q=80",
-              quantity: 2,
-            },
-          ];
+      return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
     }
@@ -345,9 +330,12 @@ export default function App() {
       if (!finalPayload || !finalPayload.items) {
         const firstItem =
           cartItems && cartItems.length > 0 ? cartItems[0] : null;
-        const farmerId = firstItem?.farmerId || 103;
-        const marketId = firstItem?.marketId || 101;
-        const slotId = 101;
+        const farmerId = firstItem?.farmerId;
+        const marketId = firstItem?.marketId;
+        const slotId = firstItem?.slotId;
+        if (!farmerId || !marketId || !slotId || !firstItem?.id) {
+          throw new Error("Thiếu thông tin sạp, chợ, ca nhận hoặc sản phẩm để tạo đơn.");
+        }
         const now = new Date();
         now.setDate(now.getDate() + 1);
         const pickupDate = now.toISOString().split("T")[0];
@@ -361,7 +349,7 @@ export default function App() {
             orderPayload?.customerNote ||
             "Đặt trước qua sàn MarketLink",
           items: cartItems.map((it) => ({
-            productId: Number(it.productId || it.id || 101),
+            productId: Number(it.productId || it.id),
             quantity: Number(it.quantity || 1),
           })),
         };
@@ -658,11 +646,14 @@ export default function App() {
         )}
 
         {activeNav === "farmer-inventory" && (
-          <FarmerInventoryPage onNavigate={(nav) => setActiveNav(nav)} />
+          <FarmerInventoryPage onNavigate={handleNavigate} />
         )}
 
         {activeNav === "farmer-stall" && (
-          <FarmerStallProfilePage onNavigate={(nav) => setActiveNav(nav)} />
+          <FarmerStallProfilePage
+            initialTab={navParams.tab || "profile"}
+            onNavigate={handleNavigate}
+          />
         )}
 
         {activeNav === "farmer-reviews" && (

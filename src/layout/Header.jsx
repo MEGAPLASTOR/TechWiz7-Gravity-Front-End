@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import "@/assets/styles/layout/Header.css";
-import Button from "@/components/common/Button";
 import NotificationBell from "./NotificationBell";
 export default function Header({
   currentRole = "GUEST",
@@ -23,9 +22,9 @@ export default function Header({
   theme = "light",
   onToggleTheme,
 }) {
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showLocationMenu, setShowLocationMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+
   const locations = [
     "Hà Nội",
     "TP. Hồ Chí Minh",
@@ -70,7 +69,7 @@ export default function Header({
       : "U";
   return (
     <header className="ml-header">
-      <div className="ml-container ml-header-inner">
+      <div className="ml-header-inner">
         <div className="ml-header-left">
           <button
             type="button"
@@ -400,7 +399,9 @@ export default function Header({
                   <span className="ml-header-user-name" title={displayName}>
                     {displayName}
                   </span>
-                  <span className="ml-header-user-role">
+                  <span
+                    className="ml-header-user-role"
+                  >
                     {roleLabels[currentRole]?.label}
                   </span>
                 </div>
@@ -458,7 +459,7 @@ export default function Header({
                       <>
                         <button
                           type="button"
-                          className="ml-user-dropdown-item"
+                          className={`ml-user-dropdown-item ${activeNav === "farmer-dashboard" ? "active" : ""}`}
                           onClick={() => {
                             onNavigate && onNavigate("farmer-dashboard");
                             setShowUserMenu(false);
@@ -468,7 +469,7 @@ export default function Header({
                         </button>
                         <button
                           type="button"
-                          className="ml-user-dropdown-item"
+                          className={`ml-user-dropdown-item ${activeNav === "farmer-inventory" ? "active" : ""}`}
                           onClick={() => {
                             onNavigate && onNavigate("farmer-inventory");
                             setShowUserMenu(false);

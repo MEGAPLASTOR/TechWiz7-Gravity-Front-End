@@ -11,7 +11,6 @@ export default function ProductDetailModal({
   cartQuantity = 0,
   onUpdateCartQty,
 }) {
-  if (!product) return null;
   const [selectedQty, setSelectedQty] = useState(1);
   const {
     id,
@@ -28,7 +27,7 @@ export default function ProductDetailModal({
     imageUrl,
     organicCertified = true,
     cutoffTime = "Chốt đơn lúc 20:00 tối nay",
-  } = product;
+  } = product || {};
   const fallbackImg =
     "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80";
   const isOutOfStock = stockQuantity <= 0;
@@ -46,6 +45,7 @@ export default function ProductDetailModal({
       onClose();
     }
   };
+  if (!product) return null;
   return (
     <Modal
       isOpen={isOpen}

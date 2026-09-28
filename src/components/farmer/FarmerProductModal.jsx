@@ -3,7 +3,6 @@ import "@/assets/styles/components/farmer/FarmerProductModal.css";
 import Modal from "../common/Modal";
 import Button from "../common/Button";
 import ImageUploadInput from "../ImageUploadInput";
-import farmerService from "../../services/farmerService";
 export default function FarmerProductModal({
   isOpen,
   onClose,
@@ -23,6 +22,11 @@ export default function FarmerProductModal({
   const [loadingStalls, setLoadingStalls] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const sellableStalls = product
+    ? stallsList
+    : stallsList.filter((stall) =>
+        ["ACTIVE", "APPROVED"].includes(String(stall.status || "").toUpperCase()),
+      );
   const categories = [
     {
       id: 1,
@@ -95,14 +99,14 @@ export default function FarmerProductModal({
       setStockQuantity("");
       setDescription("");
       setImageUrl("");
-      if (stallsList && stallsList.length > 0) {
-        const s = stallsList[0];
+      if (sellableStalls.length > 0) {
+        const s = sellableStalls[0];
         setSelectedStallKey(`${s.marketId}|${s.stallNumber || ""}`);
       } else {
         setSelectedStallKey("");
       }
     }
-  }, [product, isOpen, stallsList]);
+  }, [product, isOpen, sellableStalls]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -121,24 +125,15 @@ export default function FarmerProductModal({
       categoryId: Number(categoryId),
       name: name.trim(),
       description:
-        description.trim() || "Nông sản sạch thu hoạch sớm tại nhà vườn.",
+        description.trim(),
       unit: unit.trim(),
       price: Number(price),
       currentStock: Number(stockQuantity),
-      imageUrl:
-        imageUrl.trim() ||
-        "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
+      imageUrl: imageUrl.trim(),
     };
     try {
-      let savedResult;
-      if (product && (product.id || product.productId)) {
-        const prodId = product.id || product.productId;
-        savedResult = await farmerService.updateProduct(prodId, payload);
-      } else {
-        savedResult = await farmerService.createProduct(payload);
-      }
       if (onSave) {
-        await onSave(savedResult);
+        await onSave(payload);
       }
       onClose();
     } catch (err) {
@@ -210,7 +205,7 @@ export default function FarmerProductModal({
             >
               Đang tải danh sách sạp đã đăng ký...
             </div>
-          ) : stallsList.length === 0 ? (
+          ) : sellableStalls.length === 0 ? (
             <div
               style={{
                 fontSize: "13px",
@@ -236,7 +231,7 @@ export default function FarmerProductModal({
               }}
             >
               <option value="">-- Chọn sạp chỉ định bày bán --</option>
-              {stallsList.map((st, idx) => {
+              {sellableStalls.map((st, idx) => {
                 const key = `${st.marketId}|${st.stallNumber || ""}`;
                 const label = `${st.stallNumber || "Sạp chờ phân"} — ${st.marketName || `Chợ #${st.marketId}`} ${st.status ? `[${st.status}]` : ""}`;
                 return (
@@ -279,7 +274,9 @@ export default function FarmerProductModal({
               className="ml-form-select"
               value={categoryId}
               onChange={(e) => setCategoryId(Number(e.target.value))}
+              required
             >
+              <option value="">-- Chọn danh mục --</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -360,7 +357,7 @@ export default function FarmerProductModal({
             type="submit"
             variant="primary"
             loading={loading}
-            disabled={stallsList.length === 0 && !product}
+            disabled={sellableStalls.length === 0 && !product}
           >
             {product ? "Cập nhật nông sản" : "Đăng bán vào sạp"}
           </Button>

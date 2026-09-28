@@ -12,7 +12,7 @@ export default function OrderModifyModal({
 }) {
   const [pickupDate, setPickupDate] = useState(() => order?.pickupDate || "");
   const [pickupSlotId, setPickupSlotId] = useState(() =>
-    String(order?.slotId || "101"),
+    String(order?.slotId || ""),
   );
   const [note, setNote] = useState(() => order?.note || "");
   const [slots, setSlots] = useState([]);
@@ -20,30 +20,17 @@ export default function OrderModifyModal({
   useEffect(() => {
     if (order) {
       setPickupDate(order.pickupDate || "");
-      setPickupSlotId(String(order.slotId || "101"));
+      setPickupSlotId(String(order.slotId || ""));
       setNote(order.note || "");
-      const marketId = order.marketId || 101;
+      const marketId = order.marketId;
+      if (!marketId) {
+        setSlots([]);
+        return;
+      }
       marketService
         .getPickupSlots(marketId, order.farmerId)
         .then((data) => {
-          if (data && data.length > 0) {
-            setSlots(data);
-          } else {
-            setSlots([
-              {
-                slotId: 101,
-                timeRange: "07:00 - 08:00",
-              },
-              {
-                slotId: 102,
-                timeRange: "08:00 - 09:00",
-              },
-              {
-                slotId: 103,
-                timeRange: "09:00 - 10:00",
-              },
-            ]);
-          }
+          setSlots(data || []);
         })
         .catch(() => {});
     }

@@ -39,6 +39,8 @@ export default function UserModerationPage({ onNavigate }) {
   const [selectedFarmerKyc, setSelectedFarmerKyc] = useState(null);
   const [farmerKycDetail, setFarmerKycDetail] = useState(null);
   const [isKycDetailModalOpen, setIsKycDetailModalOpen] = useState(false);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [approveTarget, setApproveTarget] = useState(null);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [loadingKyc, setLoadingKyc] = useState(false);
@@ -157,14 +159,13 @@ export default function UserModerationPage({ onNavigate }) {
     }
     return err.response?.data?.message || err.message || "Lỗi không xác định";
   };
-  const handleApproveKyc = async (farmerId) => {
-    if (
-      !window.confirm(
-        "Xác nhận PHÊ DUYỆT hồ sơ nông hộ này? Nông dân sẽ được cấp quyền mở sạp và đón khách đặt trước.",
-      )
-    ) {
-      return;
-    }
+  const handleOpenApproveModal = (farmer) => {
+    setApproveTarget(farmer);
+    setIsApproveModalOpen(true);
+  };
+  const handleApproveKyc = async () => {
+    if (!approveTarget) return;
+    const farmerId = approveTarget.farmerId;
     try {
       await adminService.reviewFarmerKyc(
         farmerId,
@@ -175,6 +176,8 @@ export default function UserModerationPage({ onNavigate }) {
         "success",
         `Đã phê duyệt KYC thành công cho nông dân #${farmerId}. Sạp hàng đã được kích hoạt!`,
       );
+      setIsApproveModalOpen(false);
+      setApproveTarget(null);
       setIsKycDetailModalOpen(false);
       loadKyc();
     } catch (err) {
@@ -189,7 +192,7 @@ export default function UserModerationPage({ onNavigate }) {
   const handleConfirmRejectKyc = async (actionType = "REJECT") => {
     if (!selectedFarmerKyc) return;
     if (!rejectReason.trim()) {
-      alert("Vui lòng nhập lý do để phản hồi cho nông dân!");
+      showToast("error", "Vui lòng nhập lý do để phản hồi cho nông dân!");
       return;
     }
     try {
@@ -1090,7 +1093,7 @@ export default function UserModerationPage({ onNavigate }) {
                       <Button
                         variant="accent"
                         size="sm"
-                        onClick={() => handleApproveKyc(k.farmerId)}
+                        onClick={() => handleOpenApproveModal(k)}
                       >
                         ✓ Duyệt nhanh
                       </Button>
@@ -1695,11 +1698,66 @@ export default function UserModerationPage({ onNavigate }) {
                 </Button>
                 <Button
                   variant="primary"
-                  onClick={() => handleApproveKyc(selectedFarmerKyc.farmerId)}
+                  onClick={() => handleOpenApproveModal(selectedFarmerKyc)}
                 >
                   ✓ Phê duyệt hồ sơ (Cấp quyền mở sạp)
                 </Button>
               </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {isApproveModalOpen && approveTarget && (
+        <Modal
+          isOpen={isApproveModalOpen}
+          onClose={() => {
+            setIsApproveModalOpen(false);
+            setApproveTarget(null);
+          }}
+          title="Xác nhận phê duyệt hồ sơ KYC"
+          subtitle={`Nông hộ: ${approveTarget.stallName || approveTarget.fullName || `#${approveTarget.farmerId}`}`}
+          maxWidth="520px"
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+            }}
+          >
+            <div
+              style={{
+                padding: 14,
+                borderRadius: 8,
+                backgroundColor: "#f0fdf4",
+                border: "1px solid #bbf7d0",
+                color: "#166534",
+                lineHeight: 1.6,
+              }}
+            >
+              Hồ sơ hợp lệ sẽ được chuyển sang trạng thái đã xác minh. Nông
+              dân sẽ được cấp quyền đăng ký sạp và đăng bán sản phẩm.
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 8,
+              }}
+            >
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setIsApproveModalOpen(false);
+                  setApproveTarget(null);
+                }}
+              >
+                Hủy
+              </Button>
+              <Button variant="primary" onClick={handleApproveKyc}>
+                ✓ Xác nhận phê duyệt
+              </Button>
             </div>
           </div>
         </Modal>

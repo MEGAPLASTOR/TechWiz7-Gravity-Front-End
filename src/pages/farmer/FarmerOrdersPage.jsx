@@ -256,35 +256,41 @@ export default function FarmerOrdersPage({
 
         <div className="ml-card ml-farmer-filter-box">
           <div className="ml-farmer-search-row">
-            <div className="ml-farmer-search-field">
-              <span className="ml-farmer-search-icon">🔍</span>
-              <input
-                type="text"
-                placeholder="Tìm theo mã đơn (#ORD-...), tên khách, số điện thoại..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="ml-farmer-search-input"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  className="ml-clear-search-btn"
-                  onClick={() => setSearchQuery("")}
-                  title="Xóa tìm kiếm để xem tất cả đơn"
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "#94a3b8",
-                    cursor: "pointer",
-                    fontSize: "1rem",
-                    padding: "0 8px",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  ✕
-                </button>
-              )}
+            <div className="ml-farmer-search-box-wrap">
+              <div className="ml-farmer-search-field">
+                <span className="ml-farmer-search-icon">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Tìm theo mã đơn (#ORD-...), tên khách, số điện thoại..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="ml-farmer-search-input"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    className="ml-clear-search-btn"
+                    onClick={() => setSearchQuery("")}
+                    title="Xóa tìm kiếm để xem tất cả đơn"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              <div className="ml-farmer-quick-tags">
+                <span className="ml-farmer-quick-label">Gợi ý:</span>
+                {["ORD-", "Ca sáng", "Ca chiều", "Ba Đình", "Thảo Điền", "Tây Hồ"].map((tag, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`ml-farmer-tag-chip ${searchQuery === tag ? "active" : ""}`}
+                    onClick={() => setSearchQuery(searchQuery === tag ? "" : tag)}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="ml-farmer-date-filter">

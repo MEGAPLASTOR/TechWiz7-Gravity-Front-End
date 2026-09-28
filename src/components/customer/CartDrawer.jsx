@@ -69,27 +69,8 @@ export default function CartDrawer({
             setSlots(slotsData);
             setSelectedSlotId(String(slotsData[0].slotId || slotsData[0].id));
           } else {
-            setSlots([
-              {
-                slotId: 101,
-                timeRange: "07:00 - 08:00",
-                farmerName: "Sạp nông dân",
-                maxOrdersCapacity: 20,
-              },
-              {
-                slotId: 102,
-                timeRange: "08:00 - 09:00",
-                farmerName: "Sạp nông dân",
-                maxOrdersCapacity: 20,
-              },
-              {
-                slotId: 103,
-                timeRange: "09:00 - 10:00",
-                farmerName: "Sạp nông dân",
-                maxOrdersCapacity: 20,
-              },
-            ]);
-            setSelectedSlotId("101");
+            setSlots([]);
+            setSelectedSlotId("");
           }
         }
       } catch (err) {
@@ -127,9 +108,15 @@ export default function CartDrawer({
       return;
     }
     setIsSubmitting(true);
-    const farmerId = cartItems[0]?.farmerId || selectedSlot?.farmerId || 103;
-    const marketId = Number(selectedMarketId) || 101;
-    const slotId = Number(selectedSlotId) || 101;
+    const farmerId = cartItems[0]?.farmerId || selectedSlot?.farmerId;
+    const marketId = Number(selectedMarketId);
+    const slotId = Number(selectedSlotId);
+    const productIdsValid = cartItems.every((item) => item.productId || item.id);
+    if (!farmerId || !marketId || !slotId || !productIdsValid) {
+      window.alert("Không đủ thông tin chợ, sạp hoặc ca nhận hàng để tạo đơn.");
+      setIsSubmitting(false);
+      return;
+    }
     const payload = {
       farmerId: Number(farmerId),
       marketId: Number(marketId),
@@ -137,7 +124,7 @@ export default function CartDrawer({
       pickupDate: pickupDate,
       note: customerNote || "Khách đặt trước nông sản tươi",
       items: cartItems.map((item) => ({
-        productId: Number(item.productId || item.id || 101),
+        productId: Number(item.productId || item.id),
         quantity: Number(item.quantity || 1),
       })),
     };
@@ -280,8 +267,8 @@ export default function CartDrawer({
                       </option>
                     ))}
                     {markets.length === 0 && (
-                      <option value="101">
-                        Phiên Chợ Xanh Nông Sản Ba Đình (12 Núi Trúc)
+                      <option value="" disabled>
+                        Chưa tải được danh sách chợ
                       </option>
                     )}
                   </select>

@@ -193,7 +193,7 @@ export default function AuthModal({
             ? "Tham gia mạng lưới đặt trước nông sản & mở sạp chợ"
             : "Nhận mã OTP bảo mật để đặt lại mật khẩu mới"
       }
-      maxWidth="500px"
+      maxWidth={mode === "REGISTER" ? "480px" : "420px"}
     >
       <div className="ml-auth-modal-content">
         {errorMsg && (

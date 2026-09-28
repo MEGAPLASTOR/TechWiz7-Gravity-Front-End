@@ -1,13 +1,13 @@
 .ml-farmer-prod-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: 10px;
 }
 
 .ml-form-grid-2 {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-3);
+  gap: 8px;
 }
 
 @media (min-width: 640px) {
@@ -19,7 +19,7 @@
 .ml-form-grid-3 {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-3);
+  gap: 8px;
 }
 
 @media (min-width: 640px) {
@@ -30,12 +30,14 @@
 
 .ml-form-textarea {
   width: 100%;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
-  font-size: var(--font-size-sm);
+  font-size: 13px;
   background-color: var(--color-bg-base);
   resize: vertical;
+  min-height: 56px;
+  max-height: 120px;
 }
 
 .ml-form-textarea:focus {
@@ -52,29 +54,29 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--color-text-main);
   cursor: pointer;
 }
 
 .ml-checkbox-label input {
   accent-color: var(--color-primary);
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 
 .ml-prod-preview-thumb {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  margin-top: 6px;
-  font-size: 11.5px;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 11px;
   color: var(--color-primary-dark);
 }
 
 .ml-prod-preview-thumb img {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-sm);
   object-fit: cover;
   border: 1px solid var(--color-border);
@@ -83,6 +85,8 @@
 .ml-prod-form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-3);
-  margin-top: var(--space-2);
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-light);
 }

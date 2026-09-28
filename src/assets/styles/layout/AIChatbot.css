@@ -2,7 +2,7 @@
   position: fixed;
   bottom: var(--space-6);
   right: var(--space-6);
-  z-index: 900;
+  z-index: 9999;
 }
 .ml-chatbot-bubble {
   width: 56px;
@@ -31,6 +31,7 @@
 
 .ml-bubble-icon {
   font-size: 24px;
+  pointer-events: none;
 }
 
 .ml-bubble-pulse {
@@ -38,6 +39,7 @@
   inset: -4px;
   border-radius: var(--radius-full);
   border: 2px solid var(--color-primary-light);
+  pointer-events: none;
   animation: ml-pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
 }
 

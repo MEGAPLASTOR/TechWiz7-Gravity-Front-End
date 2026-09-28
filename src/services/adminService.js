@@ -218,12 +218,7 @@ export const adminService = {
       if (res && Array.isArray(res.data)) return res.data;
       return [];
     } catch (err) {
-      try {
-        const fallbackRes = await apiClient.get("/reviews/farmer/90");
-        if (Array.isArray(fallbackRes)) return fallbackRes;
-        if (fallbackRes && Array.isArray(fallbackRes.data))
-          return fallbackRes.data;
-      } catch {}
+      console.warn("Failed to fetch admin reviews", err);
       return [];
     }
   },

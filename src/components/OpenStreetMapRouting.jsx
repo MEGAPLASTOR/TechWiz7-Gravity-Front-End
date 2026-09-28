@@ -36,40 +36,7 @@ export default function OpenStreetMapRouting({
   const [selectedMarketId, setSelectedMarketId] = useState(
     targetMarketId || targetMarket?.id || targetMarket?.marketId || "",
   );
-  const [markets, setMarkets] = useState([
-    {
-      marketId: 101,
-      id: 101,
-      name: "Phiên Chợ Xanh Nông Sản Ba Đình",
-      address: "12 Núi Trúc, Ba Đình, Hà Nội",
-      latitude: 21.0312,
-      longitude: 105.8189,
-    },
-    {
-      marketId: 103,
-      id: 103,
-      name: "Phiên Chợ Hữu Cơ Thảo Điền EcoMarket",
-      address: "28 Thảo Điền, TP. Thủ Đức, TP. Hồ Chí Minh",
-      latitude: 10.8032,
-      longitude: 106.7328,
-    },
-    {
-      marketId: 104,
-      id: 104,
-      name: "Hội Chợ Nông Sản Vùng Miền Tây Hồ",
-      address: "614 Lạc Long Quân, Q. Tây Hồ, Hà Nội",
-      latitude: 21.0601,
-      longitude: 105.8182,
-    },
-    {
-      marketId: 105,
-      id: 105,
-      name: "Chợ Phiên Nông Nghiệp Xanh Ecopark",
-      address: "Công viên Mùa Hạ, KĐT Ecopark, Hưng Yên",
-      latitude: 20.9634,
-      longitude: 105.9321,
-    },
-  ]);
+  const [markets, setMarkets] = useState([]);
   const [routeInfo, setRouteInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [geofenceAlert, setGeofenceAlert] = useState(null);

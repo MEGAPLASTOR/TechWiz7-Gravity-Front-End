@@ -11,23 +11,12 @@ export default function AdminMarketStudio({ callApi, role, token }) {
   const [currentMarketId, setCurrentMarketId] = useState(null);
   const [formName, setFormName] = useState("");
   const [formAddress, setFormAddress] = useState("");
-  const [formLat, setFormLat] = useState("21.038234");
-  const [formLng, setFormLng] = useState("105.817456");
+  const [formLat, setFormLat] = useState("");
+  const [formLng, setFormLng] = useState("");
   const [formDesc, setFormDesc] = useState("");
   const [formImage, setFormImage] = useState("");
   const [formStatus, setFormStatus] = useState("ACTIVE");
-  const [formSchedules, setFormSchedules] = useState([
-    {
-      dayOfWeek: 6,
-      openTime: "06:30",
-      closeTime: "11:30",
-    },
-    {
-      dayOfWeek: 7,
-      openTime: "06:30",
-      closeTime: "11:30",
-    },
-  ]);
+  const [formSchedules, setFormSchedules] = useState([]);
   const [showStallModal, setShowStallModal] = useState(false);
   const [selectedMarketForStalls, setSelectedMarketForStalls] = useState(null);
   const [marketAssignments, setMarketAssignments] = useState([]);
@@ -70,27 +59,12 @@ export default function AdminMarketStudio({ callApi, role, token }) {
     setCurrentMarketId(null);
     setFormName("");
     setFormAddress("");
-    setFormLat("21.038234");
-    setFormLng("105.817456");
-    setFormDesc(
-      "Chợ phiên quy tụ các hợp tác xã nông sản sạch, rau hữu cơ đạt chuẩn VietGAP.",
-    );
-    setFormImage(
-      "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=600&auto=format&fit=crop&q=80",
-    );
+    setFormLat("");
+    setFormLng("");
+    setFormDesc("");
+    setFormImage("");
     setFormStatus("ACTIVE");
-    setFormSchedules([
-      {
-        dayOfWeek: 6,
-        openTime: "06:30",
-        closeTime: "11:30",
-      },
-      {
-        dayOfWeek: 7,
-        openTime: "06:30",
-        closeTime: "11:30",
-      },
-    ]);
+    setFormSchedules([]);
     setShowModal(true);
   };
   const openEditModal = (market) => {

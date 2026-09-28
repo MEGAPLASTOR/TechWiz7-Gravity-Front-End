@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "@/assets/styles/pages/farmer/FarmerInventoryPage.css";
 import Button from "../../components/common/Button";
 import Badge from "../../components/common/Badge";
@@ -18,6 +18,11 @@ export default function FarmerInventoryPage({ onNavigate }) {
   const [products, setProducts] = useState([]);
   const [stockTemplates, setStockTemplates] = useState([]);
   const [assignedMarkets, setAssignedMarkets] = useState([]);
+  const [kycStatus, setKycStatus] = useState(() => {
+    return localStorage.getItem("ml_kyc_status") || "UNVERIFIED";
+  });
+  const [kycLoaded, setKycLoaded] = useState(false);
+  const redirectedToKyc = useRef(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStallFilter, setSelectedStallFilter] = useState("all");
@@ -33,6 +38,32 @@ export default function FarmerInventoryPage({ onNavigate }) {
     dayOfWeek: "",
     recurringQuantity: "",
   });
+
+  useEffect(() => {
+    const handleKycChange = () => {
+      const stored = localStorage.getItem("ml_kyc_status");
+      if (stored) setKycStatus(stored);
+    };
+    window.addEventListener("ml_kyc_changed", handleKycChange);
+    window.addEventListener("storage", handleKycChange);
+    return () => {
+      window.removeEventListener("ml_kyc_changed", handleKycChange);
+      window.removeEventListener("storage", handleKycChange);
+    };
+  }, []);
+
+  const isAnyModalOpen = Boolean(isProductModalOpen || isTemplateModalOpen);
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isAnyModalOpen]);
+
   const showSuccess = (msg) => {
     setActionSuccessMsg(msg);
     setTimeout(() => setActionSuccessMsg(""), 4000);
@@ -44,7 +75,7 @@ export default function FarmerInventoryPage({ onNavigate }) {
   ) => {
     setLoading(true);
     try {
-      const [prods, templates, markets] = await Promise.all([
+      const [prods, templates, markets, kyc] = await Promise.all([
         farmerService.getFarmerProducts({
           keyword: (kw || "").trim(),
           categoryId: cat !== "all" && !isNaN(cat) ? cat : "",
@@ -52,7 +83,13 @@ export default function FarmerInventoryPage({ onNavigate }) {
         }),
         farmerService.getFarmerStockTemplates((kw || "").trim()),
         farmerService.getMyMarketAssignments(),
+        farmerService.getFarmerKycStatus(),
       ]);
+      const statusFromApi =
+        kyc?.kycStatus || (kyc?.isApproved ? "VERIFIED" : "UNVERIFIED");
+      const effectiveKyc = statusFromApi;
+      setKycStatus(effectiveKyc);
+      setKycLoaded(true);
       if (prods && prods.length > 0) {
         setProducts(
           prods.map((p) => ({
@@ -101,6 +138,12 @@ export default function FarmerInventoryPage({ onNavigate }) {
     }, 250);
     return () => clearTimeout(timer);
   }, [searchKeyword, selectedCategory, selectedStallFilter]);
+  useEffect(() => {
+    if (kycLoaded && kycStatus !== "VERIFIED" && !redirectedToKyc.current) {
+      redirectedToKyc.current = true;
+      onNavigate?.("farmer-stall", { tab: "kyc" });
+    }
+  }, [kycLoaded, kycStatus, onNavigate]);
   const formatCurrency = (val) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -109,7 +152,12 @@ export default function FarmerInventoryPage({ onNavigate }) {
   };
   const handleToggleStock = async (p) => {
     const nextInStock = !p.inStock;
-    const nextStatus = nextInStock ? "AVAILABLE" : "OUT_OF_STOCK";
+    if (nextInStock && kycStatus !== "VERIFIED") {
+      showSuccess("Hồ sơ KYC phải được quản trị viên duyệt trước khi mở bán trên sạp.");
+      onNavigate?.("farmer-stall", { tab: "kyc" });
+      return;
+    }
+    const nextStatus = nextInStock ? "AVAILABLE" : "SOLD_OUT";
     const nextQty = nextInStock
       ? p.stockQuantity > 0
         ? p.stockQuantity
@@ -136,6 +184,11 @@ export default function FarmerInventoryPage({ onNavigate }) {
     }
   };
   const handleAdjustQty = async (p, delta) => {
+    if (kycStatus !== "VERIFIED") {
+      showSuccess("Vui lòng hoàn tất và chờ duyệt KYC trước khi cập nhật tồn kho.");
+      onNavigate?.("farmer-stall", { tab: "kyc" });
+      return;
+    }
     const newQty = Math.max(0, p.stockQuantity + delta);
     setProducts((prev) =>
       prev.map((item) =>
@@ -163,6 +216,11 @@ export default function FarmerInventoryPage({ onNavigate }) {
     }
   };
   const handleSaveProduct = async (productData) => {
+    if (!editingProduct && kycStatus !== "VERIFIED") {
+      showSuccess("Hồ sơ KYC phải được quản trị viên duyệt trước khi đăng bán nông sản.");
+      setIsProductModalOpen(false);
+      return;
+    }
     try {
       if (editingProduct) {
         await farmerService.updateProduct(editingProduct.id, productData);
@@ -170,11 +228,10 @@ export default function FarmerInventoryPage({ onNavigate }) {
       } else {
         await farmerService.createProduct({
           ...productData,
-          categoryId: productData.categoryId || 1,
-          price: Number(productData.price) || 30000,
-          currentStock: Number(productData.stockQuantity) || 20,
-          unit: productData.unit || "kg",
-          status: "AVAILABLE",
+          categoryId: Number(productData.categoryId),
+          price: Number(productData.price),
+          currentStock: Number(productData.currentStock),
+          unit: productData.unit,
         });
         showSuccess(`Đã đăng bán nông sản mới "${productData.name}"!`);
       }
@@ -247,6 +304,7 @@ export default function FarmerInventoryPage({ onNavigate }) {
       }
     }
   };
+  const isVerified = kycStatus === "VERIFIED";
   const filteredProducts = products;
   return (
     <div className="ml-farmer-inv-page">
@@ -266,22 +324,54 @@ export default function FarmerInventoryPage({ onNavigate }) {
           <div className="ml-inv-banner-actions">
             {activeMainTab === "products" ? (
               <Button
-                variant="accent"
+                variant={isVerified ? "accent" : "secondary"}
                 size="lg"
+                className={!isVerified ? "ml-btn-unverified" : ""}
+                title={
+                  !isVerified
+                    ? "Tài khoản cần được duyệt KYC trước khi đăng bán nông sản"
+                    : ""
+                }
                 onClick={() => {
+                  if (!isVerified) {
+                    showSuccess(
+                      "Hồ sơ KYC phải được quản trị viên duyệt trước khi đăng bán nông sản.",
+                    );
+                    if (onNavigate) onNavigate("farmer-stall", { tab: "kyc" });
+                    return;
+                  }
                   setEditingProduct(null);
                   setIsProductModalOpen(true);
                 }}
               >
-                + Đăng bán nông sản mới
+                {isVerified
+                  ? "+ Đăng bán nông sản mới"
+                  : "🔒 Đăng bán nông sản (Chờ duyệt KYC)"}
               </Button>
             ) : (
               <Button
-                variant="accent"
+                variant={isVerified ? "accent" : "secondary"}
                 size="lg"
-                onClick={() => setIsTemplateModalOpen(true)}
+                className={!isVerified ? "ml-btn-unverified" : ""}
+                title={
+                  !isVerified
+                    ? "Tài khoản cần được duyệt KYC trước khi thêm định mức"
+                    : ""
+                }
+                onClick={() => {
+                  if (!isVerified) {
+                    showSuccess(
+                      "Hồ sơ KYC phải được quản trị viên duyệt trước khi thêm định mức.",
+                    );
+                    if (onNavigate) onNavigate("farmer-stall", { tab: "kyc" });
+                    return;
+                  }
+                  setIsTemplateModalOpen(true);
+                }}
               >
-                + Thêm định mức tuần mới
+                {isVerified
+                  ? "+ Thêm định mức tuần mới"
+                  : "🔒 Thêm định mức (Chờ duyệt KYC)"}
               </Button>
             )}
           </div>
@@ -313,15 +403,41 @@ export default function FarmerInventoryPage({ onNavigate }) {
         {activeMainTab === "products" && (
           <>
             <div className="ml-card ml-inv-controls">
-              <div className="ml-inv-search">
-                <span className="ml-inv-search-icon">🔍</span>
-                <input
-                  type="text"
-                  placeholder="Tìm theo tên rau, củ, quả trong sạp..."
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  className="ml-inv-search-input"
-                />
+              <div className="ml-inv-search-box-wrap">
+                <div className="ml-inv-search">
+                  <span className="ml-inv-search-icon">🔍</span>
+                  <input
+                    type="text"
+                    placeholder="Tìm theo tên rau, củ, quả trong sạp..."
+                    value={searchKeyword}
+                    onChange={(e) => setSearchKeyword(e.target.value)}
+                    className="ml-inv-search-input"
+                  />
+                  {searchKeyword && (
+                    <button
+                      type="button"
+                      className="ml-clear-search-btn"
+                      onClick={() => setSearchKeyword("")}
+                      title="Xóa tìm kiếm"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                <div className="ml-farmer-quick-tags">
+                  <span className="ml-farmer-quick-label">Gợi ý:</span>
+                  {["Cải bó xôi", "Cà chua", "Dâu tây", "Nấm", "Rau muống"].map((tag, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className={`ml-farmer-tag-chip ${searchKeyword === tag ? "active" : ""}`}
+                      onClick={() => setSearchKeyword(searchKeyword === tag ? "" : tag)}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="ml-inv-filters">
@@ -385,19 +501,49 @@ export default function FarmerInventoryPage({ onNavigate }) {
                 <span className="ml-inv-empty-icon">🌱</span>
                 <h3>Kho nông sản của bạn đang trống</h3>
                 <p>
-                  Bắt đầu đăng bán những món rau củ thu hoạch sớm đầu tiên cho
-                  phiên chợ cuối tuần.
+                  {isVerified
+                    ? "Bắt đầu đăng bán những món rau củ thu hoạch sớm đầu tiên cho phiên chợ cuối tuần."
+                    : "Tài khoản của bạn chưa được duyệt định danh KYC & VietGAP. Bạn cần được quản trị viên phê duyệt hồ sơ trước khi mở bán nông sản."}
                 </p>
                 <Button
-                  variant="primary"
+                  variant={isVerified ? "primary" : "secondary"}
                   size="md"
+                  className={!isVerified ? "ml-btn-unverified" : ""}
+                  title={
+                    !isVerified
+                      ? "Chưa được duyệt KYC. Hãy hoàn tất hồ sơ để đăng món."
+                      : ""
+                  }
                   onClick={() => {
+                    if (!isVerified) {
+                      showSuccess(
+                        "Hồ sơ KYC phải được quản trị viên duyệt trước khi đăng bán nông sản.",
+                      );
+                      if (onNavigate) onNavigate("farmer-stall", { tab: "kyc" });
+                      return;
+                    }
                     setEditingProduct(null);
                     setIsProductModalOpen(true);
                   }}
                 >
-                  Đăng món đầu tiên
+                  {isVerified
+                    ? "Đăng món đầu tiên"
+                    : "🔒 Đăng món đầu tiên (Chưa duyệt KYC)"}
                 </Button>
+                {!isVerified && (
+                  <div className="ml-inv-unverified-hint">
+                    <span>
+                      Chưa nộp hoặc muốn kiểm tra hồ sơ?{" "}
+                      <button
+                        type="button"
+                        onClick={() => onNavigate && onNavigate("farmer-stall", { tab: "kyc" })}
+                        className="ml-inv-link-stall"
+                      >
+                        Vào Hồ sơ sạp & Định danh KYC →
+                      </button>
+                    </span>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="ml-inv-grid">
@@ -510,6 +656,11 @@ export default function FarmerInventoryPage({ onNavigate }) {
                           variant="ghost"
                           size="sm"
                           onClick={() => {
+                            if (kycStatus !== "VERIFIED") {
+                              showSuccess("Vui lòng hoàn tất và chờ duyệt KYC trước khi chỉnh sửa sản phẩm.");
+                              onNavigate("farmer-stall", { tab: "kyc" });
+                              return;
+                            }
                             setEditingProduct(p);
                             setIsProductModalOpen(true);
                           }}
@@ -548,11 +699,27 @@ export default function FarmerInventoryPage({ onNavigate }) {
                 </p>
               </div>
               <Button
-                variant="primary"
+                variant={isVerified ? "primary" : "secondary"}
                 size="md"
-                onClick={() => setIsTemplateModalOpen(true)}
+                className={!isVerified ? "ml-btn-unverified" : ""}
+                title={
+                  !isVerified
+                    ? "Tài khoản cần được duyệt KYC trước khi thêm định mức"
+                    : ""
+                }
+                onClick={() => {
+                  if (!isVerified) {
+                    showSuccess(
+                      "Hồ sơ KYC phải được duyệt trước khi thêm định mức.",
+                    );
+                    return;
+                  }
+                  setIsTemplateModalOpen(true);
+                }}
               >
-                + Thêm định mức mới
+                {isVerified
+                  ? "+ Thêm định mức mới"
+                  : "🔒 Thêm định mức (Chờ KYC)"}
               </Button>
             </div>
 
@@ -565,11 +732,28 @@ export default function FarmerInventoryPage({ onNavigate }) {
                   ngày họp chợ phiên.
                 </p>
                 <Button
-                  variant="outline"
+                  variant={isVerified ? "outline" : "secondary"}
                   size="sm"
-                  onClick={() => setIsTemplateModalOpen(true)}
+                  className={!isVerified ? "ml-btn-unverified" : ""}
+                  title={
+                    !isVerified
+                      ? "Tài khoản cần được duyệt KYC trước khi tạo định mức"
+                      : ""
+                  }
+                  onClick={() => {
+                    if (!isVerified) {
+                      showSuccess(
+                        "Hồ sơ KYC phải được duyệt trước khi tạo định mức.",
+                      );
+                      if (onNavigate) onNavigate("farmer-stall", { tab: "kyc" });
+                      return;
+                    }
+                    setIsTemplateModalOpen(true);
+                  }}
                 >
-                  Tạo định mức đầu tiên
+                  {isVerified
+                    ? "Tạo định mức đầu tiên"
+                    : "🔒 Tạo định mức đầu tiên (Chờ KYC)"}
                 </Button>
               </div>
             ) : (
@@ -719,8 +903,8 @@ export default function FarmerInventoryPage({ onNavigate }) {
                     </option>
                   ))}
                   {assignedMarkets.length === 0 && (
-                    <option value="101">
-                      Chợ Nông Sản Tây Hồ Eco (Mặc định)
+                    <option value="" disabled>
+                      Chưa có sạp được phân bổ
                     </option>
                   )}
                 </select>

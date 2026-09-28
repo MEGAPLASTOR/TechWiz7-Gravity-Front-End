@@ -62,6 +62,7 @@ export default function AIChatbot({ token }) {
   return (
     <div className="ml-chatbot-container">
       <button
+        id="ml-ai-chat-toggle"
         type="button"
         className={`ml-chatbot-bubble ${isOpen ? "active" : ""}`}
         onClick={() => setIsOpen(!isOpen)}
@@ -79,8 +80,7 @@ export default function AIChatbot({ token }) {
               <div>
                 <div className="ml-chat-name">Trợ lý AI Nông Sản</div>
                 <div className="ml-chat-status">
-                  <span className="ml-status-dot" /> Trực tuyến • Sẵn sàng hỗ
-                  trợ
+                  <span className="ml-status-dot" /> Trực tuyến • Sẵn sàng hỗ trợ
                 </div>
               </div>
             </div>
@@ -104,6 +104,7 @@ export default function AIChatbot({ token }) {
                 )}
                 <div
                   className={`ml-msg-bubble ${msg.sender === "user" ? "user" : "bot"}`}
+                  style={{ whiteSpace: "pre-line" }}
                 >
                   {msg.text}
                 </div>
@@ -144,6 +145,7 @@ export default function AIChatbot({ token }) {
             }}
           >
             <input
+              id="ml-chat-input"
               type="text"
               className="ml-chat-input"
               placeholder="Hỏi về chợ, nông sản, giá bán..."
@@ -151,6 +153,7 @@ export default function AIChatbot({ token }) {
               onChange={(e) => setInputValue(e.target.value)}
             />
             <button
+              id="ml-chat-send-btn"
               type="submit"
               className="ml-chat-send-btn"
               disabled={!inputValue.trim() || isLoading}
