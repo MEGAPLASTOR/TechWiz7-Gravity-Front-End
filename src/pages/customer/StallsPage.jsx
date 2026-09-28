@@ -8,6 +8,8 @@ import productService from "../../services/productService";
 import farmerService from "../../services/farmerService";
 import customerService from "../../services/customerService";
 import { matchSearch, POPULAR_STALL_KEYWORDS } from "../../utils/searchUtils";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function StallsPage({
   onAddToCart,
   cartItems = [],
@@ -15,6 +17,15 @@ export default function StallsPage({
   onNavigate,
   initialFarmerId = null,
 }) {
+  const {
+    t,
+    isEn,
+    localizeProduceName,
+    localizeCategoryName,
+    localizeMarketName,
+    localizeStallName,
+    localizeOperatingDays,
+  } = useLanguage();
   const defaultStalls = [
     {
       id: 103,
@@ -535,7 +546,7 @@ export default function StallsPage({
               className="ml-back-to-list-btn"
               onClick={handleBackToList}
             >
-              ← Quay lại danh sách gian hàng
+              {t("stallsBackToList", "← Quay lại danh sách gian hàng")}
             </button>
           </div>
 
@@ -569,11 +580,11 @@ export default function StallsPage({
                     </Badge>
                   </div>
                   <h1 className="ml-stall-banner-title">
-                    {selectedStall.farmName}
+                    {localizeStallName(selectedStall.farmName, isEn)}
                   </h1>
                   <div className="ml-stall-banner-sub">
-                    Chủ sạp: <strong>{selectedStall.farmerName}</strong> •{" "}
-                    {selectedStall.experienceYears}
+                    {isEn ? "Grower:" : "Chủ sạp:"} <strong>{localizeStallName(selectedStall.farmerName, isEn)}</strong> •{" "}
+                    {isEn ? "10+ years farming" : selectedStall.experienceYears}
                   </div>
                 </div>
               </div>
@@ -591,18 +602,18 @@ export default function StallsPage({
                 >
                   <span>{isFavorited ? "❤️" : "🤍"}</span>
                   <span>
-                    {isFavorited ? "Đã lưu sạp yêu thích" : "Lưu sạp này"}
+                    {isFavorited ? t("stallsFavSaved", "Đã lưu sạp yêu thích") : t("stallsFavSave", "Lưu sạp này")}
                   </span>
                 </button>
               </div>
 
               <div>
-                <h4 className="ml-sidebar-title">🎪 Thông tin sạp tại chợ</h4>
+                <h4 className="ml-sidebar-title">{t("stallsInfoTitle", "🎪 Thông tin sạp tại chợ")}</h4>
                 <div className="ml-sidebar-meta-list">
                   <div className="ml-sidebar-meta-item">
                     <span className="ml-sidebar-meta-icon">📍</span>
                     <div>
-                      <strong>{selectedStall.marketName}</strong>
+                      <strong>{localizeMarketName(selectedStall.marketName, isEn)}</strong>
                       <div
                         style={{
                           fontSize: "12px",
@@ -617,14 +628,14 @@ export default function StallsPage({
                   <div className="ml-sidebar-meta-item">
                     <span className="ml-sidebar-meta-icon">🏷️</span>
                     <div>
-                      Vị trí sạp: <strong>{selectedStall.stallCode}</strong>
+                      {t("stallsStallCodeLabel", "Vị trí sạp:")} <strong>{selectedStall.stallCode}</strong>
                     </div>
                   </div>
 
                   <div className="ml-sidebar-meta-item">
                     <span className="ml-sidebar-meta-icon">⏰</span>
                     <div>
-                      Lịch họp: <strong>{selectedStall.operatingDays}</strong> (
+                      {t("stallsScheduleLabel", "Lịch họp:")} <strong>{localizeOperatingDays(selectedStall.operatingDays, isEn)}</strong> (
                       {selectedStall.operatingHours})
                     </div>
                   </div>
@@ -632,22 +643,22 @@ export default function StallsPage({
                   <div className="ml-sidebar-meta-item">
                     <span className="ml-sidebar-meta-icon">🏡</span>
                     <div>
-                      Nhà vườn tại: <strong>{selectedStall.farmAddress}</strong>
+                      {t("stallsFarmAddressLabel", "Nhà vườn tại:")} <strong>{selectedStall.farmAddress}</strong>
                     </div>
                   </div>
 
                   <div className="ml-sidebar-meta-item">
                     <span className="ml-sidebar-meta-icon">⭐</span>
                     <div>
-                      Đánh giá: <strong>{selectedStall.rating} / 5.0</strong> (
-                      {selectedStall.reviewCount} đánh giá)
+                      {t("stallsRatingLabel", "Đánh giá:")} <strong>{selectedStall.rating} / 5.0</strong> (
+                      {selectedStall.reviewCount} {isEn ? "reviews" : "đánh giá"})
                     </div>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h4 className="ml-sidebar-title">🌿 Tiêu chuẩn & Cam kết</h4>
+                <h4 className="ml-sidebar-title">{t("stallsCertTitle", "🌿 Tiêu chuẩn & Cam kết")}</h4>
                 <div className="ml-certs-chips-list">
                   {selectedStall.certifications &&
                     selectedStall.certifications.map((c, i) => (
@@ -662,9 +673,13 @@ export default function StallsPage({
             <main className="ml-stall-main-content">
               <div className="ml-detail-section-card">
                 <h3 className="ml-detail-section-title">
-                  Về Nhà Vườn & Phương Pháp Canh Tác
+                  {isEn ? "About the Farm & Practices" : "Về Nhà Vườn & Phương Pháp Canh Tác"}
                 </h3>
-                <p className="ml-detail-bio-text">{selectedStall.bio}</p>
+                <p className="ml-detail-bio-text">
+                  {isEn
+                    ? "Dedicated to cultivating safe, micro-organic and VietGAP-certified produce. Harvested fresh at dawn on market day and delivered directly to the stall to preserve natural crispness and vitamins."
+                    : selectedStall.bio}
+                </p>
                 <div
                   style={{
                     marginTop: "16px",
@@ -680,12 +695,12 @@ export default function StallsPage({
                       color: "var(--color-text-muted)",
                     }}
                   >
-                    Chuyên canh:
+                    {isEn ? "Specialties:" : "Chuyên canh:"}
                   </span>
                   {selectedStall.specialtyTags &&
                     selectedStall.specialtyTags.map((t, idx) => (
                       <span key={idx} className="ml-stall-spec-tag">
-                        {t}
+                        {localizeProduceName(t, isEn)}
                       </span>
                     ))}
                 </div>
@@ -707,7 +722,7 @@ export default function StallsPage({
                         marginBottom: "4px",
                       }}
                     >
-                      Nông Sản Mở Bán ({stallProducts.length})
+                      {isEn ? "Available Produce" : "Nông Sản Mở Bán"} ({stallProducts.length})
                     </h3>
                     <p
                       style={{
@@ -715,8 +730,9 @@ export default function StallsPage({
                         color: "var(--color-text-muted)",
                       }}
                     >
-                      Đặt trước để sạp hái tươi và đóng gói phần riêng cho bạn
-                      nhận tại chợ sáng.
+                      {isEn
+                        ? "Pre-order for the grower to harvest fresh and pack your dedicated bag for morning pickup."
+                        : "Đặt trước để sạp hái tươi và đóng gói phần riêng cho bạn nhận tại chợ sáng."}
                     </p>
                   </div>
                 </div>
@@ -729,7 +745,7 @@ export default function StallsPage({
                       color: "var(--color-text-muted)",
                     }}
                   >
-                    Đang tải nông sản của sạp...
+                    {isEn ? "Loading stall produce..." : "Đang tải nông sản của sạp..."}
                   </div>
                 ) : stallProducts.length === 0 ? (
                   <div
@@ -746,14 +762,16 @@ export default function StallsPage({
                     >
                       🥬
                     </div>
-                    <h4>Sạp chưa có sản phẩm nào mở bán cho phiên tới</h4>
+                    <h4>{isEn ? "No produce open for pre-order yet" : "Sạp chưa có sản phẩm nào mở bán cho phiên tới"}</h4>
                     <p
                       style={{
                         fontSize: "13px",
                         color: "var(--color-text-muted)",
                       }}
                     >
-                      Hãy quay lại sau khi nhà vườn cập nhật lịch hái mới.
+                      {isEn
+                        ? "Please check back when the farmer updates their next harvest schedule."
+                        : "Hãy quay lại sau khi nhà vườn cập nhật lịch hái mới."}
                     </p>
                   </div>
                 ) : (
@@ -778,7 +796,7 @@ export default function StallsPage({
                     marginBottom: "16px",
                   }}
                 >
-                  Đánh Giá Từ Khách Đi Chợ ({stallReviews.length})
+                  {isEn ? `Shopper Reviews (${stallReviews.length})` : `Đánh Giá Từ Khách Đi Chợ (${stallReviews.length})`}
                 </h3>
 
                 <div className="ml-detail-reviews-list">
@@ -802,7 +820,7 @@ export default function StallsPage({
                               rev.customerAvatar.includes("/")) ? (
                               <img
                                 src={rev.customerAvatar}
-                                alt={rev.customerName || "Khách"}
+                                alt={rev.customerName || (isEn ? "Customer" : "Khách")}
                                 style={{
                                   width: "100%",
                                   height: "100%",
@@ -837,14 +855,14 @@ export default function StallsPage({
                           </div>
                           <div>
                             <div className="ml-reviewer-name-txt">
-                              {rev.customerName || "Khách hàng MarketLink"}
+                              {rev.customerName || (isEn ? "MarketLink Shopper" : "Khách hàng MarketLink")}
                             </div>
                             <div className="ml-review-date-txt">
                               {rev.createdAt
                                 ? String(rev.createdAt)
                                     .replace("T", " ")
                                     .substring(0, 10)
-                                : "Gần đây"}
+                                : (isEn ? "Recently" : "Gần đây")}
                             </div>
                           </div>
                         </div>
@@ -856,7 +874,7 @@ export default function StallsPage({
                       <p className="ml-review-comment-txt">{rev.comment}</p>
                       {rev.replyComment && (
                         <div className="ml-review-reply-box">
-                          <strong>Phản hồi từ chủ sạp:</strong>{" "}
+                          <strong>{isEn ? "Grower response:" : "Phản hồi từ chủ sạp:"}</strong>{" "}
                           {rev.replyComment}
                         </div>
                       )}
@@ -872,7 +890,7 @@ export default function StallsPage({
                 }}
               >
                 <Button variant="outline" size="md" onClick={handleBackToList}>
-                  ← Quay lại danh sách gian hàng
+                  {isEn ? "← Back to all stalls" : "← Quay lại danh sách gian hàng"}
                 </Button>
               </div>
             </main>
@@ -888,36 +906,36 @@ export default function StallsPage({
           <div className="ml-stalls-hero-content">
             <div className="ml-stalls-hero-badge">
               <span>🏡</span>
-              <span>Gian Hàng Nông Dân Bản Địa</span>
+              <span>{isEn ? "Local Farmer Stalls" : "Gian Hàng Nông Dân Bản Địa"}</span>
             </div>
 
             <h1 className="ml-stalls-hero-title">
-              Khám Phá Các Gian Hàng Tại Phiên Chợ Sáng
+              {isEn ? "Discover Stalls at the Morning Farmers Market" : "Khám Phá Các Gian Hàng Tại Phiên Chợ Sáng"}
             </h1>
 
             <p className="ml-stalls-hero-desc">
-              Kết nối trực tiếp từng sạp rau, trái cây, nấm sạch của các nông hộ
-              tâm huyết. Xem sạp hoạt động ở chợ nào, đặt trước nông sản hái sớm
-              và đến nhận hàng tận tay vào sáng cuối tuần.
+              {isEn
+                ? "Directly connect with passionate growers of clean vegetables, fruits, and mushrooms. Check which market they attend, pre-order fresh morning harvests, and pick up in person on weekends."
+                : "Kết nối trực tiếp từng sạp rau, trái cây, nấm sạch của các nông hộ tâm huyết. Xem sạp hoạt động ở chợ nào, đặt trước nông sản hái sớm và đến nhận hàng tận tay vào sáng cuối tuần."}
             </p>
 
             <div className="ml-stalls-stats-strip">
               <div className="ml-stalls-stat-pill">
                 <span>🎪</span>
                 <span>
-                  <span className="num">{stalls.length}</span> Gian hàng mở bán
+                  <span className="num">{stalls.length}</span> {isEn ? "Active stalls" : "Gian hàng mở bán"}
                 </span>
               </div>
               <div className="ml-stalls-stat-pill">
                 <span>📍</span>
                 <span>
-                  <span className="num">4+</span> Phiên chợ liên kết
+                  <span className="num">4+</span> {isEn ? "Affiliated markets" : "Phiên chợ liên kết"}
                 </span>
               </div>
               <div className="ml-stalls-stat-pill">
                 <span>🛡️</span>
                 <span>
-                  <span className="num">100%</span> Chuẩn VietGAP & Hữu cơ
+                  <span className="num">100%</span> {isEn ? "VietGAP & Organic Certified" : "Chuẩn VietGAP & Hữu cơ"}
                 </span>
               </div>
             </div>
@@ -933,7 +951,7 @@ export default function StallsPage({
               <input
                 type="text"
                 className="ml-filter-input"
-                placeholder="Tìm tên sạp, nông dân, rau củ (cải bó xôi, dâu tây, A-01)..."
+                placeholder={isEn ? "Search stall name, farmer, produce (spinach, strawberry, A-01)..." : "Tìm tên sạp, nông dân, rau củ (cải bó xôi, dâu tây, A-01)..."}
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
               />
@@ -942,7 +960,7 @@ export default function StallsPage({
                   type="button"
                   className="ml-filter-clear-btn"
                   onClick={() => setSearchKeyword("")}
-                  title="Xóa tìm kiếm"
+                  title={isEn ? "Clear search" : "Xóa tìm kiếm"}
                 >
                   ✕
                 </button>
@@ -956,21 +974,21 @@ export default function StallsPage({
                 value={selectedMarketId}
                 onChange={(e) => setSelectedMarketId(e.target.value)}
               >
-                <option value="all">Tất cả phiên chợ</option>
+                <option value="all">{isEn ? "All Farmers Markets" : "Tất cả phiên chợ"}</option>
                 {marketsList && marketsList.length > 0 ? (
                   marketsList.map((m) => (
                     <option key={m.marketId || m.id} value={m.name}>
-                      {m.name}
+                      {localizeMarketName(m.name)}
                     </option>
                   ))
                 ) : (
                   <>
-                    <option value="Ba Đình">Phiên Chợ Xanh Ba Đình</option>
+                    <option value="Ba Đình">{isEn ? "Ba Dinh Green Market" : "Phiên Chợ Xanh Ba Đình"}</option>
                     <option value="Thảo Điền">
-                      Phiên Chợ Hữu Cơ Thảo Điền
+                      {isEn ? "Thao Dien Organic Market" : "Phiên Chợ Hữu Cơ Thảo Điền"}
                     </option>
-                    <option value="Tây Hồ">Hội Chợ Nông Sản Tây Hồ</option>
-                    <option value="Ecopark">Chợ Nông Sản Ecopark</option>
+                    <option value="Tây Hồ">{isEn ? "Tay Ho Farmers Fair" : "Hội Chợ Nông Sản Tây Hồ"}</option>
+                    <option value="Ecopark">{isEn ? "Ecopark Produce Market" : "Chợ Nông Sản Ecopark"}</option>
                   </>
                 )}
               </select>
@@ -983,9 +1001,9 @@ export default function StallsPage({
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
               >
-                <option value="all">Tất cả khu vực</option>
-                <option value="hanoi">Hà Nội (Ba Đình, Tây Hồ)</option>
-                <option value="hcm">TP. Hồ Chí Minh (Thảo Điền)</option>
+                <option value="all">{isEn ? "All regions" : "Tất cả khu vực"}</option>
+                <option value="hanoi">{isEn ? "Hanoi (Ba Dinh, Tay Ho)" : "Hà Nội (Ba Đình, Tây Hồ)"}</option>
+                <option value="hcm">{isEn ? "Ho Chi Minh City (Thao Dien)" : "TP. Hồ Chí Minh (Thảo Điền)"}</option>
               </select>
             </div>
 
@@ -996,16 +1014,16 @@ export default function StallsPage({
                 value={selectedCert}
                 onChange={(e) => setSelectedCert(e.target.value)}
               >
-                <option value="all">Tất cả chứng nhận</option>
-                <option value="vietgap">Chuẩn VietGAP</option>
-                <option value="organic">Hữu cơ (Organic)</option>
-                <option value="ocop">Đặc sản OCOP</option>
+                <option value="all">{isEn ? "All certifications" : "Tất cả chứng nhận"}</option>
+                <option value="vietgap">{isEn ? "VietGAP Standard" : "Chuẩn VietGAP"}</option>
+                <option value="organic">{isEn ? "Organic Certified" : "Hữu cơ (Organic)"}</option>
+                <option value="ocop">{isEn ? "OCOP Specialty" : "Đặc sản OCOP"}</option>
               </select>
             </div>
           </div>
 
           <div className="ml-quick-search-chips">
-            <span className="ml-quick-search-label">Gợi ý:</span>
+            <span className="ml-quick-search-label">{isEn ? "Suggestions:" : "Gợi ý:"}</span>
             {POPULAR_STALL_KEYWORDS.map((kw, idx) => (
               <button
                 key={idx}
@@ -1013,7 +1031,7 @@ export default function StallsPage({
                 className={`ml-quick-search-tag ${searchKeyword === kw ? "active" : ""}`}
                 onClick={() => setSearchKeyword(searchKeyword === kw ? "" : kw)}
               >
-                {kw}
+                {localizeProduceName(kw)}
               </button>
             ))}
           </div>
@@ -1028,56 +1046,56 @@ export default function StallsPage({
                   marginRight: "4px",
                 }}
               >
-                Chuyên canh:
+                {isEn ? "Specialty:" : "Chuyên canh:"}
               </span>
               <button
                 type="button"
                 className={`ml-stalls-tab ${selectedSpecialty === "all" ? "active" : ""}`}
                 onClick={() => setSelectedSpecialty("all")}
               >
-                🌿 Tất cả ({stalls.length})
+                🌿 {isEn ? "All" : "Tất cả"} ({stalls.length})
               </button>
               <button
                 type="button"
                 className={`ml-stalls-tab ${selectedSpecialty === "Rau" ? "active" : ""}`}
                 onClick={() => setSelectedSpecialty("Rau")}
               >
-                🥬 Rau Lá Hữu Cơ
+                🥬 {isEn ? "Organic Greens" : "Rau Lá Hữu Cơ"}
               </button>
               <button
                 type="button"
                 className={`ml-stalls-tab ${selectedSpecialty === "Củ" ? "active" : ""}`}
                 onClick={() => setSelectedSpecialty("Củ")}
               >
-                🥕 Củ & Quả Tươi
+                🥕 {isEn ? "Roots & Fresh Veggies" : "Củ & Quả Tươi"}
               </button>
               <button
                 type="button"
                 className={`ml-stalls-tab ${selectedSpecialty === "Trái Cây" ? "active" : ""}`}
                 onClick={() => setSelectedSpecialty("Trái Cây")}
               >
-                🍓 Trái Cây Bản Địa
+                🍓 {isEn ? "Native Fruits" : "Trái Cây Bản Địa"}
               </button>
               <button
                 type="button"
                 className={`ml-stalls-tab ${selectedSpecialty === "Nấm" ? "active" : ""}`}
                 onClick={() => setSelectedSpecialty("Nấm")}
               >
-                🍄 Nấm & Thảo Dược
+                🍄 {isEn ? "Mushrooms & Herbs" : "Nấm & Thảo Dược"}
               </button>
             </div>
 
             <div className="ml-stalls-sort-box">
-              <span>Sắp xếp:</span>
+              <span>{isEn ? "Sort by:" : "Sắp xếp:"}</span>
               <select
                 className="ml-sort-select"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
-                <option value="rating_desc">⭐ Đánh giá cao nhất</option>
-                <option value="prods_desc">📦 Nhiều sản phẩm nhất</option>
-                <option value="code_asc">🏷️ Mã sạp (A → Z)</option>
-                <option value="name_asc">🏡 Tên nhà vườn (A → Z)</option>
+                <option value="rating_desc">⭐ {isEn ? "Highest rated" : "Đánh giá cao nhất"}</option>
+                <option value="prods_desc">📦 {isEn ? "Most produce items" : "Nhiều sản phẩm nhất"}</option>
+                <option value="code_asc">🏷️ {isEn ? "Stall Code (A → Z)" : "Mã sạp (A → Z)"}</option>
+                <option value="name_asc">🏡 {isEn ? "Farm Name (A → Z)" : "Tên nhà vườn (A → Z)"}</option>
               </select>
             </div>
           </div>
@@ -1090,25 +1108,26 @@ export default function StallsPage({
           selectedCert !== "all") && (
           <div className="ml-stalls-status-bar">
             <span>
-              Tìm thấy <strong>{sortedStalls.length}</strong> gian hàng phù hợp
+              {isEn ? "Found " : "Tìm thấy "}
+              <strong>{sortedStalls.length}</strong>
+              {isEn ? " matching stalls" : " gian hàng phù hợp"}
               {searchKeyword && (
                 <>
-                  {" "}
-                  với từ khóa "<strong>{searchKeyword}</strong>"
+                  {isEn ? " for " : " với từ khóa "}
+                  "<strong>{searchKeyword}</strong>"
                 </>
               )}
               {selectedMarketId !== "all" && (
                 <>
-                  {" "}
-                  tại chợ <strong>{selectedMarketId}</strong>
+                  {isEn ? " at " : " tại chợ "}
+                  <strong>{localizeMarketName(selectedMarketId)}</strong>
                 </>
               )}
               {selectedCity !== "all" && (
                 <>
-                  {" "}
-                  khu vực{" "}
+                  {isEn ? " in " : " khu vực "}
                   <strong>
-                    {selectedCity === "hanoi" ? "Hà Nội" : "TP. HCM"}
+                    {selectedCity === "hanoi" ? (isEn ? "Hanoi" : "Hà Nội") : (isEn ? "HCMC" : "TP. HCM")}
                   </strong>
                 </>
               )}
@@ -1118,7 +1137,7 @@ export default function StallsPage({
               className="ml-stalls-reset-link"
               onClick={handleResetFilters}
             >
-              Xóa tất cả bộ lọc
+              {isEn ? "Clear all filters" : "Xóa tất cả bộ lọc"}
             </button>
           </div>
         )}
@@ -1157,21 +1176,21 @@ export default function StallsPage({
                 </div>
 
                 <div className="ml-stall-farmer-name">
-                  Chủ sạp: <strong>{stall.farmerName}</strong> (
-                  {stall.reviewCount} đánh giá)
+                  {isEn ? "Grower: " : "Chủ sạp: "}<strong>{stall.farmerName}</strong> (
+                  {stall.reviewCount} {isEn ? "reviews" : "đánh giá"})
                 </div>
 
                 <div className="ml-stall-meta-box">
                   <div className="ml-stall-meta-item">
                     <span className="ml-stall-meta-icon">📍</span>
                     <span>
-                      Tại: <strong>{stall.marketName}</strong>
+                      {isEn ? "At: " : "Tại: "}<strong>{localizeMarketName(stall.marketName)}</strong>
                     </span>
                   </div>
                   <div className="ml-stall-meta-item">
                     <span className="ml-stall-meta-icon">⏰</span>
                     <span>
-                      {stall.operatingDays} ({stall.operatingHours})
+                      {localizeOperatingDays(stall.operatingDays)} ({stall.operatingHours})
                     </span>
                   </div>
                 </div>
@@ -1180,7 +1199,7 @@ export default function StallsPage({
                   {stall.specialtyTags &&
                     stall.specialtyTags.map((tag, idx) => (
                       <span key={idx} className="ml-stall-spec-tag">
-                        {tag}
+                        {localizeProduceName(tag)}
                       </span>
                     ))}
                 </div>
@@ -1194,13 +1213,13 @@ export default function StallsPage({
                     className="ml-stall-btn-primary"
                     onClick={() => handleOpenDetail(stall)}
                   >
-                    Xem chi tiết gian hàng →
+                    {isEn ? "View stall details →" : "Xem chi tiết gian hàng →"}
                   </Button>
                   <div
                     className="ml-stall-prods-badge"
-                    title="Số lượng sản phẩm mở bán"
+                    title={isEn ? "Produce items open for pre-order" : "Số lượng sản phẩm mở bán"}
                   >
-                    {stall.productsCount} món
+                    {stall.productsCount} {isEn ? "items" : "món"}
                   </div>
                 </div>
               </div>
@@ -1214,17 +1233,18 @@ export default function StallsPage({
               <span className="ml-stalls-empty-icon">🎪</span>
               <div className="ml-stalls-empty-title">
                 {searchKeyword
-                  ? `Không tìm thấy gian hàng khớp với "${searchKeyword}"`
-                  : "Không có gian hàng nào khớp bộ lọc"}
+                  ? (isEn ? `No stalls found matching "${searchKeyword}"` : `Không tìm thấy gian hàng khớp với "${searchKeyword}"`)
+                  : (isEn ? "No stalls match the selected filters" : "Không có gian hàng nào khớp bộ lọc")}
               </div>
               <div className="ml-stalls-empty-desc">
-                Bạn có thể thử bấm vào một trong các từ khóa phổ biến bên dưới
-                hoặc xóa bớt tiêu chí lọc để xem thêm gian hàng.
+                {isEn
+                  ? "You can try clicking one of the popular keywords below or clear filters to view more stalls."
+                  : "Bạn có thể thử bấm vào một trong các từ khóa phổ biến bên dưới hoặc xóa bớt tiêu chí lọc để xem thêm gian hàng."}
               </div>
 
               <div className="ml-empty-suggestions-box">
                 <span className="ml-empty-suggestions-label">
-                  Thử tìm kiếm với:
+                  {isEn ? "Try searching for:" : "Thử tìm kiếm với:"}
                 </span>
                 <div className="ml-empty-chips-list">
                   {POPULAR_STALL_KEYWORDS.map((kw, i) => (
@@ -1240,7 +1260,7 @@ export default function StallsPage({
                         setSelectedCert("all");
                       }}
                     >
-                      🔍 {kw}
+                      🔍 {localizeProduceName(kw)}
                     </button>
                   ))}
                 </div>
@@ -1260,20 +1280,21 @@ export default function StallsPage({
                   size="md"
                   onClick={handleResetFilters}
                 >
-                  ↺ Xem tất cả gian hàng
+                  {isEn ? "↺ View all stalls" : "↺ Xem tất cả gian hàng"}
                 </Button>
               </div>
             </div>
 
             <div className="ml-fallback-recommended-section">
               <div className="ml-fallback-header">
-                <span className="ml-fallback-badge">⭐ ĐƯỢC ĐÁNH GIÁ CAO</span>
+                <span className="ml-fallback-badge">{isEn ? "⭐ HIGHLY RATED" : "⭐ ĐƯỢC ĐÁNH GIÁ CAO"}</span>
                 <h3 className="ml-fallback-title">
-                  Gợi Ý Các Gian Hàng Nổi Bật Tại Chợ Phiên
+                  {isEn ? "Featured Stalls at Farmers Markets" : "Gợi Ý Các Gian Hàng Nổi Bật Tại Chợ Phiên"}
                 </h3>
                 <p className="ml-fallback-sub">
-                  Các nhà vườn uy tín có nhiều nông sản tươi ngon sẵn sàng phục
-                  vụ bạn:
+                  {isEn
+                    ? "Trusted local growers with fresh harvest ready for your morning pickup:"
+                    : "Các nhà vườn uy tín có nhiều nông sản tươi ngon sẵn sàng phục vụ bạn:"}
                 </p>
               </div>
 
@@ -1311,18 +1332,18 @@ export default function StallsPage({
                         </div>
                       </div>
                       <div className="ml-stall-farmer-name">
-                        Chủ sạp: <strong>{stall.farmerName}</strong>
+                        {isEn ? "Grower: " : "Chủ sạp: "}<strong>{stall.farmerName}</strong>
                       </div>
                       <div className="ml-stall-meta-box">
                         <div className="ml-stall-meta-item">
                           <span className="ml-stall-meta-icon">📍</span>
                           <span>
-                            Tại: <strong>{stall.marketName}</strong>
+                            {isEn ? "At: " : "Tại: "}<strong>{localizeMarketName(stall.marketName)}</strong>
                           </span>
                         </div>
                         <div className="ml-stall-meta-item">
                           <span className="ml-stall-meta-icon">⏰</span>
-                          <span>{stall.operatingDays}</span>
+                          <span>{localizeOperatingDays(stall.operatingDays)}</span>
                         </div>
                       </div>
                       <div
@@ -1337,7 +1358,7 @@ export default function StallsPage({
                           className="ml-stall-btn-primary"
                           onClick={() => handleOpenDetail(stall)}
                         >
-                          Xem chi tiết gian hàng →
+                          {isEn ? "View stall details →" : "Xem chi tiết gian hàng →"}
                         </Button>
                       </div>
                     </div>

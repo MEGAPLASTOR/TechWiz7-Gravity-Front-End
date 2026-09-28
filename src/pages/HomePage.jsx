@@ -9,6 +9,8 @@ import Badge from "../components/common/Badge";
 import marketService from "../services/marketService";
 import productService from "../services/productService";
 import { matchSearch, POPULAR_PRODUCT_KEYWORDS } from "../utils/searchUtils";
+import { useLanguage } from "../context";
+
 export default function HomePage({
   onAddToCart,
   cartItems = [],
@@ -17,6 +19,7 @@ export default function HomePage({
   onSelectMarketProducts,
   onOpenFarmerRegister,
 }) {
+  const { isEn, t } = useLanguage();
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedArea, setSelectedArea] = useState("all");
   const [selectedMarketDay, setSelectedMarketDay] = useState("all");
@@ -339,21 +342,22 @@ export default function HomePage({
           <div className="ml-hero-content ml-reveal">
             <div className="ml-hero-badge">
               <span className="ml-hero-badge-dot"></span>
-              <span>Sàn Nông Sản Địa Phương Đặt Trước</span>
+              <span>{t("heroBadge", "Sàn Nông Sản Địa Phương Đặt Trước")}</span>
             </div>
 
             <h1 className="ml-hero-title">
-              Nông Sản Tươi Từ Vườn,
+              {t("heroTitle1", "Nông Sản Tươi Từ Vườn,")}
               <br />
               <span className="ml-title-highlight">
-                Đặt Trước & Nhận Tại Chợ Sáng
+                {t("heroTitle2", "Đặt Trước & Nhận Tại Chợ Sáng")}
               </span>
             </h1>
 
             <p className="ml-hero-desc">
-              Kết nối trực tiếp người tiêu dùng với các nhà vườn tâm huyết. Đặt
-              trước để sạp giữ phần rau củ ngon nhất, ra chợ kiểm tra độ tươi
-              giòn rồi mới thanh toán tiền mặt hoặc chuyển khoản tại sạp.
+              {t(
+                "heroDesc",
+                "Kết nối trực tiếp người tiêu dùng với các nhà vườn tâm huyết. Đặt trước để sạp giữ phần rau củ ngon nhất, ra chợ kiểm tra độ tươi giòn rồi mới thanh toán tiền mặt hoặc chuyển khoản tại sạp."
+              )}
             </p>
 
             <div className="ml-hero-actions">
@@ -362,31 +366,37 @@ export default function HomePage({
                 size="lg"
                 onClick={handleScrollToProducts}
               >
-                🌾 Khám Phá Nông Sản
+                {t("heroBtnProducts", "🌾 Khám Phá Nông Sản")}
               </Button>
               <Button
                 variant="outline"
                 size="lg"
                 onClick={() => onNavigate && onNavigate("markets")}
               >
-                🎪 Xem Các Phiên Chợ
+                {t("heroBtnMarkets", "🎪 Xem Các Phiên Chợ")}
               </Button>
             </div>
 
             <div className="ml-hero-stats">
               <div className="ml-stat-item">
                 <span className="ml-stat-num">{markets.length}+</span>
-                <span className="ml-stat-label">Chợ phiên cuối tuần</span>
+                <span className="ml-stat-label">
+                  {t("heroStatMarkets", "Chợ phiên cuối tuần")}
+                </span>
               </div>
               <div className="ml-stat-sep"></div>
               <div className="ml-stat-item">
                 <span className="ml-stat-num">{products.length}+</span>
-                <span className="ml-stat-label">Nông sản thu hoạch sớm</span>
+                <span className="ml-stat-label">
+                  {t("heroStatProducts", "Nông sản thu hoạch sớm")}
+                </span>
               </div>
               <div className="ml-stat-sep"></div>
               <div className="ml-stat-item">
                 <span className="ml-stat-num">100%</span>
-                <span className="ml-stat-label">Thanh toán tại sạp</span>
+                <span className="ml-stat-label">
+                  {t("heroStatPay", "Thanh toán tại sạp")}
+                </span>
               </div>
             </div>
           </div>
@@ -395,7 +405,7 @@ export default function HomePage({
             <div className="ml-hero-img-frame">
               <img
                 src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80"
-                alt="Chợ Nông Sản Sạch MarketLink"
+                alt="MarketLink"
                 className="ml-hero-main-img"
               />
 
@@ -404,9 +414,11 @@ export default function HomePage({
                   <span>🥕</span>
                 </div>
                 <div>
-                  <div className="ml-float-title">Cắt lúc 4h30 sáng</div>
+                  <div className="ml-float-title">
+                    {t("heroBadgeCut", "Cắt lúc 4h30 sáng")}
+                  </div>
                   <div className="ml-float-subtitle">
-                    Tươi giòn nguyên sương sớm
+                    {t("heroBadgeCutSub", "Tươi giòn nguyên sương sớm")}
                   </div>
                 </div>
               </div>
@@ -416,9 +428,11 @@ export default function HomePage({
                   <span>🛡️</span>
                 </div>
                 <div>
-                  <div className="ml-float-title">VietGAP & Hữu cơ</div>
+                  <div className="ml-float-title">
+                    {t("heroBadgeCert", "VietGAP & Hữu cơ")}
+                  </div>
                   <div className="ml-float-subtitle">
-                    Kiểm định nguồn gốc rõ ràng
+                    {t("heroBadgeCertSub", "Kiểm định nguồn gốc rõ ràng")}
                   </div>
                 </div>
               </div>
@@ -430,8 +444,12 @@ export default function HomePage({
                   <span>🥕</span>
                 </div>
                 <div>
-                  <div className="ml-float-title">Cắt 4h30 sáng</div>
-                  <div className="ml-float-subtitle">Tươi giòn sương sớm</div>
+                  <div className="ml-float-title">
+                    {t("heroBadgeCut", "Cắt 4h30 sáng")}
+                  </div>
+                  <div className="ml-float-subtitle">
+                    {t("heroBadgeCutSub", "Tươi giòn sương sớm")}
+                  </div>
                 </div>
               </div>
 
@@ -440,8 +458,12 @@ export default function HomePage({
                   <span>🛡️</span>
                 </div>
                 <div>
-                  <div className="ml-float-title">Chuẩn VietGAP</div>
-                  <div className="ml-float-subtitle">Minh bạch nguồn gốc</div>
+                  <div className="ml-float-title">
+                    {t("heroBadgeCert", "Chuẩn VietGAP")}
+                  </div>
+                  <div className="ml-float-subtitle">
+                    {t("heroBadgeCertSub", "Minh bạch nguồn gốc")}
+                  </div>
                 </div>
               </div>
             </div>
@@ -455,9 +477,11 @@ export default function HomePage({
             <div className="ml-trust-item">
               <div className="ml-trust-icon">🌅</div>
               <div>
-                <div className="ml-trust-title">Hái Trong Ngày</div>
+                <div className="ml-trust-title">
+                  {t("trustHarvest", "Hái Trong Ngày")}
+                </div>
                 <div className="ml-trust-desc">
-                  Rau củ tươi vừa rời cành sáng sớm
+                  {t("trustHarvestDesc", "Rau củ tươi vừa rời cành sáng sớm")}
                 </div>
               </div>
             </div>
@@ -465,9 +489,11 @@ export default function HomePage({
             <div className="ml-trust-item">
               <div className="ml-trust-icon">👨‍🌾</div>
               <div>
-                <div className="ml-trust-title">Trực Tiếp Từ Nhà Vườn</div>
+                <div className="ml-trust-title">
+                  {t("trustDirect", "Trực Tiếp Từ Nhà Vườn")}
+                </div>
                 <div className="ml-trust-desc">
-                  Không qua thương lái trung gian
+                  {t("trustDirectDesc", "Không qua thương lái trung gian")}
                 </div>
               </div>
             </div>
@@ -475,9 +501,11 @@ export default function HomePage({
             <div className="ml-trust-item">
               <div className="ml-trust-icon">🧺</div>
               <div>
-                <div className="ml-trust-title">Kiểm Tra Tại Sạp</div>
+                <div className="ml-trust-title">
+                  {t("trustInspect", "Kiểm Tra Tại Sạp")}
+                </div>
                 <div className="ml-trust-desc">
-                  Ưng ý độ tươi mới gửi tiền thanh toán
+                  {t("trustInspectDesc", "Ưng ý độ tươi mới gửi tiền thanh toán")}
                 </div>
               </div>
             </div>
@@ -485,9 +513,11 @@ export default function HomePage({
             <div className="ml-trust-item">
               <div className="ml-trust-icon">⚡</div>
               <div>
-                <div className="ml-trust-title">Đặt Trước Giữ Chỗ</div>
+                <div className="ml-trust-title">
+                  {t("trustPreorder", "Đặt Trước Giữ Chỗ")}
+                </div>
                 <div className="ml-trust-desc">
-                  Không lo hết hàng vào giờ cao điểm
+                  {t("trustPreorderDesc", "Không lo hết hàng vào giờ cao điểm")}
                 </div>
               </div>
             </div>
@@ -499,14 +529,16 @@ export default function HomePage({
         <div className="ml-container">
           <div className="ml-section-header center ml-reveal">
             <span className="ml-section-subtitle">
-              Quy trình đơn giản & an tâm
+              {t("howSubtitle", "Quy trình đơn giản & an tâm")}
             </span>
             <h2 className="ml-section-title">
-              Cách Thức Đặt Trước & Nhận Hàng Tại Chợ
+              {t("howTitle", "Cách Thức Đặt Trước & Nhận Hàng Tại Chợ")}
             </h2>
             <p className="ml-section-desc">
-              Không vận chuyển lưu kho dài ngày, nông sản đi thẳng từ luống vườn
-              đến giỏ xách của bạn.
+              {t(
+                "howDesc",
+                "Không vận chuyển lưu kho dài ngày, nông sản đi thẳng từ luống vườn đến giỏ xách của bạn."
+              )}
             </p>
           </div>
 
@@ -514,33 +546,51 @@ export default function HomePage({
             <div className="ml-step-card ml-reveal ml-stagger-1">
               <div className="ml-step-card-num">01</div>
               <div className="ml-step-icon-wrap">🥦</div>
-              <span className="ml-step-badge">Bước 1</span>
-              <h3 className="ml-step-title">Chọn sạp & đặt trước</h3>
+              <span className="ml-step-badge">
+                {t("howStep1Badge", "Bước 1")}
+              </span>
+              <h3 className="ml-step-title">
+                {t("howStep1Title", "Chọn sạp & đặt trước")}
+              </h3>
               <p className="ml-step-desc">
-                Xem lượng nông sản dự kiến hái cho phiên chợ tới. Chọn món bạn
-                thích và giữ chỗ trước khi sạp đầy đơn.
+                {t(
+                  "howStep1Desc",
+                  "Xem lượng nông sản dự kiến hái cho phiên chợ tới. Chọn món bạn thích và giữ chỗ trước khi sạp đầy đơn."
+                )}
               </p>
             </div>
 
             <div className="ml-step-card ml-reveal ml-stagger-2">
               <div className="ml-step-card-num">02</div>
               <div className="ml-step-icon-wrap">⏰</div>
-              <span className="ml-step-badge">Bước 2</span>
-              <h3 className="ml-step-title">Hẹn giờ ra chợ lấy</h3>
+              <span className="ml-step-badge">
+                {t("howStep2Badge", "Bước 2")}
+              </span>
+              <h3 className="ml-step-title">
+                {t("howStep2Title", "Hẹn giờ ra chợ lấy")}
+              </h3>
               <p className="ml-step-desc">
-                Chọn ca nhận hàng (sáng sớm 06:30 - 08:30 hoặc 08:30 - 10:30) để
-                người bán đóng gói sẵn phần riêng cho bạn.
+                {t(
+                  "howStep2Desc",
+                  "Chọn ca nhận hàng (sáng sớm 06:30 - 08:30 hoặc 08:30 - 10:30) để người bán đóng gói sẵn phần riêng cho bạn."
+                )}
               </p>
             </div>
 
             <div className="ml-step-card ml-reveal ml-stagger-3">
               <div className="ml-step-card-num">03</div>
               <div className="ml-step-icon-wrap">🤝</div>
-              <span className="ml-step-badge">Bước 3</span>
-              <h3 className="ml-step-title">Kiểm tra & trả tiền tại sạp</h3>
+              <span className="ml-step-badge">
+                {t("howStep3Badge", "Bước 3")}
+              </span>
+              <h3 className="ml-step-title">
+                {t("howStep3Title", "Kiểm tra & trả tiền tại sạp")}
+              </h3>
               <p className="ml-step-desc">
-                Ghé sạp tận mắt ngắm rau quả tươi giòn, hài lòng mới gửi tiền
-                mặt hoặc quét VietQR. Thảnh thơi dạo chợ phiên!
+                {t(
+                  "howStep3Desc",
+                  "Ghé sạp tận mắt ngắm rau quả tươi giòn, hài lòng mới gửi tiền mặt hoặc quét VietQR. Thảnh thơi dạo chợ phiên!"
+                )}
               </p>
             </div>
           </div>
@@ -551,12 +601,17 @@ export default function HomePage({
         <div className="ml-container">
           <div className="ml-section-header with-action ml-reveal">
             <div>
-              <span className="ml-section-subtitle">Điểm hẹn cuối tuần</span>
+              <span className="ml-section-subtitle">
+                {t("marketsSubtitle", "Điểm hẹn cuối tuần")}
+              </span>
               <h2 className="ml-section-title">
-                Các Phiên Chợ Đang Nhận Đặt Trước
+                {t("marketsTitle", "Các Phiên Chợ Đang Nhận Đặt Trước")}
               </h2>
               <p className="ml-section-desc">
-                Tìm phiên chợ nông sản gần nhà bạn để ghé mua sắm cuối tuần này.
+                {t(
+                  "marketsDesc",
+                  "Tìm phiên chợ nông sản gần nhà bạn để ghé mua sắm cuối tuần này."
+                )}
               </p>
             </div>
             <Button
@@ -564,7 +619,7 @@ export default function HomePage({
               size="md"
               onClick={() => onNavigate && onNavigate("markets")}
             >
-              Xem tất cả chợ ({markets.length}) →
+              {t("marketsViewAll", "Xem tất cả chợ")} ({markets.length}) →
             </Button>
           </div>
 
@@ -575,7 +630,7 @@ export default function HomePage({
                 className={`ml-filter-tab ${marketCityFilter === "all" ? "active" : ""}`}
                 onClick={() => setMarketCityFilter("all")}
               >
-                Tất cả khu vực ({markets.length})
+                {t("marketsAllAreas", "Tất cả khu vực")} ({markets.length})
               </button>
               <button
                 type="button"
@@ -589,7 +644,7 @@ export default function HomePage({
                 className={`ml-filter-tab ${marketCityFilter === "hcm" ? "active" : ""}`}
                 onClick={() => setMarketCityFilter("hcm")}
               >
-                📍 TP. Hồ Chí Minh
+                📍 {isEn ? "Ho Chi Minh City" : "TP. Hồ Chí Minh"}
               </button>
             </div>
 
@@ -599,7 +654,9 @@ export default function HomePage({
                 color: "var(--color-text-muted)",
               }}
             >
-              Đang mở đặt hàng trước cho phiên cuối tuần
+              {isEn
+                ? "Open for weekend pre-orders now"
+                : "Đang mở đặt hàng trước cho phiên cuối tuần"}
             </span>
           </div>
 
@@ -622,11 +679,14 @@ export default function HomePage({
             <div className="ml-empty-state-card ml-reveal">
               <span className="ml-empty-icon">📍</span>
               <div className="ml-empty-title">
-                Không tìm thấy phiên chợ phù hợp
+                {isEn
+                  ? "No matching markets found"
+                  : "Không tìm thấy phiên chợ phù hợp"}
               </div>
               <div className="ml-empty-desc">
-                Thử chọn khu vực khác hoặc chuyển sang xem toàn bộ các phiên
-                chợ.
+                {isEn
+                  ? "Try selecting another area or view all markets."
+                  : "Thử chọn khu vực khác hoặc chuyển sang xem toàn bộ các phiên chợ."}
               </div>
               <Button
                 variant="outline"
@@ -637,7 +697,7 @@ export default function HomePage({
                   setSelectedMarketDay("all");
                 }}
               >
-                Đặt lại bộ lọc
+                {isEn ? "Reset Filter" : "Đặt lại bộ lọc"}
               </Button>
             </div>
           )}
@@ -648,12 +708,17 @@ export default function HomePage({
         <div className="ml-container">
           <div className="ml-section-header with-action ml-reveal">
             <div>
-              <span className="ml-section-subtitle">Đang vào mùa thu hái</span>
+              <span className="ml-section-subtitle">
+                {t("prodsSubtitle", "Đang vào mùa thu hái")}
+              </span>
               <h2 className="ml-section-title">
-                Nông Sản Tươi Ngon Nhất Tuần Này
+                {t("prodsTitle", "Nông Sản Tươi Ngon Nhất Tuần Này")}
               </h2>
               <p className="ml-section-desc">
-                Nông dân vừa cập nhật số lượng hái cho phiên chợ sáng mai.
+                {t(
+                  "prodsDesc",
+                  "Nông dân vừa cập nhật số lượng hái cho phiên chợ sáng mai."
+                )}
               </p>
             </div>
             <Button
@@ -661,7 +726,7 @@ export default function HomePage({
               size="md"
               onClick={() => onNavigate && onNavigate("products")}
             >
-              Xem danh mục đầy đủ →
+              {isEn ? "View Full Catalog →" : "Xem danh mục đầy đủ →"}
             </Button>
           </div>
 
@@ -671,7 +736,11 @@ export default function HomePage({
               <input
                 type="text"
                 className="ml-home-search-input"
-                placeholder="Tìm nông sản tươi (cải bó xôi, cà chua cherry, dâu tây Đà Lạt, nấm, Ba Vì)..."
+                placeholder={
+                  isEn
+                    ? "Search fresh produce (spinach, cherry tomatoes, strawberries, mushrooms)..."
+                    : "Tìm nông sản tươi (cải bó xôi, cà chua cherry, dâu tây Đà Lạt, nấm, Ba Vì)..."
+                }
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
               />
@@ -680,7 +749,7 @@ export default function HomePage({
                   type="button"
                   className="ml-home-search-clear"
                   onClick={() => setSearchKeyword("")}
-                  title="Xóa tìm kiếm"
+                  title={isEn ? "Clear search" : "Xóa tìm kiếm"}
                 >
                   ✕
                 </button>
@@ -688,8 +757,20 @@ export default function HomePage({
             </div>
 
             <div className="ml-home-quick-tags">
-              <span className="ml-home-quick-label">Gợi ý tìm nhanh:</span>
-              {POPULAR_PRODUCT_KEYWORDS.map((tag, idx) => {
+              <span className="ml-home-quick-label">
+                {t("prodsQuickSearchLabel", "Gợi ý tìm nhanh:")}
+              </span>
+              {(isEn
+                ? [
+                    "🍅 Cherry Tomatoes",
+                    "🍓 Strawberries",
+                    "🥬 Baby Spinach",
+                    "🍄 Mushrooms",
+                    "🌿 Water Spinach",
+                    "🍊 Pomelo",
+                  ]
+                : POPULAR_PRODUCT_KEYWORDS
+              ).map((tag, idx) => {
                 const cleanTag = tag.replace(/^[^\s]+\s*/, "");
                 return (
                   <button
@@ -698,7 +779,7 @@ export default function HomePage({
                     className={`ml-home-quick-tag ${searchKeyword === cleanTag ? "active" : ""}`}
                     onClick={() =>
                       setSearchKeyword(
-                        searchKeyword === cleanTag ? "" : cleanTag,
+                        searchKeyword === cleanTag ? "" : cleanTag
                       )
                     }
                   >
@@ -715,7 +796,7 @@ export default function HomePage({
               className={`ml-cat-chip ${activeCategory === "all" ? "active" : ""}`}
               onClick={() => setActiveCategory("all")}
             >
-              🌿 Tất cả{" "}
+              🌿 {t("prodsFilterAll", "Tất cả")}{" "}
               <span className="ml-cat-chip-count">{products.length}</span>
             </button>
             <button
@@ -723,42 +804,47 @@ export default function HomePage({
               className={`ml-cat-chip ${activeCategory === "Rau" ? "active" : ""}`}
               onClick={() => setActiveCategory("Rau")}
             >
-              🥬 Rau Lá Hữu Cơ
+              🥬 {t("prodsFilterVeg", "Rau Lá Hữu Cơ")}
             </button>
             <button
               type="button"
               className={`ml-cat-chip ${activeCategory === "Củ" ? "active" : ""}`}
               onClick={() => setActiveCategory("Củ")}
             >
-              🥕 Củ & Quả Tươi Sạch
+              🥕 {t("prodsFilterRoot", "Củ & Quả Tươi Sạch")}
             </button>
             <button
               type="button"
               className={`ml-cat-chip ${activeCategory === "Trái Cây" ? "active" : ""}`}
               onClick={() => setActiveCategory("Trái Cây")}
             >
-              🍓 Trái Cây Bản Địa
+              🍓 {t("prodsFilterFruit", "Trái Cây Bản Địa")}
             </button>
             <button
               type="button"
               className={`ml-cat-chip ${activeCategory === "Nấm" ? "active" : ""}`}
               onClick={() => setActiveCategory("Nấm")}
             >
-              🍄 Nấm & Thảo Dược
+              🍄 {t("prodsFilterMushroom", "Nấm & Thảo Dược")}
             </button>
           </div>
 
           {(searchKeyword.trim() !== "" || selectedArea !== "all") && (
             <div className="ml-search-status-bar ml-reveal">
               <span>
-                Tìm thấy <strong>{filteredProducts.length}</strong> sản phẩm
+                {isEn ? "Found" : "Tìm thấy"}{" "}
+                <strong>{filteredProducts.length}</strong>{" "}
+                {isEn ? "products" : "sản phẩm"}
                 {searchKeyword && (
                   <>
                     {" "}
-                    cho từ khóa "<strong>{searchKeyword}</strong>"
+                    {isEn ? 'for keyword "' : 'cho từ khóa "' }
+                    <strong>{searchKeyword}</strong>"
                   </>
                 )}
-                {selectedArea !== "all" && <> tại khu vực đã chọn</>}
+                {selectedArea !== "all" && (
+                  <>{isEn ? " in selected region" : " tại khu vực đã chọn"}</>
+                )}
               </span>
               <button
                 type="button"
@@ -769,7 +855,7 @@ export default function HomePage({
                   setActiveCategory("all");
                 }}
               >
-                Xóa bộ lọc
+                {isEn ? "Clear Filter" : "Xóa bộ lọc"}
               </button>
             </div>
           )}
@@ -795,20 +881,32 @@ export default function HomePage({
               <span className="ml-empty-icon">🥬</span>
               <div className="ml-empty-title">
                 {searchKeyword
-                  ? `Không tìm thấy nông sản khớp với "${searchKeyword}"`
-                  : "Không tìm thấy nông sản phù hợp"}
+                  ? isEn
+                    ? `No produce matching "${searchKeyword}"`
+                    : `Không tìm thấy nông sản khớp với "${searchKeyword}"`
+                  : t("prodsEmptyTitle", "Không tìm thấy nông sản phù hợp")}
               </div>
               <div className="ml-empty-desc">
-                Bạn hãy thử bấm vào một trong các từ khóa phổ biến bên dưới hoặc
-                xem các nông sản tươi ngon đang mở bán:
+                {t(
+                  "prodsEmptyDesc",
+                  "Bạn hãy thử bấm vào một trong các từ khóa phổ biến bên dưới hoặc xem các nông sản tươi ngon đang mở bán:"
+                )}
               </div>
 
               <div className="ml-empty-suggestions-box">
                 <span className="ml-empty-suggestions-label">
-                  Thử tìm kiếm với:
+                  {isEn ? "Try searching for:" : "Thử tìm kiếm với:"}
                 </span>
                 <div className="ml-empty-chips-list">
-                  {POPULAR_PRODUCT_KEYWORDS.map((kw, i) => {
+                  {(isEn
+                    ? [
+                        "🍅 Cherry Tomatoes",
+                        "🍓 Strawberries",
+                        "🥬 Baby Spinach",
+                        "🍄 Mushrooms",
+                      ]
+                    : POPULAR_PRODUCT_KEYWORDS
+                  ).map((kw, i) => {
                     const cleanKw = kw.replace(/^[^\s]+\s*/, "");
                     return (
                       <button
@@ -842,7 +940,7 @@ export default function HomePage({
                     setSelectedArea("all");
                   }}
                 >
-                  ↺ Xem tất cả nông sản
+                  ↺ {t("prodsEmptyReset", "Xem tất cả nông sản")}
                 </Button>
               </div>
 
@@ -855,12 +953,18 @@ export default function HomePage({
                 }}
               >
                 <div className="ml-fallback-header">
-                  <span className="ml-fallback-badge">🔥 NÔNG SẢN NỔI BẬT</span>
+                  <span className="ml-fallback-badge">
+                    {isEn ? "🔥 FEATURED HARVEST" : "🔥 NÔNG SẢN NỔI BẬT"}
+                  </span>
                   <h3 className="ml-fallback-title">
-                    Gợi Ý Nông Sản Tươi Ngon Nhất Cho Bạn
+                    {isEn
+                      ? "Recommended Fresh Produce For You"
+                      : "Gợi Ý Nông Sản Tươi Ngon Nhất Cho Bạn"}
                   </h3>
                   <p className="ml-fallback-sub">
-                    Nông dân hái sớm trong ngày họp chợ, sẵn sàng giao tại sạp:
+                    {isEn
+                      ? "Harvested early on market day, ready for stall pickup:"
+                      : "Nông dân hái sớm trong ngày họp chợ, sẵn sàng giao tại sạp:"}
                   </p>
                 </div>
 
@@ -888,39 +992,58 @@ export default function HomePage({
             <div className="ml-farmer-cta-content">
               <div className="ml-farmer-badge">
                 <span>🌱</span>
-                <span>Dành Cho Nhà Vườn & Nông Hộ</span>
+                <span>
+                  {isEn
+                    ? "For Family Farms & Growers"
+                    : "Dành Cho Nhà Vườn & Nông Hộ"}
+                </span>
               </div>
 
               <h2 className="ml-farmer-cta-title">
-                Bạn Là Nông Dân Canh Tác Sạch?
-                <br />
-                Đăng Ký Sạp Chợ & Đón Khách Đặt Trước Ngay!
+                {isEn ? (
+                  <>
+                    Are You a Sustainable Farmer?
+                    <br />
+                    Register a Market Stall & Welcome Pre-orders!
+                  </>
+                ) : (
+                  <>
+                    Bạn Là Nông Dân Canh Tác Sạch?
+                    <br />
+                    Đăng Ký Sạp Chợ & Đón Khách Đặt Trước Ngay!
+                  </>
+                )}
               </h2>
 
               <p className="ml-farmer-cta-desc">
-                Chủ động sản lượng hái từ chiều hôm trước, biết chính xác có bao
-                nhiêu khách đến nhận tại chợ. Không lo dội chợ, không bị ép giá
-                trung gian!
+                {isEn
+                  ? "Plan harvest quotas the afternoon prior, knowing exactly how many shoppers will pick up at the market. Zero surplus waste, zero middleman price cuts!"
+                  : "Chủ động sản lượng hái từ chiều hôm trước, biết chính xác có bao nhiêu khách đến nhận tại chợ. Không lo dội chợ, không bị ép giá trung gian!"}
               </p>
 
               <div className="ml-farmer-benefits-list">
                 <div className="ml-benefit-item">
                   <span className="ml-benefit-icon">✓</span>
                   <span>
-                    Chủ động số lượng đơn trước khi thu hoạch mỗi buổi chiều
+                    {isEn
+                      ? "Plan harvest amounts with confirmed pre-orders each afternoon"
+                      : "Chủ động số lượng đơn trước khi thu hoạch mỗi buổi chiều"}
                   </span>
                 </div>
                 <div className="ml-benefit-item">
                   <span className="ml-benefit-icon">✓</span>
                   <span>
-                    0% chi phí sàn khởi tạo, miễn phí hỗ trợ làm bảng sạp VietQR
+                    {isEn
+                      ? "0% platform listing fees, free VietQR payment and stall sign support"
+                      : "0% chi phí sàn khởi tạo, miễn phí hỗ trợ làm bảng sạp VietQR"}
                   </span>
                 </div>
                 <div className="ml-benefit-item">
                   <span className="ml-benefit-icon">✓</span>
                   <span>
-                    Khách đến nhận trực tiếp tại sạp, nhận tiền mặt hoặc chuyển
-                    khoản 100%
+                    {isEn
+                      ? "Shoppers inspect and pay 100% directly to you in cash or VietQR"
+                      : "Khách đến nhận trực tiếp tại sạp, nhận tiền mặt hoặc chuyển khoản 100%"}
                   </span>
                 </div>
               </div>
@@ -931,14 +1054,14 @@ export default function HomePage({
                   size="lg"
                   onClick={onOpenFarmerRegister}
                 >
-                  Đăng ký mở sạp miễn phí
+                  {isEn ? "Register Free Stall" : "Đăng ký mở sạp miễn phí"}
                 </Button>
                 <Button
                   variant="outline"
                   size="lg"
                   onClick={() => onNavigate && onNavigate("farmers")}
                 >
-                  Khám phá các gian hàng →
+                  {isEn ? "Explore Farmer Stalls →" : "Khám phá các gian hàng →"}
                 </Button>
               </div>
             </div>
@@ -946,7 +1069,7 @@ export default function HomePage({
             <div className="ml-farmer-cta-visual">
               <img
                 src="https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&w=800&q=80"
-                alt="Nông dân làm vườn hữu cơ"
+                alt="Organic farming"
                 className="ml-farmer-cta-img"
               />
             </div>

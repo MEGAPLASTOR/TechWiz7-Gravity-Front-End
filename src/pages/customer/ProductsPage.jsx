@@ -6,6 +6,8 @@ import Button from "../../components/common/Button";
 import productService from "../../services/productService";
 import marketService from "../../services/marketService";
 import { matchSearch, POPULAR_PRODUCT_KEYWORDS } from "../../utils/searchUtils";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function ProductsPage({
   onAddToCart,
   cartItems = [],
@@ -13,6 +15,7 @@ export default function ProductsPage({
   onNavigate,
   initialMarket = "all",
 }) {
+  const { t, isEn, localizeProduceName, localizeCategoryName, localizeMarketName } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedMarket, setSelectedMarket] = useState(initialMarket || "all");
@@ -299,6 +302,7 @@ export default function ProductsPage({
     return found ? found.quantity : 0;
   };
   const formatCurrency = (val) => {
+    if (isEn) return `${Number(val || 0).toLocaleString()} VND`;
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
@@ -310,12 +314,11 @@ export default function ProductsPage({
         <div className="ml-container ml-products-banner-inner">
           <div>
             <span className="ml-section-subtitle">
-              Duyệt Nông Sản Tươi Sạch ({products.length} Sản phẩm)
+              {t("productsSubtitle", "Duyệt Nông Sản Tươi Sạch")} ({products.length} {isEn ? "Items" : "Sản phẩm"})
             </span>
-            <h1 className="ml-products-title">Đặt Trước Nông Sản Theo Mùa</h1>
+            <h1 className="ml-products-title">{t("productsTitle", "Đặt Trước Nông Sản Theo Mùa")}</h1>
             <p className="ml-products-desc">
-              Thu hoạch sớm trong ngày họp chợ. Chọn sạp, giữ chỗ trước và nhận
-              hàng tươi ngon tận tay!
+              {t("productsDesc", "Thu hoạch sớm trong ngày họp chợ. Chọn sạp, giữ chỗ trước và nhận hàng tươi ngon tận tay!")}
             </p>
           </div>
           <div className="ml-products-search-container">
@@ -323,7 +326,7 @@ export default function ProductsPage({
               <span className="ml-search-icon">🔍</span>
               <input
                 type="text"
-                placeholder="Tìm theo tên cải bó xôi, dâu tây, tên sạp..."
+                placeholder={t("productsSearchPlaceholder", "Tìm theo tên cải bó xôi, dâu tây, tên sạp...")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="ml-products-search-input"
@@ -340,8 +343,17 @@ export default function ProductsPage({
             </div>
 
             <div className="ml-products-search-suggestions">
-              <span className="ml-quick-label">Gợi ý:</span>
-              {POPULAR_PRODUCT_KEYWORDS.map((kw, i) => {
+              <span className="ml-quick-label">{isEn ? "Suggestions:" : "Gợi ý:"}</span>
+              {(isEn
+                ? [
+                    "🍅 Cherry Tomatoes",
+                    "🍓 Strawberries",
+                    "🥬 Baby Spinach",
+                    "🍄 Mushrooms",
+                    "🌿 Water Spinach",
+                  ]
+                : POPULAR_PRODUCT_KEYWORDS
+              ).map((kw, i) => {
                 const clean = kw.replace(/^[^\s]+\s*/, "");
                 return (
                   <button
@@ -365,7 +377,7 @@ export default function ProductsPage({
         <aside className="ml-products-sidebar">
           <div className="ml-filter-card">
             <div className="ml-filter-card-header">
-              <h3 className="ml-filter-card-title">Bộ Lọc Tìm Kiếm</h3>
+              <h3 className="ml-filter-card-title">{t("productsFilterCardTitle", "Bộ Lọc Tìm Kiếm")}</h3>
               {(selectedCategory !== "all" ||
                 selectedMarket !== "all" ||
                 searchTerm !== "") && (
@@ -379,20 +391,20 @@ export default function ProductsPage({
                     setPriceMax(200000);
                   }}
                 >
-                  Xóa lọc
+                  {t("productsFilterReset", "Xóa lọc")}
                 </button>
               )}
             </div>
 
             <div className="ml-filter-block">
-              <label className="ml-filter-label">Danh mục sản phẩm</label>
+              <label className="ml-filter-label">{t("productsFilterCategory", "Danh mục sản phẩm")}</label>
               <div className="ml-cat-list">
                 <button
                   type="button"
                   className={`ml-cat-btn ${selectedCategory === "all" ? "active" : ""}`}
                   onClick={() => setSelectedCategory("all")}
                 >
-                  <span>🌿 Tất cả danh mục</span>
+                  <span>{t("productsFilterAllCats", "🌿 Tất cả danh mục")}</span>
                   <span className="ml-cat-count">{products.length}</span>
                 </button>
                 {categories.map((cat) => (
@@ -403,7 +415,7 @@ export default function ProductsPage({
                     onClick={() => setSelectedCategory(String(cat.categoryId))}
                   >
                     <span>
-                      {cat.icon || "🌱"} {cat.name}
+                      {cat.icon || "🌱"} {localizeCategoryName(cat.name, isEn)}
                     </span>
                     <span className="ml-cat-count">
                       {
@@ -419,18 +431,18 @@ export default function ProductsPage({
             </div>
 
             <div className="ml-filter-block">
-              <label className="ml-filter-label">Điểm họp chợ phiên</label>
+              <label className="ml-filter-label">{t("productsFilterMarket", "Điểm họp chợ phiên")}</label>
               <select
                 className="ml-filter-select"
                 value={selectedMarket}
                 onChange={(e) => setSelectedMarket(e.target.value)}
               >
                 <option value="all">
-                  Tất cả các chợ ({markets.length} điểm)
+                  {t("productsFilterAllMarkets", "Tất cả các chợ")} ({markets.length} {isEn ? "locations" : "điểm"})
                 </option>
                 {markets.map((m) => (
                   <option key={m.id} value={m.name}>
-                    {m.name}
+                    {localizeMarketName(m.name, isEn)}
                   </option>
                 ))}
               </select>
@@ -438,7 +450,7 @@ export default function ProductsPage({
 
             <div className="ml-filter-block">
               <div className="ml-slider-header">
-                <label className="ml-filter-label">Mức giá tối đa:</label>
+                <label className="ml-filter-label">{t("productsFilterMaxPrice", "Mức giá tối đa:")}</label>
                 <span className="ml-slider-val">
                   {formatCurrency(priceMax)}
                 </span>
@@ -453,8 +465,8 @@ export default function ProductsPage({
                 className="ml-price-range"
               />
               <div className="ml-range-labels">
-                <span>10.000₫</span>
-                <span>200.000₫</span>
+                <span>{isEn ? "10,000 VND" : "10.000₫"}</span>
+                <span>{isEn ? "200,000 VND" : "200.000₫"}</span>
               </div>
             </div>
           </div>
@@ -463,13 +475,14 @@ export default function ProductsPage({
         <section className="ml-products-main">
           <div className="ml-products-topbar">
             <div className="ml-results-count">
-              Hiển thị <strong>{filteredProducts.length}</strong> /{" "}
-              {products.length} sản phẩm sẵn sàng đặt trước
+              {t("productsCountPrefix", "Hiển thị")}{" "}
+              <strong>{filteredProducts.length}</strong> / {products.length}{" "}
+              {t("productsCountSuffix", "sản phẩm sẵn sàng đặt trước")}
             </div>
 
             <div className="ml-sort-wrap">
               <label htmlFor="sort-select" className="ml-sort-label">
-                Sắp xếp:
+                {t("productsSortLabel", "Sắp xếp:")}
               </label>
               <select
                 id="sort-select"
@@ -477,9 +490,9 @@ export default function ProductsPage({
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
-                <option value="popular">Tồn kho sẵn sàng</option>
-                <option value="price_asc">Giá từ thấp đến cao</option>
-                <option value="price_desc">Giá từ cao xuống thấp</option>
+                <option value="popular">{t("productsSortStock", "Tồn kho sẵn sàng")}</option>
+                <option value="price_asc">{t("productsSortPriceAsc", "Giá từ thấp đến cao")}</option>
+                <option value="price_desc">{t("productsSortPriceDesc", "Giá từ cao xuống thấp")}</option>
               </select>
             </div>
           </div>
@@ -489,20 +502,27 @@ export default function ProductsPage({
               <span className="ml-no-prod-icon">🥦</span>
               <h3>
                 {searchTerm
-                  ? `Không tìm thấy sản phẩm khớp với "${searchTerm}"`
-                  : "Không tìm thấy sản phẩm phù hợp"}
+                  ? `${t("productsNoResultsMatch", "Không tìm thấy sản phẩm khớp với")} "${searchTerm}"`
+                  : t("productsNoResults", "Không tìm thấy sản phẩm phù hợp")}
               </h3>
               <p>
-                Hãy thử bấm vào các gợi ý nông sản phổ biến hoặc xem các sản
-                phẩm sẵn sàng đặt trước bên dưới.
+                {t("productsNoResultsDesc", "Hãy thử bấm vào các gợi ý nông sản phổ biến hoặc xem các sản phẩm sẵn sàng đặt trước bên dưới.")}
               </p>
 
               <div className="ml-empty-suggestions-box">
                 <span className="ml-empty-suggestions-label">
-                  Thử tìm kiếm với:
+                  {isEn ? "Try searching for:" : "Thử tìm kiếm với:"}
                 </span>
                 <div className="ml-empty-chips-list">
-                  {POPULAR_PRODUCT_KEYWORDS.map((kw, i) => {
+                  {(isEn
+                    ? [
+                        "🍅 Cherry Tomatoes",
+                        "🍓 Strawberries",
+                        "🥬 Baby Spinach",
+                        "🍄 Mushrooms",
+                      ]
+                    : POPULAR_PRODUCT_KEYWORDS
+                  ).map((kw, i) => {
                     const cleanKw = kw.replace(/^[^\s]+\s*/, "");
                     return (
                       <button
@@ -538,7 +558,7 @@ export default function ProductsPage({
                     setPriceMax(200000);
                   }}
                 >
-                  ↺ Xem tất cả nông sản
+                  {t("productsEmptyResetBtn", "↺ Xem tất cả nông sản")}
                 </Button>
               </div>
 
@@ -551,12 +571,12 @@ export default function ProductsPage({
                 }}
               >
                 <div className="ml-fallback-header">
-                  <span className="ml-fallback-badge">🔥 NÔNG SẢN NỔI BẬT</span>
+                  <span className="ml-fallback-badge">{t("productsFeaturedBadge", "🔥 NÔNG SẢN NỔI BẬT")}</span>
                   <h3 className="ml-fallback-title">
-                    Gợi Ý Nông Sản Sẵn Sàng Đặt Trước
+                    {t("productsFeaturedTitle", "Gợi Ý Nông Sản Sẵn Sàng Đặt Trước")}
                   </h3>
                   <p className="ml-fallback-sub">
-                    Các mặt hàng tươi ngon được nhiều khách đi chợ lựa chọn:
+                    {t("productsFeaturedSub", "Các mặt hàng tươi ngon được nhiều khách đi chợ lựa chọn:")}
                   </p>
                 </div>
 

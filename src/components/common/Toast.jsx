@@ -35,7 +35,7 @@ export default function Toast({ toasts = [], onRemove }) {
             type="button"
             className="ml-toast-close"
             onClick={() => onRemove(toast.id)}
-            aria-label="Đóng thông báo"
+            aria-label="Close"
           >
             ✕
           </button>

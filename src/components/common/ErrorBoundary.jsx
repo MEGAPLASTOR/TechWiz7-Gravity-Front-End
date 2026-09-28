@@ -67,7 +67,9 @@ export default class ErrorBoundary extends React.Component {
                 marginBottom: "8px",
               }}
             >
-              Đã xảy ra sự cố khi tải trang
+              {localStorage.getItem("ml_language") === "en"
+                ? "Something went wrong loading this page"
+                : "Đã xảy ra sự cố khi tải trang"}
             </h2>
             <p
               style={{
@@ -77,8 +79,9 @@ export default class ErrorBoundary extends React.Component {
                 lineHeight: 1.5,
               }}
             >
-              Hệ thống đã ghi nhận lỗi giao diện. Vui lòng tải lại trang hoặc
-              quay lại trang chủ MarketLink.
+              {localStorage.getItem("ml_language") === "en"
+                ? "The system encountered an interface issue. Please reload the page or return to the MarketLink homepage."
+                : "Hệ thống đã ghi nhận lỗi giao diện. Vui lòng tải lại trang hoặc quay lại trang chủ MarketLink."}
             </p>
             {this.state.error && (
               <div
@@ -119,7 +122,9 @@ export default class ErrorBoundary extends React.Component {
                   cursor: "pointer",
                 }}
               >
-                🔄 Tải lại trang
+                {localStorage.getItem("ml_language") === "en"
+                  ? "🔄 Reload Page"
+                  : "🔄 Tải lại trang"}
               </button>
               <button
                 type="button"
@@ -135,7 +140,9 @@ export default class ErrorBoundary extends React.Component {
                   cursor: "pointer",
                 }}
               >
-                🏠 Về trang chủ
+                {localStorage.getItem("ml_language") === "en"
+                  ? "🏠 Go to Homepage"
+                  : "🏠 Về trang chủ"}
               </button>
             </div>
           </div>

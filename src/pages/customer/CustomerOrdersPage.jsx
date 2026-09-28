@@ -7,6 +7,8 @@ import OrderModifyModal from "../../components/customer/OrderModifyModal";
 import ReviewModal from "../../components/customer/ReviewModal";
 import orderService from "../../services/orderService";
 import customerService from "../../services/customerService";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function CustomerOrdersPage({
   initialOrderId,
   initialOrderCode,
@@ -14,6 +16,7 @@ export default function CustomerOrdersPage({
   onReorder,
   onNavigate,
 } = {}) {
+  const { isEn, localizeProduceName, localizeMarketName, localizeUnit } = useLanguage();
   const [activeTab, setActiveTab] = useState("all");
   const [searchKeyword, setSearchKeyword] = useState(
     () =>
@@ -27,6 +30,7 @@ export default function CustomerOrdersPage({
   const [selectedQrOrder, setSelectedQrOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
+
   useEffect(() => {
     const target =
       initialOrderCode || (initialOrderId ? String(initialOrderId) : "");
@@ -35,6 +39,7 @@ export default function CustomerOrdersPage({
       setActiveTab("all");
     }
   }, [initialOrderId, initialOrderCode]);
+
   const loadOrders = async () => {
     setLoading(true);
     try {
@@ -42,10 +47,12 @@ export default function CustomerOrdersPage({
       if (activeTab === "READY") statusParam = "READY_FOR_PICKUP";
       else if (activeTab === "PENDING") statusParam = "PLACED";
       else if (activeTab !== "all") statusParam = activeTab;
+
       const realOrders = await orderService.getMyOrders({
         keyword: searchKeyword.trim(),
         status: statusParam,
       });
+
       if (realOrders && realOrders.length > 0) {
         setOrders(
           realOrders.map((o) => ({
@@ -97,67 +104,75 @@ export default function CustomerOrdersPage({
       setLoading(false);
     }
   };
+
   useEffect(() => {
     const timer = setTimeout(() => {
       loadOrders();
     }, 250);
     return () => clearTimeout(timer);
   }, [searchKeyword, activeTab]);
+
   const filteredOrders = orders;
+
   const formatCurrency = (val) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(val);
   };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case "READY":
       case "READY_FOR_PICKUP":
         return (
           <Badge variant="ready" dot>
-            Sẵn sàng tại sạp chợ
+            {isEn ? "Ready for pickup at market" : "Sẵn sàng tại sạp chợ"}
           </Badge>
         );
       case "PENDING":
       case "PLACED":
         return (
           <Badge variant="pending" dot>
-            Đang chờ sạp chốt đơn
+            {isEn ? "Waiting for stall confirmation" : "Đang chờ sạp chốt đơn"}
           </Badge>
         );
       case "ACCEPTED":
       case "CONFIRMED":
         return (
           <Badge variant="organic" dot>
-            Đang thu hoạch & đóng gói
+            {isEn ? "Harvesting & packing" : "Đang thu hoạch & đóng gói"}
           </Badge>
         );
       case "COMPLETED":
-        return <Badge variant="completed">Đã nhận & thanh toán</Badge>;
+        return <Badge variant="completed">{isEn ? "Picked up & paid" : "Đã nhận & thanh toán"}</Badge>;
       case "CANCELLED":
       case "DECLINED":
-        return <Badge variant="cancelled">Đã hủy</Badge>;
+        return <Badge variant="cancelled">{isEn ? "Cancelled" : "Đã hủy"}</Badge>;
       default:
         return <Badge variant="neutral">{status}</Badge>;
     }
   };
+
   const handleCancelOrder = async (orderId) => {
     if (
       window.confirm(
-        "Bạn có chắc muốn hủy đơn đặt trước này? Nông dân sẽ hoàn lại tồn kho cho khách hàng khác.",
+        isEn
+          ? "Are you sure you want to cancel this pre-order? The farmer will release the reserved stock."
+          : "Bạn có chắc muốn hủy đơn đặt trước này? Nông dân sẽ hoàn lại tồn kho cho khách hàng khác.",
       )
     ) {
       try {
         await orderService.cancelOrder(orderId);
-        setActionMessage("Đã hủy đơn thành công. Tồn kho đã được hoàn lại.");
+        setActionMessage(isEn ? "Order cancelled successfully. Stock released." : "Đã hủy đơn thành công. Tồn kho đã được hoàn lại.");
         setTimeout(() => setActionMessage(""), 4000);
         await loadOrders();
       } catch (err) {
-        alert(err?.message || "Không thể hủy đơn hàng vào lúc này.");
+        alert(err?.message || (isEn ? "Could not cancel order at this time." : "Không thể hủy đơn hàng vào lúc này."));
       }
     }
   };
+
   const handleSaveModification = async (orderId, newDetails) => {
     try {
       await customerService.modifyOrder(orderId, {
@@ -165,13 +180,14 @@ export default function CustomerOrdersPage({
         slotId: Number(newDetails.slotId),
         note: newDetails.note,
       });
-      setActionMessage("Đã điều chỉnh lịch nhận hàng thành công!");
+      setActionMessage(isEn ? "Pickup schedule updated successfully!" : "Đã điều chỉnh lịch nhận hàng thành công!");
       setTimeout(() => setActionMessage(""), 4000);
       await loadOrders();
     } catch (err) {
-      alert(err?.message || "Không thể thay đổi đơn hàng lúc này.");
+      alert(err?.message || (isEn ? "Could not modify order at this time." : "Không thể thay đổi đơn hàng lúc này."));
     }
   };
+
   const handleSubmitReview = async (reviewData) => {
     try {
       await customerService.submitReview({
@@ -180,22 +196,24 @@ export default function CustomerOrdersPage({
         rating: Number(reviewData.rating),
         comment: reviewData.comment,
       });
-      setActionMessage("Cảm ơn bạn đã gửi đánh giá cho sạp nông dân!");
+      setActionMessage(isEn ? "Thank you for reviewing the farmer stall!" : "Cảm ơn bạn đã gửi đánh giá cho sạp nông dân!");
       setTimeout(() => setActionMessage(""), 4000);
       await loadOrders();
     } catch (err) {
-      alert(err?.message || "Không thể gửi đánh giá lúc này.");
+      alert(err?.message || (isEn ? "Could not submit review at this time." : "Không thể gửi đánh giá lúc này."));
     }
   };
+
   return (
     <div className="ml-orders-page">
       <div className="ml-orders-banner">
         <div className="ml-container">
-          <span className="ml-section-subtitle">Đơn Hàng Của Bạn</span>
-          <h1 className="ml-orders-title">Quản Lý Đơn Đặt Trước Nông Sản</h1>
+          <span className="ml-section-subtitle">{isEn ? "Your Pre-orders" : "Đơn Hàng Của Bạn"}</span>
+          <h1 className="ml-orders-title">{isEn ? "Manage Fresh Produce Pre-orders" : "Quản Lý Đơn Đặt Trước Nông Sản"}</h1>
           <p className="ml-orders-subtitle">
-            Theo dõi trạng thái thu hoạch và đóng gói từ nhà vườn, lấy mã QR
-            xuất trình tại sạp và thanh toán tiền mặt trực tiếp khi đến chợ.
+            {isEn
+              ? "Track harvest and packing status from growers, present your QR code at the stall, and pay cash directly upon morning pickup."
+              : "Theo dõi trạng thái thu hoạch và đóng gói từ nhà vườn, lấy mã QR xuất trình tại sạp và thanh toán tiền mặt trực tiếp khi đến chợ."}
           </p>
 
           <div
@@ -217,23 +235,23 @@ export default function CustomerOrdersPage({
               {[
                 {
                   key: "all",
-                  label: `Tất cả (${orders.length})`,
+                  label: isEn ? `All (${orders.length})` : `Tất cả (${orders.length})`,
                 },
                 {
                   key: "READY",
-                  label: "🌿 Sẵn sàng tại sạp",
+                  label: isEn ? "🌿 Ready at stall" : "🌿 Sẵn sàng tại sạp",
                 },
                 {
                   key: "PENDING",
-                  label: "⏳ Chờ chốt đơn",
+                  label: isEn ? "⏳ Pending" : "⏳ Chờ chốt đơn",
                 },
                 {
                   key: "COMPLETED",
-                  label: "✓ Đã nhận hàng",
+                  label: isEn ? "✓ Picked up" : "✓ Đã nhận hàng",
                 },
                 {
                   key: "CANCELLED",
-                  label: "✕ Đã hủy",
+                  label: isEn ? "✕ Cancelled" : "✕ Đã hủy",
                 },
               ].map((tab) => (
                 <button
@@ -264,7 +282,7 @@ export default function CustomerOrdersPage({
                   border: "1px solid #cbd5e1",
                   fontSize: 13.5,
                 }}
-                placeholder="Tìm mã đơn, tên nông sản, sạp..."
+                placeholder={isEn ? "Search order code, produce name, stall..." : "Tìm mã đơn, tên nông sản, sạp..."}
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
               />
@@ -273,6 +291,7 @@ export default function CustomerOrdersPage({
                   type="button"
                   className="ml-search-clear"
                   onClick={() => setSearchKeyword("")}
+                  title={isEn ? "Clear search" : "Xóa tìm kiếm"}
                   style={{
                     background: "none",
                     border: "none",
@@ -305,24 +324,25 @@ export default function CustomerOrdersPage({
 
         {loading && (
           <div className="ml-orders-loading">
-            Đang tải dữ liệu đơn hàng thực tế từ hệ thống...
+            {isEn ? "Loading orders from system..." : "Đang tải dữ liệu đơn hàng thực tế từ hệ thống..."}
           </div>
         )}
 
         {!loading && filteredOrders.length === 0 ? (
           <div className="ml-card ml-orders-empty">
             <span className="ml-orders-empty-icon">🧺</span>
-            <h3>Chưa có đơn đặt trước nào</h3>
+            <h3>{isEn ? "No pre-orders found" : "Chưa có đơn đặt trước nào"}</h3>
             <p>
-              Các sạp nông dân họp chợ đang mở nhận đơn rau sạch sớm. Đặt trước
-              để giữ phần ngon nhất!
+              {isEn
+                ? "Morning market stalls are currently accepting pre-orders. Reserve ahead to get the freshest produce!"
+                : "Các sạp nông dân họp chợ đang mở nhận đơn rau sạch sớm. Đặt trước để giữ phần ngon nhất!"}
             </p>
             <Button
               variant="primary"
               size="md"
               onClick={() => onNavigate && onNavigate("products")}
             >
-              Khám phá nông sản mùa vụ
+              {isEn ? "Explore seasonal produce" : "Khám phá nông sản mùa vụ"}
             </Button>
           </div>
         ) : (
@@ -332,11 +352,11 @@ export default function CustomerOrdersPage({
                 <div className="ml-order-header">
                   <div className="ml-order-identity">
                     <span className="ml-order-code">
-                      Mã: #{order.orderCode}
+                      {isEn ? "Order: #" : "Mã: #"}{order.orderCode}
                     </span>
                     <span className="ml-order-dot">•</span>
                     <span className="ml-order-time">
-                      Đặt lúc: {order.createdAt}
+                      {isEn ? "Placed at: " : "Đặt lúc: "}{order.createdAt}
                     </span>
                   </div>
                   <div className="ml-order-status-wrap">
@@ -350,10 +370,10 @@ export default function CustomerOrdersPage({
                       <span className="ml-pickup-icon">🎪</span>
                       <div>
                         <div className="ml-pickup-label">
-                          Điểm hẹn chợ phiên:
+                          {isEn ? "Pickup Market:" : "Điểm hẹn chợ phiên:"}
                         </div>
                         <div className="ml-pickup-val">
-                          <strong>{order.pickupMarket}</strong>
+                          <strong>{localizeMarketName(order.pickupMarket)}</strong>
                         </div>
                         <div className="ml-pickup-sub">
                           {order.stallLocation}
@@ -365,7 +385,7 @@ export default function CustomerOrdersPage({
                       <span className="ml-pickup-icon">⏰</span>
                       <div>
                         <div className="ml-pickup-label">
-                          Thời gian đến lấy hàng:
+                          {isEn ? "Pickup Window:" : "Thời gian đến lấy hàng:"}
                         </div>
                         <div className="ml-pickup-val">
                           <strong>
@@ -373,7 +393,7 @@ export default function CustomerOrdersPage({
                           </strong>
                         </div>
                         <div className="ml-pickup-sub">
-                          Ngày: {order.pickupDate}
+                          {isEn ? "Date: " : "Ngày: "}{order.pickupDate}
                         </div>
                       </div>
                     </div>
@@ -381,7 +401,7 @@ export default function CustomerOrdersPage({
                     <div className="ml-pickup-col">
                       <span className="ml-pickup-icon">👨‍🌾</span>
                       <div>
-                        <div className="ml-pickup-label">Sạp nông dân:</div>
+                        <div className="ml-pickup-label">{isEn ? "Grower Stall:" : "Sạp nông dân:"}</div>
                         <div className="ml-pickup-val">
                           <strong>{order.farmerName}</strong>
                         </div>
@@ -395,17 +415,17 @@ export default function CustomerOrdersPage({
 
                 <div className="ml-order-items-table">
                   <div className="ml-table-head">
-                    <span className="col-name">Nông sản đặt trước</span>
-                    <span className="col-qty">Số lượng</span>
-                    <span className="col-price">Đơn giá</span>
-                    <span className="col-total">Tạm tính</span>
+                    <span className="col-name">{isEn ? "Pre-ordered Produce" : "Nông sản đặt trước"}</span>
+                    <span className="col-qty">{isEn ? "Quantity" : "Số lượng"}</span>
+                    <span className="col-price">{isEn ? "Unit Price" : "Đơn giá"}</span>
+                    <span className="col-total">{isEn ? "Subtotal" : "Tạm tính"}</span>
                   </div>
                   <div className="ml-table-body">
                     {order.items.map((item, idx) => (
                       <div key={idx} className="ml-table-row">
-                        <span className="col-name">🥬 {item.name}</span>
+                        <span className="col-name">🥬 {localizeProduceName(item.name)}</span>
                         <span className="col-qty">
-                          {item.quantity} {item.unit}
+                          {item.quantity} {localizeUnit(item.unit)}
                         </span>
                         <span className="col-price">
                           {formatCurrency(item.price)}
@@ -420,20 +440,22 @@ export default function CustomerOrdersPage({
 
                 {order.note && (
                   <div className="ml-order-note">
-                    <strong>Ghi chú cho nông dân:</strong> "{order.note}"
+                    <strong>{isEn ? "Note to farmer:" : "Ghi chú cho nông dân:"}</strong> "{order.note}"
                   </div>
                 )}
 
                 <div className="ml-order-footer">
                   <div className="ml-order-total-block">
                     <span className="ml-total-label">
-                      Tổng thanh toán tại sạp:
+                      {isEn ? "Total due at stall:" : "Tổng thanh toán tại sạp:"}
                     </span>
                     <span className="ml-total-val">
                       {formatCurrency(order.totalAmount)}
                     </span>
                     <span className="ml-payment-tag">
-                      {order.paymentMethod}
+                      {order.paymentMethod === "Thanh toán trực tiếp tại sạp" || !order.paymentMethod
+                        ? (isEn ? "Cash at stall" : "Thanh toán trực tiếp tại sạp")
+                        : order.paymentMethod}
                     </span>
                   </div>
 
@@ -443,7 +465,7 @@ export default function CustomerOrdersPage({
                       size="sm"
                       onClick={() => setSelectedQrOrder(order)}
                     >
-                      📱 Xem mã QR nhận hàng
+                      {isEn ? "📱 View pickup QR" : "📱 Xem mã QR nhận hàng"}
                     </Button>
 
                     {order.status === "COMPLETED" && !order.reviewed && (
@@ -452,12 +474,12 @@ export default function CustomerOrdersPage({
                         size="sm"
                         onClick={() => setSelectedReviewOrder(order)}
                       >
-                        ⭐ Đánh giá sạp
+                        {isEn ? "⭐ Review stall" : "⭐ Đánh giá sạp"}
                       </Button>
                     )}
 
                     {order.status === "COMPLETED" && order.reviewed && (
-                      <span className="ml-reviewed-badge">✓ Đã đánh giá</span>
+                      <span className="ml-reviewed-badge">{isEn ? "✓ Reviewed" : "✓ Đã đánh giá"}</span>
                     )}
 
                     {(order.status === "PENDING" ||
@@ -468,7 +490,7 @@ export default function CustomerOrdersPage({
                           size="sm"
                           onClick={() => setSelectedModifyOrder(order)}
                         >
-                          Đổi giờ lấy hàng
+                          {isEn ? "Change pickup time" : "Đổi giờ lấy hàng"}
                         </Button>
                         <Button
                           variant="ghost"
@@ -476,7 +498,7 @@ export default function CustomerOrdersPage({
                           className="btn-danger-text"
                           onClick={() => handleCancelOrder(order.id)}
                         >
-                          Hủy đơn
+                          {isEn ? "Cancel order" : "Hủy đơn"}
                         </Button>
                       </>
                     )}
@@ -487,7 +509,7 @@ export default function CustomerOrdersPage({
                         size="sm"
                         onClick={() => onReorder && onReorder(order)}
                       >
-                        🧺 Đặt lại đơn này
+                        {isEn ? "🧺 Reorder this" : "🧺 Đặt lại đơn này"}
                       </Button>
                     )}
                   </div>
@@ -502,8 +524,8 @@ export default function CustomerOrdersPage({
         <Modal
           isOpen={!!selectedQrOrder}
           onClose={() => setSelectedQrOrder(null)}
-          title="Mã Nhận Hàng Tại Sạp Chợ"
-          subtitle={`Xuất trình mã này cho chủ sạp ${selectedQrOrder.farmerName}`}
+          title={isEn ? "Pickup QR Code at Market Stall" : "Mã Nhận Hàng Tại Sạp Chợ"}
+          subtitle={isEn ? `Present this code to grower ${selectedQrOrder.farmerName}` : `Xuất trình mã này cho chủ sạp ${selectedQrOrder.farmerName}`}
           maxWidth="440px"
         >
           <div className="ml-qr-pickup-modal">
@@ -511,24 +533,24 @@ export default function CustomerOrdersPage({
 
             <img
               src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(selectedQrOrder.orderCode)}`}
-              alt="Mã QR đơn hàng"
+              alt={isEn ? "Order QR Code" : "Mã QR đơn hàng"}
               className="ml-qr-code-img"
             />
 
             <div className="ml-qr-stall-info">
               <div>
-                🎪 <strong>Điểm hẹn:</strong> {selectedQrOrder.pickupMarket}
+                🎪 <strong>{isEn ? "Pickup Market:" : "Điểm hẹn:"}</strong> {localizeMarketName(selectedQrOrder.pickupMarket)}
               </div>
               <div>
-                📍 <strong>Vị trí sạp:</strong> {selectedQrOrder.stallLocation}
+                📍 <strong>{isEn ? "Stall Location:" : "Vị trí sạp:"}</strong> {selectedQrOrder.stallLocation}
               </div>
               <div>
-                ⏰ <strong>Ca lấy hàng:</strong>{" "}
+                ⏰ <strong>{isEn ? "Pickup Window:" : "Ca lấy hàng:"}</strong>{" "}
                 {selectedQrOrder.pickupSlotLabel || selectedQrOrder.pickupSlot}{" "}
                 ({selectedQrOrder.pickupDate})
               </div>
               <div>
-                💵 <strong>Số tiền thanh toán:</strong>{" "}
+                💵 <strong>{isEn ? "Amount to Pay:" : "Số tiền thanh toán:"}</strong>{" "}
                 <span
                   style={{
                     color: "var(--color-accent)",
@@ -541,9 +563,9 @@ export default function CustomerOrdersPage({
             </div>
 
             <p className="ml-qr-pickup-guide">
-              Khi đến sạp, hãy đưa màn hình này cho nông dân quét hoặc đọc mã
-              đơn để nhận giỏ nông sản đã đóng gói sẵn và kiểm tra trước khi trả
-              tiền mặt.
+              {isEn
+                ? "When arriving at the stall, show this screen to the farmer or read the order code to collect your pre-packed produce basket and inspect it before paying cash."
+                : "Khi đến sạp, hãy đưa màn hình này cho nông dân quét hoặc đọc mã đơn để nhận giỏ nông sản đã đóng gói sẵn và kiểm tra trước khi trả tiền mặt."}
             </p>
 
             <Button
@@ -552,7 +574,7 @@ export default function CustomerOrdersPage({
               fullWidth
               onClick={() => setSelectedQrOrder(null)}
             >
-              Đã hiểu & Đóng
+              {isEn ? "Understood & Close" : "Đã hiểu & Đóng"}
             </Button>
           </div>
         </Modal>

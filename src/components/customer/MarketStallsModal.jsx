@@ -5,6 +5,8 @@ import Badge from "../common/Badge";
 import Button from "../common/Button";
 import marketService from "../../services/marketService";
 import productService from "../../services/productService";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function MarketStallsModal({
   isOpen,
   onClose,
@@ -15,6 +17,7 @@ export default function MarketStallsModal({
   onViewScheduleMap,
   onOpenFullProducts,
 }) {
+  const { t, isEn, localizeProduceName, localizeMarketName, localizeStallName } = useLanguage();
   const [activeTab, setActiveTab] = useState("products");
   const [selectedStallCode, setSelectedStallCode] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -374,8 +377,16 @@ export default function MarketStallsModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Sản Phẩm & Sạp Bán: ${marketName}`}
-      subtitle={`🎪 ${stalls.length} Gian hàng nông dân • Nhận hàng tại: ${market.address || market.city}`}
+      title={
+        isEn
+          ? `Produce & Stalls: ${localizeMarketName(marketName, isEn)}`
+          : `Sản Phẩm & Sạp Bán: ${marketName}`
+      }
+      subtitle={
+        isEn
+          ? `🎪 ${stalls.length} Farmer Stalls • Pickup at: ${market.address || market.city}`
+          : `🎪 ${stalls.length} Gian hàng nông dân • Nhận hàng tại: ${market.address || market.city}`
+      }
       maxWidth="860px"
     >
       <div className="ml-market-stalls-modal-content">
@@ -385,14 +396,14 @@ export default function MarketStallsModal({
             className={`ml-stalls-tab-btn ${activeTab === "products" ? "active" : ""}`}
             onClick={() => setActiveTab("products")}
           >
-            🧺 Nông Sản Tại Chợ ({filteredProducts.length})
+            🧺 {isEn ? "Market Produce" : "Nông Sản Tại Chợ"} ({filteredProducts.length})
           </button>
           <button
             type="button"
             className={`ml-stalls-tab-btn ${activeTab === "stalls" ? "active" : ""}`}
             onClick={() => setActiveTab("stalls")}
           >
-            🎪 Danh Sách Gian Hàng / Sạp ({stalls.length})
+            🎪 {isEn ? "Stall Directory" : "Danh Sách Gian Hàng / Sạp"} ({stalls.length})
           </button>
         </div>
 
@@ -400,13 +411,13 @@ export default function MarketStallsModal({
           <div className="ml-stalls-tab-pane">
             <div className="ml-stalls-filter-bar">
               <div className="ml-filter-chips-row">
-                <span className="ml-filter-sublabel">Chọn sạp:</span>
+                <span className="ml-filter-sublabel">{isEn ? "Select stall:" : "Chọn sạp:"}</span>
                 <button
                   type="button"
                   className={`ml-stall-chip ${selectedStallCode === "all" ? "active" : ""}`}
                   onClick={() => setSelectedStallCode("all")}
                 >
-                  Tất cả các sạp ({products.length})
+                  {isEn ? "All Stalls" : "Tất cả các sạp"} ({products.length})
                 </button>
                 {stalls.map((s, idx) => (
                   <button
@@ -416,7 +427,7 @@ export default function MarketStallsModal({
                     onClick={() => setSelectedStallCode(s.stallNumber)}
                     title={s.stallName}
                   >
-                    🎪 {s.stallNumber}: {s.stallName.split(" ")[0]}
+                    🎪 {s.stallNumber}: {localizeStallName(s.stallName, isEn).split(" ")[0]}
                   </button>
                 ))}
               </div>
@@ -428,35 +439,35 @@ export default function MarketStallsModal({
                     className={`ml-cat-btn ${selectedCategory === "all" ? "active" : ""}`}
                     onClick={() => setSelectedCategory("all")}
                   >
-                    Tất cả
+                    {isEn ? "All" : "Tất cả"}
                   </button>
                   <button
                     type="button"
                     className={`ml-cat-btn ${selectedCategory === "1" ? "active" : ""}`}
                     onClick={() => setSelectedCategory("1")}
                   >
-                    🥬 Rau lá
+                    🥬 {isEn ? "Leafy Greens" : "Rau lá"}
                   </button>
                   <button
                     type="button"
                     className={`ml-cat-btn ${selectedCategory === "2" ? "active" : ""}`}
                     onClick={() => setSelectedCategory("2")}
                   >
-                    🥕 Củ quả
+                    🥕 {isEn ? "Roots & Veggies" : "Củ quả"}
                   </button>
                   <button
                     type="button"
                     className={`ml-cat-btn ${selectedCategory === "3" ? "active" : ""}`}
                     onClick={() => setSelectedCategory("3")}
                   >
-                    🍓 Trái cây
+                    🍓 {isEn ? "Fruits" : "Trái cây"}
                   </button>
                   <button
                     type="button"
                     className={`ml-cat-btn ${selectedCategory === "4" ? "active" : ""}`}
                     onClick={() => setSelectedCategory("4")}
                   >
-                    🍄 Nấm
+                    🍄 {isEn ? "Mushrooms" : "Nấm"}
                   </button>
                 </div>
 
@@ -464,7 +475,7 @@ export default function MarketStallsModal({
                   <span className="ml-search-ic">🔍</span>
                   <input
                     type="text"
-                    placeholder="Tìm rau, củ, tên sạp..."
+                    placeholder={isEn ? "Search produce, stall..." : "Tìm rau, củ, tên sạp..."}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="ml-stalls-search-input"
@@ -476,14 +487,14 @@ export default function MarketStallsModal({
             {selectedStallCode !== "all" && (
               <div className="ml-active-stall-banner">
                 <span>
-                  Đang lọc theo: <strong>{selectedStallCode}</strong>
+                  {isEn ? "Filtering by:" : "Đang lọc theo:"} <strong>{selectedStallCode}</strong>
                 </span>
                 <button
                   type="button"
                   className="ml-clear-stall-btn"
                   onClick={() => setSelectedStallCode("all")}
                 >
-                  ✕ Bỏ lọc sạp
+                  ✕ {isEn ? "Clear stall filter" : "Bỏ lọc sạp"}
                 </button>
               </div>
             )}
@@ -491,10 +502,11 @@ export default function MarketStallsModal({
             {filteredProducts.length === 0 ? (
               <div className="ml-products-empty-state">
                 <span className="ml-empty-icon">🥬</span>
-                <h4>Không tìm thấy nông sản phù hợp</h4>
+                <h4>{isEn ? "No matching produce found" : "Không tìm thấy nông sản phù hợp"}</h4>
                 <p>
-                  Thử bỏ bớt từ khóa hoặc chuyển sang xem tất cả các sạp nông
-                  dân.
+                  {isEn
+                    ? "Try clearing search keywords or view all stalls."
+                    : "Thử bỏ bớt từ khóa hoặc chuyển sang xem tất cả các sạp nông dân."}
                 </p>
                 <Button
                   variant="outline"
@@ -505,7 +517,7 @@ export default function MarketStallsModal({
                     setSearchTerm("");
                   }}
                 >
-                  Xem toàn bộ nông sản
+                  {isEn ? "View all produce" : "Xem toàn bộ nông sản"}
                 </Button>
               </div>
             ) : (
@@ -531,17 +543,17 @@ export default function MarketStallsModal({
 
                       <div className="ml-sp-info">
                         <div className="ml-sp-stall-tag">
-                          🎪 {p.stallCode || "Sạp nông sản"} • {p.farmerName}
+                          🎪 {p.stallCode || (isEn ? "Farmer Stall" : "Sạp nông sản")} • {localizeStallName(p.farmerName, isEn)}
                         </div>
                         <h4 className="ml-sp-name" title={p.name}>
-                          {p.name}
+                          {localizeProduceName(p.name, isEn)}
                         </h4>
                         <div className="ml-sp-stock">
-                          Tồn kho:{" "}
+                          {isEn ? "Stock:" : "Tồn kho:"}{" "}
                           <strong>
                             {p.stockQuantity} {p.unit}
                           </strong>{" "}
-                          ({p.harvestTime || "Thu hoạch sớm"})
+                          ({isEn ? "Early harvest" : (p.harvestTime || "Thu hoạch sớm")})
                         </div>
 
                         <div className="ml-sp-footer">
@@ -585,7 +597,7 @@ export default function MarketStallsModal({
                                   className="ml-sp-add-btn"
                                   onClick={() => onAddToCart(p)}
                                 >
-                                  + Đặt trước
+                                  + {isEn ? "Pre-order" : "Đặt trước"}
                                 </button>
                               )}
                             </div>
@@ -604,10 +616,15 @@ export default function MarketStallsModal({
           <div className="ml-stalls-tab-pane">
             <div className="ml-stalls-overview-banner">
               <div className="ml-stalls-ob-text">
-                <strong>Các Sạp Nông Dân Tại Phiên Chợ {marketName}</strong>
+                <strong>
+                  {isEn
+                    ? `Farmer Stalls at ${localizeMarketName(marketName, isEn)}`
+                    : `Các Sạp Nông Dân Tại Phiên Chợ ${marketName}`}
+                </strong>
                 <p>
-                  Mỗi sạp đại diện cho một hợp tác xã hoặc nông hộ cam kết sản
-                  phẩm sạch, minh bạch nguồn gốc.
+                  {isEn
+                    ? "Each stall represents a dedicated cooperative or family farm committed to clean, transparent agriculture."
+                    : "Mỗi sạp đại diện cho một hợp tác xã hoặc nông hộ cam kết sản phẩm sạch, minh bạch nguồn gốc."}
                 </p>
               </div>
             </div>
@@ -627,25 +644,29 @@ export default function MarketStallsModal({
                     />
                     <div className="ml-sd-meta">
                       <div className="ml-sd-stall-pill">{s.stallNumber}</div>
-                      <h4 className="ml-sd-stall-name">{s.stallName}</h4>
+                      <h4 className="ml-sd-stall-name">{localizeStallName(s.stallName, isEn)}</h4>
                       <div className="ml-sd-owner">
-                        👨‍🌾 Chủ sạp: <strong>{s.farmerName}</strong>
+                        👨‍🌾 {isEn ? "Grower:" : "Chủ sạp:"} <strong>{localizeStallName(s.farmerName, isEn)}</strong>
                       </div>
                     </div>
                   </div>
 
-                  <p className="ml-sd-bio">{s.bio}</p>
+                  <p className="ml-sd-bio">
+                    {isEn
+                      ? "Specialized in clean, micro-organic leafy vegetables and seasonal specialties, harvested at dawn on market day."
+                      : s.bio}
+                  </p>
 
                   <div className="ml-sd-address">
-                    📍 Vùng trồng: <span>{s.farmAddress}</span>
+                    📍 {isEn ? "Farm location:" : "Vùng trồng:"} <span>{s.farmAddress}</span>
                   </div>
 
                   <div className="ml-sd-featured">
-                    <span className="ml-sd-feat-label">Nông sản thế mạnh:</span>
+                    <span className="ml-sd-feat-label">{isEn ? "Key produce:" : "Nông sản thế mạnh:"}</span>
                     <div className="ml-sd-feat-tags">
                       {(s.featuredItems || []).map((it, i) => (
                         <span key={i} className="ml-feat-tag">
-                          ✓ {it}
+                          ✓ {localizeProduceName(it, isEn)}
                         </span>
                       ))}
                     </div>
@@ -657,7 +678,7 @@ export default function MarketStallsModal({
                       className="ml-sd-view-prods-btn"
                       onClick={() => handleSelectStallToFilter(s)}
                     >
-                      🧺 Xem nông sản sạp này →
+                      🧺 {isEn ? "View stall produce →" : "Xem nông sản sạp này →"}
                     </button>
                   </div>
                 </div>
@@ -677,7 +698,7 @@ export default function MarketStallsModal({
                   onViewScheduleMap(market);
                 }}
               >
-                📅 Xem lịch & bản đồ chợ này
+                📅 {isEn ? "Schedule & Map for this market" : "Xem lịch & bản đồ chợ này"}
               </button>
             )}
           </div>
@@ -693,11 +714,11 @@ export default function MarketStallsModal({
                 }}
                 icon={<span>🛒</span>}
               >
-                Duyệt trên trang Mua sắm đầy đủ →
+                {isEn ? "Browse in Full Catalog →" : "Duyệt trên trang Mua sắm đầy đủ →"}
               </Button>
             )}
             <Button variant="primary" size="md" onClick={onClose}>
-              Xong
+              {isEn ? "Done" : "Xong"}
             </Button>
           </div>
         </div>

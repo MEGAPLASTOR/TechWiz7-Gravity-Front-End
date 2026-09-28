@@ -2,9 +2,13 @@ import React, { useState, useEffect } from "react";
 import "@/assets/styles/pages/customer/CustomerReviewsPage.css";
 import customerService from "../../services/customerService";
 import Button from "../../components/common/Button";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function CustomerReviewsPage({ onNavigate }) {
+  const { isEn, localizeProduceName } = useLanguage();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
+
   const loadReviews = async () => {
     setLoading(true);
     try {
@@ -19,15 +23,15 @@ export default function CustomerReviewsPage({ onNavigate }) {
           rating: r.rating || 5,
           comment: r.comment || "",
           productName: r.productName || "",
-          stallName: r.stallName || "Sap nong dan",
-          farmerName: r.farmerName || "Nong dan",
+          stallName: r.stallName || (isEn ? "Farmer Stall" : "Sạp nông dân"),
+          farmerName: r.farmerName || (isEn ? "Farmer" : "Nông dân"),
           farmerReply: r.farmerReply || "",
           farmerReplyAt: r.farmerReplyAt
             ? String(r.farmerReplyAt).replace("T", " ").substring(0, 16)
             : "",
           createdAt: r.createdAt
             ? String(r.createdAt).replace("T", " ").substring(0, 10)
-            : "Gan day",
+            : (isEn ? "Recently" : "Gần đây"),
           isHidden: r.isHidden === true,
         })),
       );
@@ -37,22 +41,26 @@ export default function CustomerReviewsPage({ onNavigate }) {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     loadReviews();
   }, []);
+
   const renderStars = (rating) => {
     const full = Math.min(Math.max(Math.round(rating), 1), 5);
-    return "\u2605".repeat(full) + "\u2606".repeat(5 - full);
+    return "★".repeat(full) + "☆".repeat(5 - full);
   };
+
   return (
     <div className="ml-my-reviews-page">
       <div className="ml-my-reviews-banner">
         <div className="ml-container">
-          <span className="ml-section-subtitle">Lich Su Danh Gia</span>
-          <h1 className="ml-my-reviews-title">Danh Gia Cua Toi</h1>
+          <span className="ml-section-subtitle">{isEn ? "Review History" : "Lịch Sử Đánh Giá"}</span>
+          <h1 className="ml-my-reviews-title">{isEn ? "My Reviews" : "Đánh Giá Của Tôi"}</h1>
           <p className="ml-my-reviews-subtitle">
-            Xem lai cac danh gia ban da gui cho sap nong dan sau khi nhan hang
-            tai cho phien.
+            {isEn
+              ? "Review the feedback and ratings you submitted for farmer stalls after picking up at weekend markets."
+              : "Xem lại các đánh giá bạn đã gửi cho sạp nông dân sau khi nhận hàng tại chợ phiên."}
           </p>
         </div>
       </div>
@@ -60,24 +68,25 @@ export default function CustomerReviewsPage({ onNavigate }) {
       <div className="ml-container">
         {loading && (
           <div className="ml-my-reviews-loading">
-            Dang tai lich su danh gia...
+            {isEn ? "Loading review history..." : "Đang tải lịch sử đánh giá..."}
           </div>
         )}
 
         {!loading && reviews.length === 0 && (
           <div className="ml-card ml-my-reviews-empty">
-            <span className="ml-my-reviews-empty-icon">&#11088;</span>
-            <h3>Ban chua gui danh gia nao</h3>
+            <span className="ml-my-reviews-empty-icon">⭐</span>
+            <h3>{isEn ? "You haven't submitted any reviews yet" : "Bạn chưa gửi đánh giá nào"}</h3>
             <p>
-              Sau khi nhan hang thanh cong tai sap cho, hay gui danh gia de giup
-              cac khach hang khac tim duoc sap tot!
+              {isEn
+                ? "After picking up fresh produce at the market stall, submit a review to help other shoppers discover great farms!"
+                : "Sau khi nhận hàng thành công tại sạp chợ, hãy gửi đánh giá để giúp các khách hàng khác tìm được sạp tốt!"}
             </p>
             <Button
               variant="primary"
               size="md"
               onClick={() => onNavigate && onNavigate("orders")}
             >
-              Xem don hang cua toi
+              {isEn ? "View my pre-orders" : "Xem đơn hàng của tôi"}
             </Button>
           </div>
         )}
@@ -86,10 +95,10 @@ export default function CustomerReviewsPage({ onNavigate }) {
           <div className="ml-my-reviews-list">
             <div className="ml-my-reviews-summary">
               <span className="ml-reviews-count-badge">
-                {reviews.length} danh gia
+                {reviews.length} {isEn ? "reviews" : "đánh giá"}
               </span>
               <span className="ml-reviews-avg-score">
-                Diem trung binh:{" "}
+                {isEn ? "Average rating: " : "Điểm trung bình: "}
                 <strong>
                   {(
                     reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
@@ -106,24 +115,26 @@ export default function CustomerReviewsPage({ onNavigate }) {
               >
                 {rev.isHidden && (
                   <div className="ml-rev-hidden-notice">
-                    Danh gia nay da bi quan tri vien an do vi pham chinh sach
+                    {isEn
+                      ? "This review has been hidden by an administrator due to community policy."
+                      : "Đánh giá này đã bị quản trị viên ẩn do vi phạm chính sách"}
                   </div>
                 )}
 
                 <div className="ml-my-rev-header">
                   <div className="ml-my-rev-meta">
                     <span className="ml-my-rev-stall">
-                      &#127978; {rev.stallName}
+                      🏪 {rev.stallName}
                     </span>
                     {rev.productName && (
                       <span className="ml-my-rev-product">
                         {" "}
-                        &bull; &#129379; {rev.productName}
+                        • 🥬 {localizeProduceName(rev.productName)}
                       </span>
                     )}
                     <span className="ml-my-rev-date">
                       {" "}
-                      &bull; &#128197; {rev.createdAt}
+                      • 📅 {rev.createdAt}
                     </span>
                   </div>
                   <div className="ml-my-rev-stars">
@@ -136,19 +147,21 @@ export default function CustomerReviewsPage({ onNavigate }) {
                 {rev.farmerReply ? (
                   <div className="ml-my-rev-reply-box">
                     <div className="ml-my-rev-reply-author">
-                      &#128104;&#8205;&#127806;{" "}
-                      <strong>Phan hoi tu {rev.farmerName}:</strong>
+                      👨‍🌾{" "}
+                      <strong>
+                        {isEn ? `Response from ${rev.farmerName}:` : `Phản hồi từ ${rev.farmerName}:`}
+                      </strong>
                     </div>
                     <p className="ml-my-rev-reply-text">{rev.farmerReply}</p>
                     {rev.farmerReplyAt && (
                       <span className="ml-my-rev-reply-time">
-                        Da tra loi luc: {rev.farmerReplyAt}
+                        {isEn ? "Replied at: " : "Đã trả lời lúc: "}{rev.farmerReplyAt}
                       </span>
                     )}
                   </div>
                 ) : (
                   <div className="ml-my-rev-no-reply">
-                    Nong dan chua phan hoi danh gia nay
+                    {isEn ? "The grower has not responded to this review yet." : "Nông dân chưa phản hồi đánh giá này"}
                   </div>
                 )}
               </div>

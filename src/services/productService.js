@@ -22,15 +22,20 @@ export const productService = {
       if (Array.isArray(res)) rawList = res;
       else if (res && Array.isArray(res.data)) rawList = res.data;
       else if (res && Array.isArray(res.value)) rawList = res.value;
+      const isEn = typeof window !== "undefined" && localStorage.getItem("ml_language") === "en";
+      const fallbackFarmer = isEn ? "Member Family Farm" : "Nông Trại Thành Viên";
+      const fallbackStall = isEn ? "Standard Stall" : "Sạp Tiêu Chuẩn";
+      const fallbackMarket = isEn ? "Farmers' Market" : "Chợ Phiên Nông Sản";
+
       return rawList.map((p) => ({
         ...p,
         id: p.productId || p.id,
         imageUrl: formatImageUrl(p.imageUrl),
-        farmerName: p.farmerStallName || p.farmerName || "Nông Trại Thành Viên",
-        stallNumber: p.stallNumber || p.stallCode || "Sạp Tiêu Chuẩn",
-        stallCode: p.stallNumber || p.stallCode || "Sạp Tiêu Chuẩn",
+        farmerName: p.farmerStallName || p.farmerName || fallbackFarmer,
+        stallNumber: p.stallNumber || p.stallCode || fallbackStall,
+        stallCode: p.stallNumber || p.stallCode || fallbackStall,
         marketId: p.marketId,
-        marketName: p.marketName || "Chợ Phiên Nông Sản",
+        marketName: p.marketName || fallbackMarket,
       }));
     } catch (err) {
       console.warn("Failed to fetch products from backend", err);

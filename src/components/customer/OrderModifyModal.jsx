@@ -3,6 +3,8 @@ import "@/assets/styles/components/customer/OrderModifyModal.css";
 import Modal from "../common/Modal";
 import Button from "../common/Button";
 import marketService from "../../services/marketService";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function OrderModifyModal({
   isOpen,
   onClose,
@@ -10,6 +12,7 @@ export default function OrderModifyModal({
   onSave,
   onSaveModification,
 }) {
+  const { isEn, localizeMarketName } = useLanguage();
   const [pickupDate, setPickupDate] = useState(() => order?.pickupDate || "");
   const [pickupSlotId, setPickupSlotId] = useState(() =>
     String(order?.slotId || ""),
@@ -17,6 +20,7 @@ export default function OrderModifyModal({
   const [note, setNote] = useState(() => order?.note || "");
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     if (order) {
       setPickupDate(order.pickupDate || "");
@@ -35,7 +39,9 @@ export default function OrderModifyModal({
         .catch(() => {});
     }
   }, [order]);
+
   if (!order) return null;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -50,25 +56,32 @@ export default function OrderModifyModal({
     setLoading(false);
     onClose();
   };
+
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split("T")[0];
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Điều Chỉnh Giờ Nhận Hàng"
-      subtitle={`Đơn hàng #${order.orderCode || order.id} tại ${order.pickupMarket || order.marketName || "chợ phiên"}`}
+      title={isEn ? "Adjust Pickup Schedule" : "Điều Chỉnh Giờ Nhận Hàng"}
+      subtitle={
+        isEn
+          ? `Order #${order.orderCode || order.id} at ${localizeMarketName(order.pickupMarket || order.marketName || "morning market")}`
+          : `Đơn hàng #${order.orderCode || order.id} tại ${order.pickupMarket || order.marketName || "chợ phiên"}`
+      }
       maxWidth="480px"
     >
       <form onSubmit={handleSubmit} className="ml-modify-form">
         <div className="ml-modify-notice">
-          ℹ️ Bạn có thể đổi ngày và ca nhận hàng trước thời hạn chốt đơn của
-          nông dân.
+          {isEn
+            ? "ℹ️ You can change pickup date and time slot before the farmer cutoff deadline."
+            : "ℹ️ Bạn có thể đổi ngày và ca nhận hàng trước thời hạn chốt đơn của nông dân."}
         </div>
 
         <div className="ml-form-group">
-          <label className="ml-form-label">Ngày bạn sẽ ra sạp nhận:</label>
+          <label className="ml-form-label">{isEn ? "Pickup Date at Stall:" : "Ngày bạn sẽ ra sạp nhận:"}</label>
           <input
             type="date"
             className="ml-form-input"
@@ -80,7 +93,7 @@ export default function OrderModifyModal({
         </div>
 
         <div className="ml-form-group">
-          <label className="ml-form-label">Chọn ca nhận hàng mới:</label>
+          <label className="ml-form-label">{isEn ? "Select New Pickup Slot:" : "Chọn ca nhận hàng mới:"}</label>
           <div className="ml-slot-options">
             {slots.map((s) => {
               const sid = String(s.slotId || s.id);
@@ -96,7 +109,8 @@ export default function OrderModifyModal({
                     onChange={() => setPickupSlotId(sid)}
                   />
                   <span>
-                    Ca {s.timeRange || `${s.startTime} - ${s.endTime}`}
+                    {isEn ? "Slot: " : "Ca "}
+                    {s.timeRange || `${s.startTime} - ${s.endTime}`}
                   </span>
                 </label>
               );
@@ -106,23 +120,23 @@ export default function OrderModifyModal({
 
         <div className="ml-form-group">
           <label className="ml-form-label">
-            Cập nhật ghi chú cho nông dân:
+            {isEn ? "Update Note to Farmer:" : "Cập nhật ghi chú cho nông dân:"}
           </label>
           <input
             type="text"
             className="ml-form-input"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="VD: Chuyển sang ca sáng sớm nhận giúp mình..."
+            placeholder={isEn ? "e.g., Switch to early morning slot for pickup..." : "VD: Chuyển sang ca sáng sớm nhận giúp mình..."}
           />
         </div>
 
         <div className="ml-modify-actions">
           <Button variant="ghost" onClick={onClose} type="button">
-            Hủy bỏ
+            {isEn ? "Cancel" : "Hủy bỏ"}
           </Button>
           <Button type="submit" variant="primary" loading={loading}>
-            Lưu thay đổi
+            {isEn ? "Save Changes" : "Lưu thay đổi"}
           </Button>
         </div>
       </form>

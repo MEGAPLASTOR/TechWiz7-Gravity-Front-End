@@ -5,10 +5,14 @@ import App from "./App.jsx";
 import "./assets/styles/experience.css";
 import "./assets/styles/responsive.css";
 import ErrorBoundary from "./components/common/ErrorBoundary.jsx";
+import { LanguageProvider } from "./context";
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ErrorBoundary>
-      <App />
+      <LanguageProvider>
+        <App />
+      </LanguageProvider>
     </ErrorBoundary>
   </StrictMode>,
 );

@@ -1,6 +1,10 @@
 import React from "react";
 import "@/assets/styles/layout/Footer.css";
+import { useLanguage } from "@/context";
+
 export default function Footer({ onNavigate }) {
+  const { isEn, t } = useLanguage();
+
   return (
     <footer className="ml-footer">
       <div className="ml-footer-badges">
@@ -8,9 +12,13 @@ export default function Footer({ onNavigate }) {
           <div className="ml-badge-card">
             <span className="ml-badge-icon">🌱</span>
             <div>
-              <div className="ml-badge-card-title">100% Thu hoạch sớm</div>
+              <div className="ml-badge-card-title">
+                {isEn ? "100% Morning Harvest" : "100% Thu hoạch sớm"}
+              </div>
               <div className="ml-badge-card-desc">
-                Nông sản tươi rói từ vườn đem ra sạp chợ sáng
+                {isEn
+                  ? "Fresh produce harvested at dawn and delivered straight to market"
+                  : "Nông sản tươi rói từ vườn đem ra sạp chợ sáng"}
               </div>
             </div>
           </div>
@@ -18,10 +26,12 @@ export default function Footer({ onNavigate }) {
             <span className="ml-badge-icon">🧺</span>
             <div>
               <div className="ml-badge-card-title">
-                Đặt trước - Giữ món ngon
+                {isEn ? "Pre-order - Reserve Freshness" : "Đặt trước - Giữ món ngon"}
               </div>
               <div className="ml-badge-card-desc">
-                Không lo cháy hàng, sạp giữ sẵn phần cho bạn
+                {isEn
+                  ? "No sellout stress, stalls package and hold your favorites"
+                  : "Không lo cháy hàng, sạp giữ sẵn phần cho bạn"}
               </div>
             </div>
           </div>
@@ -29,10 +39,12 @@ export default function Footer({ onNavigate }) {
             <span className="ml-badge-icon">🤝</span>
             <div>
               <div className="ml-badge-card-title">
-                Ủng hộ nông dân địa phương
+                {isEn ? "Support Local Farmers" : "Ủng hộ nông dân địa phương"}
               </div>
               <div className="ml-badge-card-desc">
-                Giao dịch trực tiếp, không qua tầng trung gian ép giá
+                {isEn
+                  ? "Direct trade without price-squeezing intermediate brokers"
+                  : "Giao dịch trực tiếp, không qua tầng trung gian ép giá"}
               </div>
             </div>
           </div>
@@ -40,10 +52,12 @@ export default function Footer({ onNavigate }) {
             <span className="ml-badge-icon">💵</span>
             <div>
               <div className="ml-badge-card-title">
-                Nhận hàng rồi mới thanh toán
+                {isEn ? "Inspect & Pay at Stall" : "Nhận hàng rồi mới thanh toán"}
               </div>
               <div className="ml-badge-card-desc">
-                Kiểm tra tận mắt độ tươi ngon ngay tại sạp
+                {isEn
+                  ? "Verify fresh quality firsthand before handing over payment"
+                  : "Kiểm tra tận mắt độ tươi ngon ngay tại sạp"}
               </div>
             </div>
           </div>
@@ -76,94 +90,113 @@ export default function Footer({ onNavigate }) {
                   Market<span className="ml-brand-title-accent">Link</span>
                 </span>
                 <span className="ml-brand-tagline">
-                  Nông sản sạch từ vườn đến chợ
+                  {t("brandTaglineLong", "Nông sản sạch từ vườn đến chợ")}
                 </span>
               </div>
             </div>
             <p className="ml-footer-desc">
-              MarketLink là nền tảng số hóa chợ nông sản địa phương, kết nối
-              những người nông dân tâm huyết với cư dân đô thị, mang lại bữa ăn
-              lành mạnh và giữ trọn nét đẹp văn hóa chợ phiên truyền thống.
+              {t(
+                "footerDesc",
+                "MarketLink là nền tảng số hóa chợ nông sản địa phương, kết nối những người nông dân tâm huyết với cư dân đô thị, mang lại bữa ăn lành mạnh và giữ trọn nét đẹp văn hóa chợ phiên truyền thống."
+              )}
             </p>
             <div className="ml-footer-meta">
-              <span>📍 Trụ sở: Tòa nhà TechWiz, Hà Nội</span>
+              <span>📍 {t("footerHeadquarters", "Trụ sở: Tòa nhà TechWiz, Hà Nội")}</span>
               <span>✉️ lienhe@marketlink.vn</span>
             </div>
           </div>
 
           <div className="ml-footer-col">
-            <h4 className="ml-footer-heading">Dành cho khách hàng</h4>
+            <h4 className="ml-footer-heading">
+              {t("footerHeadCustomer", "Dành cho khách hàng")}
+            </h4>
             <ul className="ml-footer-links">
               <li>
                 <button type="button" onClick={() => onNavigate("markets")}>
-                  Tìm chợ nông sản gần đây
+                  {t("footerLinkFindMarket", "Tìm chợ nông sản gần đây")}
                 </button>
               </li>
               <li>
                 <button type="button" onClick={() => onNavigate("products")}>
-                  Rau củ hữu cơ theo mùa
+                  {t("footerLinkOrganicVeg", "Rau củ hữu cơ theo mùa")}
                 </button>
               </li>
               <li>
                 <button type="button" onClick={() => onNavigate("home")}>
-                  Cách thức đặt trước & nhận tại sạp
+                  {t("footerLinkHowItWorks", "Cách thức đặt trước & nhận tại sạp")}
                 </button>
               </li>
               <li>
                 <button type="button" onClick={() => onNavigate("farmers")}>
-                  Danh sách sạp nông dân uy tín
+                  {t("footerLinkStallList", "Danh sách sạp nông dân uy tín")}
                 </button>
               </li>
             </ul>
           </div>
 
           <div className="ml-footer-col">
-            <h4 className="ml-footer-heading">Dành cho nông dân</h4>
+            <h4 className="ml-footer-heading">
+              {t("footerHeadFarmer", "Dành cho nông dân")}
+            </h4>
             <ul className="ml-footer-links">
               <li>
                 <button type="button" onClick={() => onNavigate("farmers")}>
-                  Đăng ký mở sạp bán tại chợ
+                  {t("footerLinkRegisterStall", "Đăng ký mở sạp bán tại chợ")}
                 </button>
               </li>
               <li>
                 <button type="button" onClick={() => onNavigate("home")}>
-                  Quy trình xác thực nông sản sạch
+                  {t("footerLinkVerification", "Quy trình xác thực nông sản sạch")}
                 </button>
               </li>
               <li>
                 <button type="button" onClick={() => onNavigate("home")}>
-                  Chính sách hỗ trợ nông hộ nhỏ lẻ
+                  {t("footerLinkSupport", "Chính sách hỗ trợ nông hộ nhỏ lẻ")}
                 </button>
               </li>
               <li>
                 <button type="button" onClick={() => onNavigate("home")}>
-                  Lịch đăng ký chợ phiên cuối tuần
+                  {t("footerLinkCalendar", "Lịch đăng ký chợ phiên cuối tuần")}
                 </button>
               </li>
             </ul>
           </div>
 
           <div className="ml-footer-col">
-            <h4 className="ml-footer-heading">Chợ phiên nổi bật</h4>
+            <h4 className="ml-footer-heading">
+              {t("footerHeadMarkets", "Chợ phiên nổi bật")}
+            </h4>
             <div className="ml-footer-tag-cloud">
-              <span className="ml-footer-tag">Chợ Phiên Yên Hòa</span>
-              <span className="ml-footer-tag">Chợ Xanh Thảo Điền</span>
-              <span className="ml-footer-tag">Chợ Nông Sản Tây Hồ</span>
-              <span className="ml-footer-tag">Chợ Sớm Ba Vì</span>
-              <span className="ml-footer-tag">Chợ Đêm Nông Sản</span>
+              <span className="ml-footer-tag">
+                {isEn ? "Yen Hoa Market" : "Chợ Phiên Yên Hòa"}
+              </span>
+              <span className="ml-footer-tag">
+                {isEn ? "Thao Dien EcoMarket" : "Chợ Xanh Thảo Điền"}
+              </span>
+              <span className="ml-footer-tag">
+                {isEn ? "Tay Ho Farmers Fair" : "Chợ Nông Sản Tây Hồ"}
+              </span>
+              <span className="ml-footer-tag">
+                {isEn ? "Ba Vi Early Market" : "Chợ Sớm Ba Vì"}
+              </span>
+              <span className="ml-footer-tag">
+                {isEn ? "Night Farm Market" : "Chợ Đêm Nông Sản"}
+              </span>
             </div>
           </div>
         </div>
 
         <div className="ml-footer-bottom">
           <p>
-            © 2026 MarketLink Platform. Dự án số hóa nông sản TechWiz 7. Bảo lưu
-            mọi quyền.
+            {t(
+              "footerCopyright",
+              "© 2026 MarketLink Platform. Dự án số hóa nông sản TechWiz 7. Bảo lưu mọi quyền."
+            )}
           </p>
           <div className="ml-footer-bottom-links">
-            <a href="#privacy">Chính sách bảo mật</a>
-            <a href="#terms">Điều khoản sử dụng</a>
-            <a href="#contact">Liên hệ hỗ trợ</a>
+            <a href="#privacy">{t("footerPrivacy", "Chính sách bảo mật")}</a>
+            <a href="#terms">{t("footerTerms", "Điều khoản sử dụng")}</a>
+            <a href="#contact">{t("footerContact", "Liên hệ hỗ trợ")}</a>
           </div>
         </div>
       </div>

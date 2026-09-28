@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import "@/assets/styles/components/customer/ReviewModal.css";
 import Modal from "../common/Modal";
 import Button from "../common/Button";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function ReviewModal({
   isOpen,
   onClose,
@@ -9,22 +11,34 @@ export default function ReviewModal({
   onSubmit,
   onSubmitReview,
 }) {
+  const { isEn } = useLanguage();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
-  const [selectedTags, setSelectedTags] = useState([
-    "Rau rất tươi",
-    "Đúng hẹn",
-  ]);
+  const [selectedTags, setSelectedTags] = useState(() =>
+    isEn ? ["Produce very fresh", "On-time pickup"] : ["Rau rất tươi", "Đúng hẹn"],
+  );
   const [loading, setLoading] = useState(false);
+
   if (!order) return null;
-  const quickTags = [
-    "Rau rất tươi",
-    "Chủ sạp thân thiện",
-    "Đúng hẹn tại sạp",
-    "Đóng gói cẩn thận",
-    "Cân chuẩn đủ ký",
-    "Giá hợp lý",
-  ];
+
+  const quickTags = isEn
+    ? [
+        "Produce very fresh",
+        "Friendly grower",
+        "On-time pickup",
+        "Carefully packed",
+        "Accurate weight",
+        "Fair price",
+      ]
+    : [
+        "Rau rất tươi",
+        "Chủ sạp thân thiện",
+        "Đúng hẹn tại sạp",
+        "Đóng gói cẩn thận",
+        "Cân chuẩn đủ ký",
+        "Giá hợp lý",
+      ];
+
   const toggleTag = (tag) => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter((t) => t !== tag));
@@ -32,6 +46,7 @@ export default function ReviewModal({
       setSelectedTags([...selectedTags, tag]);
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -54,18 +69,23 @@ export default function ReviewModal({
     setLoading(false);
     onClose();
   };
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Đánh Giá Trải Nghiệm Nhận Hàng"
-      subtitle={`Đơn hàng #${order.orderCode || order.id} tại ${order.marketName || "chợ phiên"}`}
+      title={isEn ? "Review Your Pickup Experience" : "Đánh Giá Trải Nghiệm Nhận Hàng"}
+      subtitle={
+        isEn
+          ? `Order #${order.orderCode || order.id} at ${order.marketName || "morning market"}`
+          : `Đơn hàng #${order.orderCode || order.id} tại ${order.marketName || "chợ phiên"}`
+      }
       maxWidth="520px"
     >
       <form onSubmit={handleSubmit} className="ml-review-form">
         <div className="ml-review-stars-box">
           <label className="ml-review-stars-label">
-            Chất lượng nông sản & sạp hàng:
+            {isEn ? "Produce Quality & Stall Service:" : "Chất lượng nông sản & sạp hàng:"}
           </label>
           <div className="ml-stars-row">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -79,17 +99,19 @@ export default function ReviewModal({
               </button>
             ))}
             <span className="ml-rating-text">
-              {rating === 5 && "Tuyệt vời, rau củ rất tươi ngon!"}
-              {rating === 4 && "Rất hài lòng, đúng hẹn"}
-              {rating === 3 && "Bình thường, chấp nhận được"}
-              {rating === 2 && "Cần cải thiện chất lượng"}
-              {rating === 1 && "Không hài lòng"}
+              {rating === 5 && (isEn ? "Excellent, produce is so fresh and delicious!" : "Tuyệt vời, rau củ rất tươi ngon!")}
+              {rating === 4 && (isEn ? "Very satisfied, on time" : "Rất hài lòng, đúng hẹn")}
+              {rating === 3 && (isEn ? "Average, acceptable" : "Bình thường, chấp nhận được")}
+              {rating === 2 && (isEn ? "Needs quality improvement" : "Cần cải thiện chất lượng")}
+              {rating === 1 && (isEn ? "Dissatisfied" : "Không hài lòng")}
             </span>
           </div>
         </div>
 
         <div className="ml-review-tags-section">
-          <label className="ml-review-tags-label">Điểm bạn thích nhất:</label>
+          <label className="ml-review-tags-label">
+            {isEn ? "What did you like most:" : "Điểm bạn thích nhất:"}
+          </label>
           <div className="ml-review-tags-cloud">
             {quickTags.map((tag) => (
               <button
@@ -107,12 +129,12 @@ export default function ReviewModal({
 
         <div className="ml-form-group">
           <label className="ml-form-label">
-            Chia sẻ thêm cảm nhận của bạn (tùy chọn):
+            {isEn ? "Share more feedback (optional):" : "Chia sẻ thêm cảm nhận của bạn (tùy chọn):"}
           </label>
           <textarea
             className="ml-review-textarea"
             rows={3}
-            placeholder="Chia sẻ về độ tươi ngọt của rau, thái độ của chủ sạp..."
+            placeholder={isEn ? "Share about produce freshness, stall service, pickup convenience..." : "Chia sẻ về độ tươi ngọt của rau, thái độ của chủ sạp..."}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
           />
@@ -120,7 +142,7 @@ export default function ReviewModal({
 
         <div className="ml-review-actions">
           <Button variant="ghost" onClick={onClose}>
-            Để sau
+            {isEn ? "Later" : "Để sau"}
           </Button>
           <Button
             type="submit"
@@ -129,7 +151,7 @@ export default function ReviewModal({
             loading={loading}
             icon={<span>⭐</span>}
           >
-            Gửi đánh giá
+            {isEn ? "Submit Review" : "Gửi đánh giá"}
           </Button>
         </div>
       </form>

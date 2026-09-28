@@ -150,6 +150,45 @@ body::before {
   color: var(--color-accent);
 }
 
+.ml-lang-toggle {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  color: var(--color-text-main);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  transition:
+    transform var(--transition-fast),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-xs);
+}
+
+.ml-lang-toggle:hover {
+  transform: scale(1.05);
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-surface);
+  color: var(--color-primary);
+}
+
+.ml-lang-flag {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.ml-lang-code {
+  letter-spacing: 0.5px;
+}
+
 .ml-btn--loading {
   position: relative;
   overflow: hidden;

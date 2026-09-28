@@ -7,6 +7,8 @@ import OpenStreetMapRouting from "../../components/OpenStreetMapRouting";
 import Button from "../../components/common/Button";
 import marketService from "../../services/marketService";
 import { matchSearch, POPULAR_MARKET_KEYWORDS } from "../../utils/searchUtils";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function MarketsPage({
   onNavigate,
   onSelectMarketProducts,
@@ -14,6 +16,7 @@ export default function MarketsPage({
   cartItems = [],
   onUpdateCartQty,
 }) {
+  const { t, isEn, localizeMarketName } = useLanguage();
   const [activeCity, setActiveCity] = useState("all");
   const [activeDay, setActiveDay] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -157,14 +160,16 @@ export default function MarketsPage({
         <div className="ml-container ml-markets-banner-inner">
           <div>
             <span className="ml-section-subtitle">
-              Mạng Lưới Chợ Phiên ({marketsData.length} Điểm)
+              {t("marketsPageSubtitle", "Mạng Lưới Chợ Phiên")} ({marketsData.length} {isEn ? "Locations" : "Điểm"})
             </span>
             <h1 className="ml-markets-title">
-              Khám Phá Các Điểm Chợ Nông Sản Sạch
+              {t("marketsPageTitle", "Khám Phá Các Điểm Chợ Nông Sản Sạch")}
             </h1>
             <p className="ml-markets-desc">
-              Tìm các chợ phiên họp định kỳ gần nơi bạn sinh sống, xem lịch họp
-              sạp và lộ trình đi lại thuận tiện nhất.
+              {t(
+                "marketsPageDesc",
+                "Tìm các chợ phiên họp định kỳ gần nơi bạn sinh sống, xem lịch họp sạp và lộ trình đi lại thuận tiện nhất."
+              )}
             </p>
           </div>
 
@@ -174,14 +179,14 @@ export default function MarketsPage({
               className={`ml-toggle-btn ${viewMode === "grid" ? "active" : ""}`}
               onClick={() => setViewMode("grid")}
             >
-              ⊞ Danh sách sạp
+              {t("marketsTabGrid", "⊞ Danh sách sạp")}
             </button>
             <button
               type="button"
               className={`ml-toggle-btn ${viewMode === "map" ? "active" : ""}`}
               onClick={() => setViewMode("map")}
             >
-              🗺️ Bản đồ & Định vị
+              {t("marketsTabMap", "🗺️ Bản đồ & Định vị")}
             </button>
           </div>
         </div>
@@ -194,7 +199,7 @@ export default function MarketsPage({
               <span className="ml-filter-icon">🔍</span>
               <input
                 type="text"
-                placeholder="Tìm theo tên chợ, quận/huyện, tên đường..."
+                placeholder={t("marketsSearchPlaceholder", "Tìm theo tên chợ, quận/huyện, tên đường...")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="ml-markets-search-input"
@@ -211,8 +216,11 @@ export default function MarketsPage({
             </div>
 
             <div className="ml-markets-quick-tags">
-              <span className="ml-markets-quick-label">Gợi ý:</span>
-              {POPULAR_MARKET_KEYWORDS.map((kw, i) => (
+              <span className="ml-markets-quick-label">{isEn ? "Suggestions:" : "Gợi ý:"}</span>
+              {(isEn
+                ? ["Ba Dinh", "Tay Ho", "Thao Dien", "Ecopark", "Weekend Market"]
+                : POPULAR_MARKET_KEYWORDS
+              ).map((kw, i) => (
                 <button
                   key={i}
                   type="button"
@@ -226,14 +234,14 @@ export default function MarketsPage({
           </div>
 
           <div className="ml-filter-group">
-            <span className="ml-filter-label">Thành phố:</span>
+            <span className="ml-filter-label">{t("marketsCityFilter", "Thành phố:")}</span>
             <div className="ml-filter-chips">
               <button
                 type="button"
                 className={`ml-chip-btn ${activeCity === "all" ? "active" : ""}`}
                 onClick={() => setActiveCity("all")}
               >
-                Tất cả ({marketsData.length})
+                {t("marketsCityAll", "Tất cả")} ({marketsData.length})
               </button>
               <button
                 type="button"
@@ -247,7 +255,7 @@ export default function MarketsPage({
                 className={`ml-chip-btn ${activeCity === "TP. Hồ Chí Minh" ? "active" : ""}`}
                 onClick={() => setActiveCity("TP. Hồ Chí Minh")}
               >
-                TP. Hồ Chí Minh
+                {isEn ? "Ho Chi Minh City" : "TP. Hồ Chí Minh"}
               </button>
               <button
                 type="button"
@@ -274,20 +282,25 @@ export default function MarketsPage({
                   <span className="ml-empty-icon">🎪</span>
                   <h3>
                     {searchTerm
-                      ? `Không tìm thấy chợ phiên khớp với "${searchTerm}"`
-                      : "Không tìm thấy chợ phiên phù hợp"}
+                      ? `${t("marketsEmptyMatch", "Không tìm thấy chợ phiên khớp với")} "${searchTerm}"`
+                      : t("marketsEmptyTitle", "Không tìm thấy chợ phiên phù hợp")}
                   </h3>
                   <p>
-                    Thử tìm kiếm với từ khóa khác hoặc chuyển sang khu vực "Tất
-                    cả".
+                    {t(
+                      "marketsEmptyDesc",
+                      "Thử tìm kiếm với từ khóa khác hoặc chuyển sang khu vực 'Tất cả'."
+                    )}
                   </p>
 
                   <div className="ml-empty-suggestions-box">
                     <span className="ml-empty-suggestions-label">
-                      Thử tìm kiếm với:
+                      {isEn ? "Try searching for:" : "Thử tìm kiếm với:"}
                     </span>
                     <div className="ml-empty-chips-list">
-                      {POPULAR_MARKET_KEYWORDS.map((kw, i) => (
+                      {(isEn
+                        ? ["Ba Dinh", "Tay Ho", "Thao Dien", "Ecopark"]
+                        : POPULAR_MARKET_KEYWORDS
+                      ).map((kw, i) => (
                         <button
                           key={i}
                           type="button"
@@ -318,7 +331,7 @@ export default function MarketsPage({
                         setSearchTerm("");
                       }}
                     >
-                      ↺ Xem tất cả chợ
+                      {t("marketsEmptyResetBtn", "↺ Xem tất cả chợ")}
                     </Button>
                   </div>
                 </div>
@@ -333,13 +346,16 @@ export default function MarketsPage({
                 >
                   <div className="ml-fallback-header">
                     <span className="ml-fallback-badge">
-                      ⭐ CHỢ PHIÊN TIÊU BIỂU
+                      {t("marketsFeaturedBadge", "⭐ CHỢ PHIÊN TIÊU BIỂU")}
                     </span>
                     <h3 className="ml-fallback-title">
-                      Gợi Ý Các Phiên Chợ Nổi Bật Cho Bạn
+                      {t("marketsFeaturedTitle", "Gợi Ý Các Phiên Chợ Nổi Bật Cho Bạn")}
                     </h3>
                     <p className="ml-fallback-sub">
-                      Các điểm chợ nông sản sạch họp định kỳ mỗi cuối tuần:
+                      {t(
+                        "marketsFeaturedSub",
+                        "Các điểm chợ nông sản sạch họp định kỳ mỗi cuối tuần:"
+                      )}
                     </p>
                   </div>
 

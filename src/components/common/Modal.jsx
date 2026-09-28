@@ -47,7 +47,7 @@ export default function Modal({
             type="button"
             className="ml-modal-close"
             onClick={onClose}
-            aria-label="Đóng hộp thoại"
+            aria-label="Close"
           >
             ✕
           </button>

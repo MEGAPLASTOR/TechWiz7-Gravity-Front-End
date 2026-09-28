@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import "@/assets/styles/layout/NotificationBell.css";
 import notificationService from "@/services/notificationService";
+import { useLanguage } from "@/context";
+
 export default function NotificationBell({
   notifications = [],
   unreadCount = 0,
@@ -10,6 +12,7 @@ export default function NotificationBell({
   onNavigate,
   currentRole,
 }) {
+  const { isEn } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [browserPermission, setBrowserPermission] = useState("default");
@@ -141,14 +144,14 @@ export default function NotificationBell({
     try {
       const past = new Date(dateStr).getTime();
       const diffSec = Math.floor((Date.now() - past) / 1000);
-      if (diffSec < 60) return "Vừa xong";
+      if (diffSec < 60) return isEn ? "Just now" : "Vừa xong";
       const diffMin = Math.floor(diffSec / 60);
-      if (diffMin < 60) return `${diffMin} phút trước`;
+      if (diffMin < 60) return isEn ? `${diffMin}m ago` : `${diffMin} phút trước`;
       const diffHour = Math.floor(diffMin / 60);
-      if (diffHour < 24) return `${diffHour} giờ trước`;
+      if (diffHour < 24) return isEn ? `${diffHour}h ago` : `${diffHour} giờ trước`;
       const diffDay = Math.floor(diffHour / 24);
-      if (diffDay < 7) return `${diffDay} ngày trước`;
-      return new Date(dateStr).toLocaleDateString("vi-VN");
+      if (diffDay < 7) return isEn ? `${diffDay}d ago` : `${diffDay} ngày trước`;
+      return new Date(dateStr).toLocaleDateString(isEn ? "en-US" : "vi-VN");
     } catch {
       return "";
     }
@@ -195,8 +198,8 @@ export default function NotificationBell({
         type="button"
         className={`ml-notif-bell-btn ${unreadCount > 0 ? "has-unread" : ""} ${isOpen ? "active" : ""}`}
         onClick={() => setIsOpen(!isOpen)}
-        title="Thông báo hệ thống và đơn hàng"
-        aria-label={`Thông báo (${unreadCount} chưa đọc)`}
+        title={isEn ? "System and order notifications" : "Thông báo hệ thống và đơn hàng"}
+        aria-label={isEn ? `Notifications (${unreadCount} unread)` : `Thông báo (${unreadCount} chưa đọc)`}
         aria-expanded={isOpen}
       >
         <svg
@@ -217,7 +220,7 @@ export default function NotificationBell({
         {isLiveConnected && (
           <span
             className="ml-notif-live-dot"
-            title="Đang kết nối luồng đẩy trực tiếp"
+            title={isEn ? "Live push stream connected" : "Đang kết nối luồng đẩy trực tiếp"}
           />
         )}
 
@@ -233,7 +236,7 @@ export default function NotificationBell({
           <div className="ml-notif-header">
             <div className="ml-notif-header-top">
               <div className="ml-notif-title-wrap">
-                <h4 className="ml-notif-header-title">Thông báo</h4>
+                <h4 className="ml-notif-header-title">{isEn ? "Notifications" : "Thông báo"}</h4>
                 {isLiveConnected && (
                   <span className="ml-notif-live-badge">
                     <span className="ml-notif-live-indicator" /> Live
@@ -246,9 +249,9 @@ export default function NotificationBell({
                     type="button"
                     className="ml-notif-btn-action"
                     onClick={onMarkAllRead}
-                    title="Đánh dấu tất cả là đã đọc"
+                    title={isEn ? "Mark all as read" : "Đánh dấu tất cả là đã đọc"}
                   >
-                    ✓ Đọc hết
+                    {isEn ? "✓ Mark all read" : "✓ Đọc hết"}
                   </button>
                 )}
               </div>
@@ -260,14 +263,14 @@ export default function NotificationBell({
                 className={`ml-notif-tab ${activeTab === "all" ? "active" : ""}`}
                 onClick={() => setActiveTab("all")}
               >
-                Tất cả ({notifications.length})
+                {isEn ? `All (${notifications.length})` : `Tất cả (${notifications.length})`}
               </button>
               <button
                 type="button"
                 className={`ml-notif-tab ${activeTab === "unread" ? "active" : ""}`}
                 onClick={() => setActiveTab("unread")}
               >
-                Chưa đọc ({unreadCount})
+                {isEn ? `Unread (${unreadCount})` : `Chưa đọc (${unreadCount})`}
               </button>
             </div>
           </div>
@@ -275,14 +278,14 @@ export default function NotificationBell({
           {browserPermission === "default" && (
             <div className="ml-notif-permission-banner">
               <span>
-                Bật thông báo đẩy trên trình duyệt để không bỏ lỡ đơn hàng?
+                {isEn ? "Enable browser push notifications to avoid missing orders?" : "Bật thông báo đẩy trên trình duyệt để không bỏ lỡ đơn hàng?"}
               </span>
               <button
                 type="button"
                 className="ml-notif-perm-btn"
                 onClick={handleRequestPermission}
               >
-                Bật ngay
+                {isEn ? "Enable Now" : "Bật ngay"}
               </button>
             </div>
           )}
@@ -293,12 +296,13 @@ export default function NotificationBell({
                 <div className="ml-notif-empty-icon">🔔</div>
                 <div className="ml-notif-empty-title">
                   {activeTab === "unread"
-                    ? "Không có thông báo chưa đọc"
-                    : "Chưa có thông báo nào"}
+                    ? (isEn ? "No unread notifications" : "Không có thông báo chưa đọc")
+                    : (isEn ? "No notifications yet" : "Chưa có thông báo nào")}
                 </div>
                 <div className="ml-notif-empty-desc">
-                  Các cập nhật đơn hàng, kết quả kiểm duyệt và phản hồi sẽ xuất
-                  hiện tại đây tức thời.
+                  {isEn
+                    ? "Order updates, verification results, and replies will appear here in real time."
+                    : "Các cập nhật đơn hàng, kết quả kiểm duyệt và phản hồi sẽ xuất hiện tại đây tức thời."}
                 </div>
               </div>
             ) : (
@@ -325,7 +329,7 @@ export default function NotificationBell({
                       <div className="ml-notif-item-desc">{item.message}</div>
                     </div>
                     {!item.isRead && (
-                      <span className="ml-notif-item-dot" title="Chưa đọc" />
+                      <span className="ml-notif-item-dot" title={isEn ? "Unread" : "Chưa đọc"} />
                     )}
                   </div>
                 );
@@ -340,7 +344,7 @@ export default function NotificationBell({
                 color: "#16a34a",
               }}
             >
-              ● Đã kết nối luồng đẩy
+              {isEn ? "● Push stream connected" : "● Đã kết nối luồng đẩy"}
             </span>
           </div>
         </div>

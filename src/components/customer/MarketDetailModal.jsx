@@ -8,6 +8,8 @@ import {
   notificationService,
   playNotificationChime,
 } from "../../services/notificationService";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function MarketDetailModal({
   isOpen,
   onClose,
@@ -15,6 +17,7 @@ export default function MarketDetailModal({
   onViewStalls,
   initialTab = "schedule",
 }) {
+  const { t, isEn, localizeMarketName, localizeOperatingDays } = useLanguage();
   const [activeTab, setActiveTab] = useState(initialTab);
   const mapRef = useRef(null);
   const leafletMap = useRef(null);
@@ -290,7 +293,7 @@ export default function MarketDetailModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={name}
+      title={localizeMarketName(name, isEn)}
       subtitle={`📍 ${address}, ${city}`}
       maxWidth="780px"
     >
@@ -301,14 +304,14 @@ export default function MarketDetailModal({
             className={`ml-modal-tab-btn ${activeTab === "schedule" ? "active" : ""}`}
             onClick={() => setActiveTab("schedule")}
           >
-            📅 Lịch Hoạt Động & Hướng Dẫn
+            📅 {isEn ? "Operating Schedule & Guide" : "Lịch Hoạt Động & Hướng Dẫn"}
           </button>
           <button
             type="button"
             className={`ml-modal-tab-btn ${activeTab === "map" ? "active" : ""}`}
             onClick={() => setActiveTab("map")}
           >
-            🗺️ Bản Đồ & Chỉ Đường GPS
+            🗺️ {isEn ? "Map & GPS Route" : "Bản Đồ & Chỉ Đường GPS"}
           </button>
         </div>
 
@@ -318,10 +321,10 @@ export default function MarketDetailModal({
               <img src={imageUrl} alt={name} className="ml-detail-img" />
               <div className="ml-detail-pills">
                 <Badge variant="organic" size="sm">
-                  📍 Khoảng cách: {distance}
+                  📍 {isEn ? "Distance:" : "Khoảng cách:"} {distance}
                 </Badge>
                 <Badge variant="ready" size="sm">
-                  ✓ Đang mở nhận đặt trước
+                  ✓ {isEn ? "Open for Pre-orders" : "Đang mở nhận đặt trước"}
                 </Badge>
               </div>
             </div>
@@ -330,16 +333,16 @@ export default function MarketDetailModal({
               <div className="ml-sched-item">
                 <span className="ml-sched-icon">📅</span>
                 <div>
-                  <div className="ml-sched-label">Lịch họp định kỳ:</div>
+                  <div className="ml-sched-label">{isEn ? "Recurring Schedule:" : "Lịch họp định kỳ:"}</div>
                   <div className="ml-sched-val">
-                    <strong>{operatingDays}</strong>
+                    <strong>{localizeOperatingDays(operatingDays, isEn)}</strong>
                   </div>
                 </div>
               </div>
               <div className="ml-sched-item">
                 <span className="ml-sched-icon">⏰</span>
                 <div>
-                  <div className="ml-sched-label">Khung giờ đón khách:</div>
+                  <div className="ml-sched-label">{isEn ? "Visitor Hours:" : "Khung giờ đón khách:"}</div>
                   <div className="ml-sched-val">
                     <strong>{operatingHours}</strong>
                   </div>
@@ -352,55 +355,62 @@ export default function MarketDetailModal({
                 <span className="ml-session-icon">⚡</span>
                 <div>
                   <h4 className="ml-session-title">
-                    Phiên Chợ Sắp Diễn Ra: Cuối Tuần Này
+                    {isEn ? "Upcoming Session: This Weekend" : "Phiên Chợ Sắp Diễn Ra: Cuối Tuần Này"}
                   </h4>
                   <p className="ml-session-desc">
-                    Nông dân thu hoạch rau củ vào 4:30 - 5:00 sáng và chở thẳng
-                    đến sạp.
+                    {isEn
+                      ? "Growers harvest fresh vegetables at 4:30 - 5:00 AM and deliver straight to stalls."
+                      : "Nông dân thu hoạch rau củ vào 4:30 - 5:00 sáng và chở thẳng đến sạp."}
                   </p>
                 </div>
               </div>
               <div className="ml-cutoff-notice">
                 <span className="ml-cutoff-badge">
-                  ⏳ Hạn chót đặt trước (Cut-off):
+                  ⏳ {isEn ? "Pre-order Cut-off:" : "Hạn chót đặt trước (Cut-off):"}
                 </span>
                 <span>
-                  <strong>20:00 tối Thứ Sáu</strong> — Sau giờ này sạp sẽ đóng
-                  đơn để tập trung thu hái theo số lượng.
+                  <strong>{isEn ? "20:00 Friday night" : "20:00 tối Thứ Sáu"}</strong> —{" "}
+                  {isEn
+                    ? "After this cutoff, stalls close order taking to focus on harvest quantities."
+                    : "Sau giờ này sạp sẽ đóng đơn để tập trung thu hái theo số lượng."}
                 </span>
               </div>
             </div>
 
             <div className="ml-detail-section">
-              <h4 className="ml-detail-heading">Giới thiệu phiên chợ</h4>
-              <p className="ml-detail-text">{description}</p>
+              <h4 className="ml-detail-heading">{isEn ? "About This Market" : "Giới thiệu phiên chợ"}</h4>
+              <p className="ml-detail-text">
+                {isEn
+                  ? "Clean farmers' market bringing together certified agricultural cooperatives and family farms from regional highlands. All produce harvested within local radius, ensuring the highest crispness and nutrition."
+                  : description}
+              </p>
             </div>
 
             <div className="ml-detail-section">
               <h4 className="ml-detail-heading">
-                3 Bước nhận nông sản nhanh tại chợ
+                {isEn ? "3 Quick Steps to Pick Up at Market" : "3 Bước nhận nông sản nhanh tại chợ"}
               </h4>
               <div className="ml-steps-grid">
                 <div className="ml-step-card">
                   <div className="ml-step-num">1</div>
                   <div className="ml-step-info">
-                    <strong>Đặt trước online</strong>
-                    <span>Chọn rau quả và chọn giờ hẹn ra chợ.</span>
+                    <strong>{isEn ? "Pre-order Online" : "Đặt trước online"}</strong>
+                    <span>{isEn ? "Pick produce and choose your pickup window." : "Chọn rau quả và chọn giờ hẹn ra chợ."}</span>
                   </div>
                 </div>
                 <div className="ml-step-card">
                   <div className="ml-step-num">2</div>
                   <div className="ml-step-info">
-                    <strong>Đến chợ (Geofence 300m)</strong>
-                    <span>Hệ thống rung chuông để sạp soạn sẵn giỏ hàng.</span>
+                    <strong>{isEn ? "Arrive at Market (300m Geofence)" : "Đến chợ (Geofence 300m)"}</strong>
+                    <span>{isEn ? "System rings chime for stalls to ready your basket." : "Hệ thống rung chuông để sạp soạn sẵn giỏ hàng."}</span>
                   </div>
                 </div>
                 <div className="ml-step-card">
                   <div className="ml-step-num">3</div>
                   <div className="ml-step-info">
-                    <strong>Đọc mã nhận hàng</strong>
+                    <strong>{isEn ? "Show Pickup Code" : "Đọc mã nhận hàng"}</strong>
                     <span>
-                      Đến bàn Express hoặc sạp lấy hàng ngay không chờ đợi.
+                      {isEn ? "Pick up at express counter or stall without waiting." : "Đến bàn Express hoặc sạp lấy hàng ngay không chờ đợi."}
                     </span>
                   </div>
                 </div>
@@ -409,10 +419,19 @@ export default function MarketDetailModal({
 
             <div className="ml-detail-section">
               <h4 className="ml-detail-heading">
-                Tiện ích hỗ trợ khách lấy hàng
+                {isEn ? "Market Amenities & Facilities" : "Tiện ích hỗ trợ khách lấy hàng"}
               </h4>
               <div className="ml-amenities-grid">
-                {amenities.map((item, idx) => (
+                {(isEn
+                  ? [
+                      "Free Parking",
+                      "Express Pickup Counter",
+                      "Organic Waste Bins",
+                      "Traceability Verification Stall",
+                      "VietQR Instant Payment",
+                    ]
+                  : amenities
+                ).map((item, idx) => (
                   <span key={idx} className="ml-amenity-chip">
                     ✓ {item}
                   </span>
@@ -422,8 +441,9 @@ export default function MarketDetailModal({
 
             <div className="ml-detail-footer">
               <div className="ml-detail-stall-note">
-                🎪 Hiện có <strong>{stallsCount} gian hàng nông dân</strong> đã
-                đăng ký sản phẩm sẵn sàng phục vụ.
+                🎪 {isEn ? "Currently " : "Hiện có "}
+                <strong>{stallsCount} {isEn ? "farmer stalls" : "gian hàng nông dân"}</strong>{" "}
+                {isEn ? "registered and ready to serve." : "đã đăng ký sản phẩm sẵn sàng phục vụ."}
               </div>
               <div className="ml-modal-actions-row">
                 <Button
@@ -433,7 +453,7 @@ export default function MarketDetailModal({
                   onClick={() => setActiveTab("map")}
                   icon={<span>🗺️</span>}
                 >
-                  Xem bản đồ & chỉ đường
+                  {isEn ? "View Map & Directions" : "Xem bản đồ & chỉ đường"}
                 </Button>
                 <Button
                   variant="primary"
@@ -445,7 +465,7 @@ export default function MarketDetailModal({
                   }}
                   icon={<span>🧺</span>}
                 >
-                  Xem sản phẩm sạp tại chợ
+                  {isEn ? "Browse Stalls at Market" : "Xem sản phẩm sạp tại chợ"}
                 </Button>
               </div>
             </div>
@@ -477,28 +497,30 @@ export default function MarketDetailModal({
 
             {loadingRoute ? (
               <div className="ml-route-loading">
-                ⏳ Đang tính toán đường đi ngắn nhất qua OpenStreetMap...
+                ⏳ {isEn ? "Calculating shortest route via OpenStreetMap..." : "Đang tính toán đường đi ngắn nhất qua OpenStreetMap..."}
               </div>
             ) : routeData ? (
               <div className="ml-route-stats-container">
                 <div className="ml-route-stat-box">
-                  <span className="ml-route-stat-label">Khoảng cách</span>
+                  <span className="ml-route-stat-label">{isEn ? "Distance" : "Khoảng cách"}</span>
                   <span className="ml-route-stat-num">
                     {routeData.distanceKm} km
                   </span>
                 </div>
                 <div className="ml-route-stat-box">
-                  <span className="ml-route-stat-label">Thời gian xe máy</span>
+                  <span className="ml-route-stat-label">{isEn ? "Transit Time" : "Thời gian xe máy"}</span>
                   <span className="ml-route-stat-num highlight">
-                    ~{routeData.minutes} phút
+                    ~{routeData.minutes} {isEn ? "mins" : "phút"}
                   </span>
                 </div>
                 <div className="ml-route-stat-box">
-                  <span className="ml-route-stat-label">Bán kính 300m</span>
+                  <span className="ml-route-stat-label">{isEn ? "300m Radius" : "Bán kính 300m"}</span>
                   <span
                     className={`ml-route-stat-num ${routeData.inGeofence ? "in" : "out"}`}
                   >
-                    {routeData.inGeofence ? "✅ ĐÃ ĐẾN VÙNG" : "📍 NGOÀI VÙNG"}
+                    {routeData.inGeofence
+                      ? isEn ? "✅ IN GEOFENCE" : "✅ ĐÃ ĐẾN VÙNG"
+                      : isEn ? "📍 OUTSIDE" : "📍 NGOÀI VÙNG"}
                   </span>
                 </div>
               </div>
@@ -509,11 +531,12 @@ export default function MarketDetailModal({
                 <span className="ml-geofence-bell">🔔</span>
                 <div>
                   <div className="ml-geofence-title">
-                    Chào mừng bạn đã đến gần {name}!
+                    {isEn ? `Welcome to ${name}!` : `Chào mừng bạn đã đến gần ${name}!`}
                   </div>
                   <div className="ml-geofence-desc">
-                    Bạn đang ở trong bán kính 300m. Nông dân tại các sạp đã nhận
-                    được tín hiệu chuẩn bị túi hàng tươi cho bạn!
+                    {isEn
+                      ? "You are within 300m of the market. Farmers have received a chime to prepare your fresh basket!"
+                      : "Bạn đang ở trong bán kính 300m. Nông dân tại các sạp đã nhận được tín hiệu chuẩn bị túi hàng tươi cho bạn!"}
                   </div>
                 </div>
               </div>
@@ -521,7 +544,7 @@ export default function MarketDetailModal({
 
             {farmerAlertMsg && (
               <div className="ml-farmer-alert-preview">
-                👨‍🌾 <strong>Phía Nông Dân:</strong> {farmerAlertMsg}
+                👨‍🌾 <strong>{isEn ? "Grower Alert:" : "Phía Nông Dân:"}</strong> {farmerAlertMsg}
               </div>
             )}
 
@@ -540,7 +563,8 @@ export default function MarketDetailModal({
               }}
             >
               <div>
-                📍 Vị trí GPS của bạn: <strong>{userPos.label}</strong> (
+                📍 {isEn ? "Your GPS Location:" : "Vị trí GPS của bạn:"}{" "}
+                <strong>{userPos.label}</strong> (
                 {userPos.lat.toFixed(4)}, {userPos.lon.toFixed(4)})
               </div>
               <button
@@ -553,13 +577,13 @@ export default function MarketDetailModal({
                 }}
                 onClick={handleGetRealGps}
               >
-                📡 Dò lại GPS
+                📡 {isEn ? "Refresh GPS" : "Dò lại GPS"}
               </button>
             </div>
 
             {routeData?.steps && routeData.steps.length > 0 && (
               <div className="ml-route-steps-section">
-                <div className="ml-steps-heading">🚦 Hướng dẫn lộ trình:</div>
+                <div className="ml-steps-heading">🚦 {isEn ? "Route Directions:" : "Hướng dẫn lộ trình:"}</div>
                 <ol className="ml-steps-list">
                   {routeData.steps.slice(0, 4).map((s, idx) => (
                     <li key={idx}>{s}</li>
@@ -576,7 +600,7 @@ export default function MarketDetailModal({
                   rel="noreferrer"
                   className="ml-btn-gmaps"
                 >
-                  🧭 Mở Google Maps Dẫn Đường
+                  🧭 {isEn ? "Open in Google Maps" : "Mở Google Maps Dẫn Đường"}
                 </a>
               )}
               <Button
@@ -588,7 +612,7 @@ export default function MarketDetailModal({
                 }}
                 icon={<span>🧺</span>}
               >
-                Xem sản phẩm sạp tại chợ
+                {isEn ? "Browse Stalls at Market" : "Xem sản phẩm sạp tại chợ"}
               </Button>
             </div>
           </div>

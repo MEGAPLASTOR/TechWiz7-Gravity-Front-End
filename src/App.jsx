@@ -30,9 +30,12 @@ import ImageUploadStudio from "./components/ImageUploadStudio";
 import orderService from "./services/orderService";
 import authService from "./services/authService";
 import notificationService from "./services/notificationService";
+import { useLanguage } from "./context";
+
 export default function App() {
+  const { isEn, t, localizeProduceName, localizeMarketName } = useLanguage();
   const sanitizeName = (raw) => {
-    if (!raw || raw === "Khách vãng lai") return "Khách vãng lai";
+    if (!raw || raw === "Khách vãng lai" || raw === "Guest") return isEn ? "Guest" : "Khách vãng lai";
     return raw
       .replace(/Nguy\?n\s*Nh\?t\s*Quang/gi, "Nguyễn Nhựt Quang")
       .replace(/Nguy\?n/gi, "Nguyễn")
@@ -56,8 +59,11 @@ export default function App() {
       }
       return clean;
     }
-    return "Khách vãng lai";
+    return isEn ? "Guest" : "Khách vãng lai";
   });
+  const displayUserName = !userName || userName === "Khách vãng lai" || userName === "Guest"
+    ? (isEn ? "Guest" : "Khách vãng lai")
+    : userName;
   const [activeNav, setActiveNav] = useState("home");
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [navParams, setNavParams] = useState({});
@@ -295,8 +301,10 @@ export default function App() {
       ];
     });
     addToast(
-      "Đã thêm vào giỏ đặt trước! 🌿",
-      `${product.name} được đặt giữ chỗ tại ${product.marketName || "chợ phiên"}.`,
+      isEn ? "Added to pre-order cart! 🌿" : "Đã thêm vào giỏ đặt trước! 🌿",
+      isEn
+        ? `${localizeProduceName(product.name)} reserved at ${localizeMarketName(product.marketName) || "market stall"}.`
+        : `${product.name} được đặt giữ chỗ tại ${product.marketName || "chợ phiên"}.`,
       "success",
     );
   };
@@ -319,8 +327,8 @@ export default function App() {
   const handleRemoveCartItem = (productId) => {
     setCartItems((prev) => prev.filter((item) => item.id !== productId));
     addToast(
-      "Đã bỏ món khỏi giỏ",
-      "Bạn có thể chọn lại sản phẩm khác bất kỳ lúc nào.",
+      isEn ? "Item removed from cart" : "Đã bỏ món khỏi giỏ",
+      isEn ? "You can select another produce item anytime." : "Bạn có thể chọn lại sản phẩm khác bất kỳ lúc nào.",
       "info",
     );
   };
@@ -334,7 +342,7 @@ export default function App() {
         const marketId = firstItem?.marketId;
         const slotId = firstItem?.slotId;
         if (!farmerId || !marketId || !slotId || !firstItem?.id) {
-          throw new Error("Thiếu thông tin sạp, chợ, ca nhận hoặc sản phẩm để tạo đơn.");
+          throw new Error(isEn ? "Missing stall, market, slot or item info to place order." : "Thiếu thông tin sạp, chợ, ca nhận hoặc sản phẩm để tạo đơn.");
         }
         const now = new Date();
         now.setDate(now.getDate() + 1);
@@ -347,7 +355,7 @@ export default function App() {
           note:
             metaDetails.customerNote ||
             orderPayload?.customerNote ||
-            "Đặt trước qua sàn MarketLink",
+            (isEn ? "Pre-ordered via MarketLink" : "Đặt trước qua sàn MarketLink"),
           items: cartItems.map((it) => ({
             productId: Number(it.productId || it.id),
             quantity: Number(it.quantity || 1),
@@ -360,8 +368,10 @@ export default function App() {
         result?.data?.orderCode ||
         "ORD-" + Math.floor(1000 + Math.random() * 9000);
       addToast(
-        `Đặt trước thành công! 🎉 Mã đơn: #${code}`,
-        `Đơn hàng tại ${metaDetails.pickupMarket || "sạp nông dân"} đã được ghi nhận. Hẹn bạn ghé chợ nhận hàng và thanh toán trực tiếp!`,
+        isEn ? `Pre-order confirmed! 🎉 Order code: #${code}` : `Đặt trước thành công! 🎉 Mã đơn: #${code}`,
+        isEn
+          ? `Your order at ${localizeMarketName(metaDetails.pickupMarket) || "farmer stall"} is confirmed. See you at the market for morning pickup & direct payment!`
+          : `Đơn hàng tại ${metaDetails.pickupMarket || "sạp nông dân"} đã được ghi nhận. Hẹn bạn ghé chợ nhận hàng và thanh toán trực tiếp!`,
         "success",
       );
       setCartItems([]);
@@ -370,9 +380,9 @@ export default function App() {
     } catch (err) {
       console.warn("Real order submit warning:", err);
       addToast(
-        "Không thể tạo đơn đặt trước",
+        isEn ? "Could not create pre-order" : "Không thể tạo đơn đặt trước",
         err?.message ||
-          "Vui lòng kiểm tra lại thông tin hoặc đăng nhập trước khi đặt hàng.",
+          (isEn ? "Please verify your order details or log in before placing order." : "Vui lòng kiểm tra lại thông tin hoặc đăng nhập trước khi đặt hàng."),
         "error",
       );
     }
@@ -486,7 +496,9 @@ export default function App() {
               🌿
             </span>
             <span className="ml-page-transition__spinner" aria-hidden="true" />
-            <span className="ml-page-transition__label">Đang mở trang...</span>
+            <span className="ml-page-transition__label">
+              {isEn ? "Loading page..." : "Đang mở trang..."}
+            </span>
             <span className="ml-page-transition__bar" aria-hidden="true">
               <i />
             </span>
@@ -496,7 +508,7 @@ export default function App() {
 
       <Header
         currentRole={currentRole}
-        userName={userName}
+        userName={displayUserName}
         onSwitchRole={handleSwitchRole}
         cartCount={isShopper ? totalCartCount : 0}
         onOpenCart={isShopper ? () => setIsCartOpen(true) : undefined}
@@ -522,7 +534,7 @@ export default function App() {
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         currentRole={currentRole}
-        userName={userName}
+        userName={displayUserName}
         onSwitchRole={handleSwitchRole}
         selectedLocation={selectedLocation}
         onSelectLocation={setSelectedLocation}
@@ -604,8 +616,10 @@ export default function App() {
               setCartItems(reorderedItems);
               setIsCartOpen(true);
               addToast(
-                "Đã nạp lại đơn cũ! 🧺",
-                `Đã thêm ${reorderedItems.length} sản phẩm vào giỏ. Hãy chọn ngày và giờ hẹn ra chợ nhé!`,
+                isEn ? "Order items reloaded! 🧺" : "Đã nạp lại đơn cũ! 🧺",
+                isEn
+                  ? `Added ${reorderedItems.length} products to cart. Choose your pickup date and slot!`
+                  : `Đã thêm ${reorderedItems.length} sản phẩm vào giỏ. Hãy chọn ngày và giờ hẹn ra chợ nhé!`,
                 "success",
               );
             }}
@@ -615,11 +629,11 @@ export default function App() {
 
         {activeNav === "dashboard" && (
           <CustomerDashboardPage
-            userName={userName}
+            userName={displayUserName}
             userEmail={
               token
                 ? localStorage.getItem("ml_email") || "customer@marketlink.vn"
-                : "khach@marketlink.vn"
+                : (isEn ? "guest@marketlink.vn" : "khach@marketlink.vn")
             }
             onNavigate={handleNavigate}
             onAddToCart={handleAddToCart}

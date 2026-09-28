@@ -3,12 +3,15 @@ import "@/assets/styles/components/common/AuthModal.css";
 import Modal from "./Modal";
 import Button from "./Button";
 import authService from "../../services/authService";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function AuthModal({
   isOpen,
   onClose,
   initialMode = "LOGIN",
   onLoginSuccess,
 }) {
+  const { isEn } = useLanguage();
   const [mode, setMode] = useState(initialMode);
   const [role, setRole] = useState("CUSTOMER");
   const [email, setEmail] = useState("");
@@ -24,6 +27,7 @@ export default function AuthModal({
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
   useEffect(() => {
     if (isOpen) {
       setMode(initialMode);
@@ -40,6 +44,7 @@ export default function AuthModal({
       setShowPassword(false);
     }
   }, [isOpen, initialMode]);
+
   useEffect(() => {
     let timer = null;
     if (countdown > 0) {
@@ -47,6 +52,7 @@ export default function AuthModal({
     }
     return () => clearTimeout(timer);
   }, [countdown]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMsg("");
@@ -66,21 +72,22 @@ export default function AuthModal({
       onClose();
     } catch (err) {
       console.warn("Login error:", err);
-      setErrorMsg(err.message || "Email hoặc mật khẩu không chính xác.");
+      setErrorMsg(err.message || (isEn ? "Incorrect email or password." : "Email hoặc mật khẩu không chính xác."));
     } finally {
       setLoading(false);
     }
   };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
     if (password.length < 6) {
-      setErrorMsg("Mật khẩu phải có tối thiểu 6 ký tự.");
+      setErrorMsg(isEn ? "Password must be at least 6 characters." : "Mật khẩu phải có tối thiểu 6 ký tự.");
       return;
     }
     if (confirmPassword && password !== confirmPassword) {
-      setErrorMsg("Mật khẩu xác nhận không khớp.");
+      setErrorMsg(isEn ? "Passwords do not match." : "Mật khẩu xác nhận không khớp.");
       return;
     }
     setLoading(true);
@@ -103,18 +110,19 @@ export default function AuthModal({
     } catch (err) {
       console.warn("Register error:", err);
       setErrorMsg(
-        err.message || "Đăng ký tài khoản thất bại. Vui lòng thử lại.",
+        err.message || (isEn ? "Registration failed. Please try again." : "Đăng ký tài khoản thất bại. Vui lòng thử lại."),
       );
     } finally {
       setLoading(false);
     }
   };
+
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
     if (!email) {
-      setErrorMsg("Vui lòng nhập email hoặc số điện thoại.");
+      setErrorMsg(isEn ? "Please enter your email or phone number." : "Vui lòng nhập email hoặc số điện thoại.");
       return;
     }
     setLoading(true);
@@ -124,31 +132,34 @@ export default function AuthModal({
       setCountdown(60);
       setSuccessMsg(
         res?.message ||
-          "Mã xác minh OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư đến (Inbox) hoặc Spam.",
+          (isEn
+            ? "OTP verification code sent to your email. Please check your Inbox or Spam folder."
+            : "Mã xác minh OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư đến (Inbox) hoặc Spam."),
       );
     } catch (err) {
       console.warn("Send OTP error:", err);
       setErrorMsg(
-        err.message || "Không thể gửi mã OTP. Vui lòng kiểm tra lại email.",
+        err.message || (isEn ? "Could not send OTP code. Please check your email." : "Không thể gửi mã OTP. Vui lòng kiểm tra lại email."),
       );
     } finally {
       setLoading(false);
     }
   };
+
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
     if (!otpCode || otpCode.trim().length < 6) {
-      setErrorMsg("Vui lòng nhập đủ 6 chữ số mã OTP.");
+      setErrorMsg(isEn ? "Please enter all 6 digits of the OTP code." : "Vui lòng nhập đủ 6 chữ số mã OTP.");
       return;
     }
     if (password.length < 6) {
-      setErrorMsg("Mật khẩu mới phải có tối thiểu 6 ký tự.");
+      setErrorMsg(isEn ? "New password must be at least 6 characters." : "Mật khẩu mới phải có tối thiểu 6 ký tự.");
       return;
     }
     if (confirmPassword && password !== confirmPassword) {
-      setErrorMsg("Mật khẩu xác nhận không khớp.");
+      setErrorMsg(isEn ? "Passwords do not match." : "Mật khẩu xác nhận không khớp.");
       return;
     }
     setLoading(true);
@@ -160,7 +171,7 @@ export default function AuthModal({
       );
       setSuccessMsg(
         res?.message ||
-          "Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay.",
+          (isEn ? "Password reset successfully! You can now sign in." : "Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay."),
       );
       setTimeout(() => {
         setMode("LOGIN");
@@ -170,28 +181,29 @@ export default function AuthModal({
       }, 1500);
     } catch (err) {
       console.warn("Reset password error:", err);
-      setErrorMsg(err.message || "Mã OTP không chính xác hoặc đã hết hạn.");
+      setErrorMsg(err.message || (isEn ? "Invalid or expired OTP code." : "Mã OTP không chính xác hoặc đã hết hạn."));
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={
         mode === "LOGIN"
-          ? "Đăng Nhập Vào MarketLink"
+          ? (isEn ? "Sign In to MarketLink" : "Đăng Nhập Vào MarketLink")
           : mode === "REGISTER"
-            ? "Đăng Ký Thành Viên Mới"
-            : "Khôi Phục & Đặt Lại Mật Khẩu"
+            ? (isEn ? "Register New Account" : "Đăng Ký Thành Viên Mới")
+            : (isEn ? "Recover & Reset Password" : "Khôi Phục & Đặt Lại Mật Khẩu")
       }
       subtitle={
         mode === "LOGIN"
-          ? "Kết nối trực tiếp nông sản sạch từ vườn ra chợ phiên"
+          ? (isEn ? "Fresh farm produce from grower to market" : "Kết nối trực tiếp nông sản sạch từ vườn ra chợ phiên")
           : mode === "REGISTER"
-            ? "Tham gia mạng lưới đặt trước nông sản & mở sạp chợ"
-            : "Nhận mã OTP bảo mật để đặt lại mật khẩu mới"
+            ? (isEn ? "Join the network to pre-order fresh produce & open stalls" : "Tham gia mạng lưới đặt trước nông sản & mở sạp chợ")
+            : (isEn ? "Receive a secure OTP code to set your new password" : "Nhận mã OTP bảo mật để đặt lại mật khẩu mới")
       }
       maxWidth={mode === "REGISTER" ? "480px" : "420px"}
     >
@@ -214,7 +226,7 @@ export default function AuthModal({
           <>
             <form onSubmit={handleLogin} className="ml-auth-form">
               <div className="ml-form-group">
-                <label className="ml-form-label">Email tài khoản:</label>
+                <label className="ml-form-label">{isEn ? "Account Email:" : "Email tài khoản:"}</label>
                 <div className="ml-input-wrapper">
                   <span className="ml-input-icon">✉️</span>
                   <input
@@ -232,7 +244,7 @@ export default function AuthModal({
 
               <div className="ml-form-group">
                 <div className="ml-form-label-row">
-                  <label className="ml-form-label">Mật khẩu:</label>
+                  <label className="ml-form-label">{isEn ? "Password:" : "Mật khẩu:"}</label>
                   <button
                     type="button"
                     className="ml-link-btn"
@@ -242,7 +254,7 @@ export default function AuthModal({
                       setSuccessMsg("");
                     }}
                   >
-                    Quên mật khẩu?
+                    {isEn ? "Forgot password?" : "Quên mật khẩu?"}
                   </button>
                 </div>
                 <div className="ml-input-wrapper">
@@ -260,8 +272,8 @@ export default function AuthModal({
                     type="button"
                     className="ml-pwd-toggle-btn"
                     onClick={() => setShowPassword(!showPassword)}
-                    title={showPassword ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"}
-                    aria-label="Ẩn hiện mật khẩu"
+                    title={showPassword ? (isEn ? "Hide password" : "Ẩn mật khẩu") : (isEn ? "Show password" : "Hiển thị mật khẩu")}
+                    aria-label={isEn ? "Toggle password visibility" : "Ẩn hiện mật khẩu"}
                   >
                     {showPassword ? "🙈" : "👁️"}
                   </button>
@@ -276,13 +288,13 @@ export default function AuthModal({
                 loading={loading}
                 className="ml-auth-submit-btn"
               >
-                Đăng nhập ngay
+                {isEn ? "Sign In Now" : "Đăng nhập ngay"}
               </Button>
             </form>
 
             <div className="ml-auth-switch">
               <p>
-                Chưa có tài khoản?{" "}
+                {isEn ? "Don't have an account? " : "Chưa có tài khoản? "}
                 <button
                   type="button"
                   className="ml-auth-switch-btn"
@@ -292,7 +304,7 @@ export default function AuthModal({
                     setSuccessMsg("");
                   }}
                 >
-                  Đăng ký thành viên mới
+                  {isEn ? "Create new account" : "Đăng ký thành viên mới"}
                 </button>
               </p>
             </div>
@@ -309,8 +321,8 @@ export default function AuthModal({
               >
                 <span className="ml-role-tab-icon">🛒</span>
                 <span className="ml-role-tab-text">
-                  <strong>Tôi là Khách Hàng</strong>
-                  <small>Đặt trước & nhận hàng tại chợ</small>
+                  <strong>{isEn ? "I am a Customer" : "Tôi là Khách Hàng"}</strong>
+                  <small>{isEn ? "Pre-order & pick up at morning market" : "Đặt trước & nhận hàng tại chợ"}</small>
                 </span>
               </button>
               <button
@@ -320,21 +332,21 @@ export default function AuthModal({
               >
                 <span className="ml-role-tab-icon">👨‍🌾</span>
                 <span className="ml-role-tab-text">
-                  <strong>Tôi là Nông Dân</strong>
-                  <small>Đăng ký sạp & bán mùa vụ</small>
+                  <strong>{isEn ? "I am a Farmer" : "Tôi là Nông Dân"}</strong>
+                  <small>{isEn ? "Register stall & sell harvest" : "Đăng ký sạp & bán mùa vụ"}</small>
                 </span>
               </button>
             </div>
 
             <form onSubmit={handleRegister} className="ml-auth-form">
               <div className="ml-form-group">
-                <label className="ml-form-label">Họ và tên của bạn:</label>
+                <label className="ml-form-label">{isEn ? "Your Full Name:" : "Họ và tên của bạn:"}</label>
                 <div className="ml-input-wrapper">
                   <span className="ml-input-icon">👤</span>
                   <input
                     type="text"
                     className="ml-form-input ml-form-input--icon"
-                    placeholder="VD: Nguyễn Văn A"
+                    placeholder={isEn ? "e.g., John Doe" : "VD: Nguyễn Văn A"}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
@@ -344,7 +356,7 @@ export default function AuthModal({
 
               <div className="ml-form-row">
                 <div className="ml-form-group">
-                  <label className="ml-form-label">Số điện thoại:</label>
+                  <label className="ml-form-label">{isEn ? "Phone Number:" : "Số điện thoại:"}</label>
                   <div className="ml-input-wrapper">
                     <span className="ml-input-icon">📱</span>
                     <input
@@ -359,7 +371,7 @@ export default function AuthModal({
                 </div>
 
                 <div className="ml-form-group">
-                  <label className="ml-form-label">Email tài khoản:</label>
+                  <label className="ml-form-label">{isEn ? "Account Email:" : "Email tài khoản:"}</label>
                   <div className="ml-input-wrapper">
                     <span className="ml-input-icon">✉️</span>
                     <input
@@ -378,14 +390,14 @@ export default function AuthModal({
               {role === "FARMER" && (
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Tên nhà vườn / Hợp tác xã:
+                    {isEn ? "Farm / Cooperative Name:" : "Tên nhà vườn / Hợp tác xã:"}
                   </label>
                   <div className="ml-input-wrapper">
                     <span className="ml-input-icon">🏡</span>
                     <input
                       type="text"
                       className="ml-form-input ml-form-input--icon"
-                      placeholder="VD: Hợp Tác Xã Nông Sản Ba Vì"
+                      placeholder={isEn ? "e.g., Ba Vi Organic Cooperative" : "VD: Hợp Tác Xã Nông Sản Ba Vì"}
                       value={farmName}
                       onChange={(e) => setFarmName(e.target.value)}
                       required
@@ -396,14 +408,14 @@ export default function AuthModal({
 
               <div className="ml-form-row">
                 <div className="ml-form-group">
-                  <label className="ml-form-label">Mật khẩu (≥ 6 ký tự):</label>
+                  <label className="ml-form-label">{isEn ? "Password (≥ 6 chars):" : "Mật khẩu (≥ 6 ký tự):"}</label>
                   <div className="ml-input-wrapper">
                     <span className="ml-input-icon">🔒</span>
                     <input
                       type={showPassword ? "text" : "password"}
                       autoComplete="new-password"
                       className="ml-form-input ml-form-input--icon"
-                      placeholder="Tối thiểu 6 ký tự"
+                      placeholder={isEn ? "At least 6 characters" : "Tối thiểu 6 ký tự"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -413,14 +425,14 @@ export default function AuthModal({
                 </div>
 
                 <div className="ml-form-group">
-                  <label className="ml-form-label">Xác nhận mật khẩu:</label>
+                  <label className="ml-form-label">{isEn ? "Confirm Password:" : "Xác nhận mật khẩu:"}</label>
                   <div className="ml-input-wrapper">
                     <span className="ml-input-icon">🔑</span>
                     <input
                       type={showPassword ? "text" : "password"}
                       autoComplete="new-password"
                       className="ml-form-input ml-form-input--icon"
-                      placeholder="Nhập lại mật khẩu"
+                      placeholder={isEn ? "Re-enter password" : "Nhập lại mật khẩu"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
@@ -431,7 +443,7 @@ export default function AuthModal({
 
               {confirmPassword && password !== confirmPassword && (
                 <div className="ml-field-hint ml-field-hint--error">
-                  ⚠️ Mật khẩu xác nhận chưa khớp
+                  {isEn ? "⚠️ Passwords do not match" : "⚠️ Mật khẩu xác nhận chưa khớp"}
                 </div>
               )}
 
@@ -444,14 +456,14 @@ export default function AuthModal({
                 className="ml-auth-submit-btn"
               >
                 {role === "FARMER"
-                  ? "Đăng ký bán hàng tại chợ"
-                  : "Đăng ký tài khoản mua sắm"}
+                  ? (isEn ? "Register as Farmer Stall" : "Đăng ký bán hàng tại chợ")
+                  : (isEn ? "Register Customer Account" : "Đăng ký tài khoản mua sắm")}
               </Button>
             </form>
 
             <div className="ml-auth-switch">
               <p>
-                Đã có tài khoản?{" "}
+                {isEn ? "Already have an account? " : "Đã có tài khoản? "}
                 <button
                   type="button"
                   className="ml-auth-switch-btn"
@@ -461,7 +473,7 @@ export default function AuthModal({
                     setSuccessMsg("");
                   }}
                 >
-                  Đăng nhập
+                  {isEn ? "Sign In" : "Đăng nhập"}
                 </button>
               </p>
             </div>
@@ -473,12 +485,13 @@ export default function AuthModal({
             {!otpSent ? (
               <form onSubmit={handleSendOtp} className="ml-auth-form">
                 <p className="ml-forgot-instruction">
-                  Nhập email đăng ký của bạn. Hệ thống sẽ tạo và gửi mã xác minh
-                  OTP gồm 6 chữ số để bạn đặt lại mật khẩu an toàn.
+                  {isEn
+                    ? "Enter your registered email. The system will generate and send a 6-digit OTP verification code to securely reset your password."
+                    : "Nhập email đăng ký của bạn. Hệ thống sẽ tạo và gửi mã xác minh OTP gồm 6 chữ số để bạn đặt lại mật khẩu an toàn."}
                 </p>
 
                 <div className="ml-form-group">
-                  <label className="ml-form-label">Email tài khoản:</label>
+                  <label className="ml-form-label">{isEn ? "Account Email:" : "Email tài khoản:"}</label>
                   <div className="ml-input-wrapper">
                     <span className="ml-input-icon">✉️</span>
                     <input
@@ -501,7 +514,7 @@ export default function AuthModal({
                   loading={loading}
                   className="ml-auth-submit-btn"
                 >
-                  Gửi mã xác minh OTP
+                  {isEn ? "Send OTP Verification Code" : "Gửi mã xác minh OTP"}
                 </Button>
               </form>
             ) : (
@@ -509,14 +522,21 @@ export default function AuthModal({
                 <div className="ml-email-otp-notice">
                   <span className="ml-email-otp-notice-icon">📬</span>
                   <div className="ml-email-otp-notice-text">
-                    Mã xác minh bảo mật đã gửi tới <strong>{email}</strong>. Vui
-                    lòng kiểm tra hộp thư đến (Inbox) hoặc thư mục Spam/Rác.
+                    {isEn ? (
+                      <>
+                        Security verification code sent to <strong>{email}</strong>. Please check your Inbox or Spam folder.
+                      </>
+                    ) : (
+                      <>
+                        Mã xác minh bảo mật đã gửi tới <strong>{email}</strong>. Vui lòng kiểm tra hộp thư đến (Inbox) hoặc thư mục Spam/Rác.
+                      </>
+                    )}
                   </div>
                 </div>
 
                 <div className="ml-form-group">
                   <div className="ml-form-label-row">
-                    <label className="ml-form-label">Mã OTP (6 chữ số):</label>
+                    <label className="ml-form-label">{isEn ? "OTP Code (6 digits):" : "Mã OTP (6 chữ số):"}</label>
                     <button
                       type="button"
                       className="ml-link-btn"
@@ -524,14 +544,14 @@ export default function AuthModal({
                       onClick={handleSendOtp}
                     >
                       {countdown > 0
-                        ? `Gửi lại sau ${countdown}s`
-                        : "Gửi lại mã"}
+                        ? (isEn ? `Resend in ${countdown}s` : `Gửi lại sau ${countdown}s`)
+                        : (isEn ? "Resend code" : "Gửi lại mã")}
                     </button>
                   </div>
                   <input
                     type="text"
                     className="ml-form-input ml-otp-input"
-                    placeholder="VD: 123456"
+                    placeholder={isEn ? "e.g., 123456" : "VD: 123456"}
                     maxLength={6}
                     value={otpCode}
                     onChange={(e) =>
@@ -544,14 +564,14 @@ export default function AuthModal({
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Mật khẩu mới (≥ 6 ký tự):
+                    {isEn ? "New Password (≥ 6 chars):" : "Mật khẩu mới (≥ 6 ký tự):"}
                   </label>
                   <div className="ml-input-wrapper">
                     <span className="ml-input-icon">🔒</span>
                     <input
                       type={showPassword ? "text" : "password"}
                       className="ml-form-input ml-form-input--icon"
-                      placeholder="Mật khẩu mới"
+                      placeholder={isEn ? "New password" : "Mật khẩu mới"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -562,14 +582,14 @@ export default function AuthModal({
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Xác nhận mật khẩu mới:
+                    {isEn ? "Confirm New Password:" : "Xác nhận mật khẩu mới:"}
                   </label>
                   <div className="ml-input-wrapper">
                     <span className="ml-input-icon">🔑</span>
                     <input
                       type={showPassword ? "text" : "password"}
                       className="ml-form-input ml-form-input--icon"
-                      placeholder="Nhập lại mật khẩu mới"
+                      placeholder={isEn ? "Re-enter new password" : "Nhập lại mật khẩu mới"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
@@ -585,7 +605,7 @@ export default function AuthModal({
                   loading={loading}
                   className="ml-auth-submit-btn"
                 >
-                  Xác nhận đặt lại mật khẩu
+                  {isEn ? "Confirm Password Reset" : "Xác nhận đặt lại mật khẩu"}
                 </Button>
               </form>
             )}
@@ -602,7 +622,7 @@ export default function AuthModal({
                     setOtpSent(false);
                   }}
                 >
-                  ← Quay lại Đăng nhập
+                  {isEn ? "← Back to Sign In" : "← Quay lại Đăng nhập"}
                 </button>
               </p>
             </div>

@@ -6,12 +6,15 @@ import ImageUploadInput from "../../components/ImageUploadInput";
 import customerService from "../../services/customerService";
 import orderService from "../../services/orderService";
 import marketService from "../../services/marketService";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function CustomerDashboardPage({
   userName: propUserName,
   userEmail: propUserEmail,
   onNavigate,
   onAddToCart,
 }) {
+  const { isEn, t, localizeProduceName, localizeMarketName, localizeStallName, localizeUnit } = useLanguage();
   const [activeTab, setActiveTab] = useState("upcoming");
   const [loading, setLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState("");
@@ -148,10 +151,10 @@ export default function CustomerDashboardPage({
         localStorage.setItem("ml_avatar", nextAvatar);
       }
       setIsEditProfileModalOpen(false);
-      showStatus("✓ Đã cập nhật hồ sơ và ảnh đại diện thành công!");
+      showStatus(isEn ? "✓ Profile and avatar updated successfully!" : "✓ Đã cập nhật hồ sơ và ảnh đại diện thành công!");
     } catch (err) {
       console.error("Update profile error:", err);
-      alert(err?.message || "Không thể cập nhật hồ sơ lúc này.");
+      alert(err?.message || (isEn ? "Unable to update profile at this time." : "Không thể cập nhật hồ sơ lúc này."));
     } finally {
       setSavingProfile(false);
     }
@@ -174,9 +177,9 @@ export default function CustomerDashboardPage({
         }));
         localStorage.setItem("ml_name", updated.fullName || fullName);
       }
-      showStatus("✓ Đã cập nhật thông tin cá nhân thành công!");
+      showStatus(isEn ? "✓ Personal information updated successfully!" : "✓ Đã cập nhật thông tin cá nhân thành công!");
     } catch (err) {
-      alert(err?.message || "Không thể cập nhật hồ sơ lúc này.");
+      alert(err?.message || (isEn ? "Unable to update profile at this time." : "Không thể cập nhật hồ sơ lúc này."));
     } finally {
       setSavingProfile(false);
     }
@@ -184,18 +187,18 @@ export default function CustomerDashboardPage({
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      setPasswordMessage("Mật khẩu xác nhận không khớp.");
+      setPasswordMessage(isEn ? "New password confirmation does not match." : "Mật khẩu xác nhận không khớp.");
       return;
     }
     try {
       await customerService.changePassword(currentPassword, newPassword);
-      setPasswordMessage("✓ Đã đổi mật khẩu thành công!");
+      setPasswordMessage(isEn ? "✓ Password changed successfully!" : "✓ Đã đổi mật khẩu thành công!");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setTimeout(() => setPasswordMessage(""), 4000);
     } catch (err) {
-      setPasswordMessage(`Lỗi: ${err?.message || "Không thể đổi mật khẩu"}`);
+      setPasswordMessage(isEn ? `Error: ${err?.message || "Could not change password"}` : `Lỗi: ${err?.message || "Không thể đổi mật khẩu"}`);
     }
   };
   const handleSendFamilyInvite = async (e) => {
@@ -204,12 +207,12 @@ export default function CustomerDashboardPage({
     setFamilyLoading(true);
     try {
       await customerService.inviteFamilyMember(inviteEmail);
-      showStatus(`✓ Đã gửi lời mời tham gia nhóm gia đình tới ${inviteEmail}!`);
+      showStatus(isEn ? `✓ Family group invitation sent to ${inviteEmail}!` : `✓ Đã gửi lời mời tham gia nhóm gia đình tới ${inviteEmail}!`);
       setInviteEmail("");
       const invs = await customerService.getFamilyInvitations();
       setFamilyInvitations(invs || []);
     } catch (err) {
-      alert(err?.message || "Không thể gửi lời mời gia đình.");
+      alert(err?.message || (isEn ? "Could not send family invitation." : "Không thể gửi lời mời gia đình."));
     } finally {
       setFamilyLoading(false);
     }
@@ -218,7 +221,7 @@ export default function CustomerDashboardPage({
     setFamilyLoading(true);
     try {
       await customerService.acceptFamilyInvitation(tokenVal);
-      showStatus("✓ Bạn đã gia nhập nhóm gia đình thành công!");
+      showStatus(isEn ? "✓ You joined the family group successfully!" : "✓ Bạn đã gia nhập nhóm gia đình thành công!");
       const [members, invs] = await Promise.all([
         customerService.getFamilyMembers(),
         customerService.getFamilyInvitations(),
@@ -226,34 +229,34 @@ export default function CustomerDashboardPage({
       setFamilyMembers(members || []);
       setFamilyInvitations(invs || []);
     } catch (err) {
-      alert(err?.message || "Không thể chấp nhận lời mời.");
+      alert(err?.message || (isEn ? "Could not accept invitation." : "Không thể chấp nhận lời mời."));
     } finally {
       setFamilyLoading(false);
     }
   };
   const handleLeaveFamily = async () => {
-    if (window.confirm("Bạn có chắc chắn muốn rời khỏi nhóm gia đình này?")) {
+    if (window.confirm(isEn ? "Are you sure you want to leave this family group?" : "Bạn có chắc chắn muốn rời khỏi nhóm gia đình này?")) {
       try {
         await customerService.leaveFamily();
-        showStatus("✓ Bạn đã rời khỏi nhóm gia đình.");
+        showStatus(isEn ? "✓ You have left the family group." : "✓ Bạn đã rời khỏi nhóm gia đình.");
         const members = await customerService.getFamilyMembers();
         setFamilyMembers(members || []);
       } catch (err) {
-        alert(err?.message || "Không thể rời nhóm gia đình.");
+        alert(err?.message || (isEn ? "Could not leave family group." : "Không thể rời nhóm gia đình."));
       }
     }
   };
   const handleRemoveMember = async (memberId) => {
     if (
-      window.confirm("Bạn có chắc muốn xóa thành viên này khỏi nhóm gia đình?")
+      window.confirm(isEn ? "Are you sure you want to remove this member from the family group?" : "Bạn có chắc muốn xóa thành viên này khỏi nhóm gia đình?")
     ) {
       try {
         await customerService.removeFamilyMember(memberId);
-        showStatus("✓ Đã xóa thành viên khỏi nhóm gia đình.");
+        showStatus(isEn ? "✓ Member removed from family group." : "✓ Đã xóa thành viên khỏi nhóm gia đình.");
         const members = await customerService.getFamilyMembers();
         setFamilyMembers(members || []);
       } catch (err) {
-        alert(err?.message || "Không thể xóa thành viên lúc này.");
+        alert(err?.message || (isEn ? "Could not remove member at this time." : "Không thể xóa thành viên lúc này."));
       }
     }
   };
@@ -269,12 +272,13 @@ export default function CustomerDashboardPage({
           prev.filter((p) => (p.targetId || p.id) !== targetId),
         );
       }
-      showStatus("✓ Đã xóa khỏi danh sách yêu thích.");
+      showStatus(isEn ? "✓ Removed from favorites." : "✓ Đã xóa khỏi danh sách yêu thích.");
     } catch (err) {
       console.warn("Failed to remove favorite", err);
     }
   };
   const formatCurrency = (val) => {
+    if (isEn) return `${Number(val || 0).toLocaleString()} VND`;
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
@@ -293,7 +297,7 @@ export default function CustomerDashboardPage({
   const displayUserEmail =
     profile?.email || propUserEmail || "customer@marketlink.vn";
   const displayUserName =
-    profile?.fullName || fullName || propUserName || "Khách Hàng MarketLink";
+    profile?.fullName || fullName || propUserName || (isEn ? "MarketLink Customer" : "Khách Hàng MarketLink");
   return (
     <div className="ml-dashboard-page">
       <div className="ml-dashboard-banner">
@@ -302,7 +306,7 @@ export default function CustomerDashboardPage({
             <div
               className="ml-dashboard-avatar ml-dashboard-avatar--clickable"
               onClick={handleOpenEditProfileModal}
-              title="Nhấn để đổi ảnh đại diện & thông tin cá nhân"
+              title={isEn ? "Click to change avatar & personal info" : "Nhấn để đổi ảnh đại diện & thông tin cá nhân"}
             >
               {profile?.avatarUrl ? (
                 <img
@@ -315,14 +319,14 @@ export default function CustomerDashboardPage({
               )}
               <span
                 className="ml-dashboard-avatar-badge"
-                title="Đổi ảnh đại diện"
+                title={isEn ? "Change avatar" : "Đổi ảnh đại diện"}
               >
                 📷
               </span>
             </div>
             <div>
               <div className="ml-dashboard-user-greeting">
-                Tài khoản khách hàng
+                {t("dashUserGreeting", "Tài khoản khách hàng")}
               </div>
               <h1 className="ml-dashboard-user-name">{displayUserName}</h1>
               <div className="ml-dashboard-user-meta">
@@ -340,28 +344,28 @@ export default function CustomerDashboardPage({
               onClick={handleOpenEditProfileModal}
               className="ml-btn-header-edit-profile"
             >
-              ✏️ Chỉnh sửa hồ sơ
+              ✏️ {t("dashEditProfileBtn", "Chỉnh sửa hồ sơ")}
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => onNavigate("orders")}
             >
-              📦 Lịch sử đơn hàng ({orders.length})
+              📦 {t("dashOrderHistoryBtn", "Lịch sử đơn hàng")} ({orders.length})
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => onNavigate("my-reviews")}
             >
-              ⭐ Đánh giá của tôi
+              ⭐ {t("dashMyReviewsBtn", "Đánh giá của tôi")}
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => onNavigate("products")}
             >
-              🥦 Đặt thêm nông sản
+              🥦 {t("dashBrowseMoreBtn", "Đặt thêm nông sản")}
             </Button>
           </div>
         </div>
@@ -385,16 +389,20 @@ export default function CustomerDashboardPage({
           <div className="ml-metric-card">
             <span className="ml-metric-icon">⏰</span>
             <div>
-              <div className="ml-metric-val">{activePickupCount} Đơn</div>
-              <div className="ml-metric-label">Đơn hẹn lấy tại chợ</div>
+              <div className="ml-metric-val">
+                {activePickupCount} {isEn ? (activePickupCount === 1 ? "Order" : "Orders") : "Đơn"}
+              </div>
+              <div className="ml-metric-label">{t("dashMetricPickup", "Đơn hẹn lấy tại chợ")}</div>
             </div>
           </div>
 
           <div className="ml-metric-card">
             <span className="ml-metric-icon">🧺</span>
             <div>
-              <div className="ml-metric-val">{completedCount} Đơn</div>
-              <div className="ml-metric-label">Đã nhận & thanh toán</div>
+              <div className="ml-metric-val">
+                {completedCount} {isEn ? (completedCount === 1 ? "Order" : "Orders") : "Đơn"}
+              </div>
+              <div className="ml-metric-label">{t("dashMetricCompleted", "Đã nhận & thanh toán")}</div>
             </div>
           </div>
 
@@ -402,9 +410,9 @@ export default function CustomerDashboardPage({
             <span className="ml-metric-icon">💚</span>
             <div>
               <div className="ml-metric-val">
-                {favoriteFarmers.length + favoriteProducts.length} Mục
+                {favoriteFarmers.length + favoriteProducts.length} {isEn ? "Items" : "Mục"}
               </div>
-              <div className="ml-metric-label">Nông dân & món đã lưu</div>
+              <div className="ml-metric-label">{t("dashMetricSaved", "Nông dân & món đã lưu")}</div>
             </div>
           </div>
 
@@ -413,10 +421,10 @@ export default function CustomerDashboardPage({
             <div>
               <div className="ml-metric-val">
                 {familyMembers.length > 0
-                  ? `${familyMembers.length} Người`
-                  : "Chưa có"}
+                  ? `${familyMembers.length} ${isEn ? "Members" : "Người"}`
+                  : t("dashNoMembers", "Chưa có")}
               </div>
-              <div className="ml-metric-label">Thành viên nhóm gia đình</div>
+              <div className="ml-metric-label">{t("dashMetricFamily", "Thành viên nhóm gia đình")}</div>
             </div>
           </div>
         </div>
@@ -425,26 +433,26 @@ export default function CustomerDashboardPage({
           <div className="ml-card ml-upcoming-card">
             <div className="ml-upcoming-header">
               <span className="ml-upcoming-badge">
-                ⚡ ĐƠN NÔNG SẢN ĐẶT TRƯỚC SẮP TỚI
+                ⚡ {t("dashUpcomingTitle", "ĐƠN NÔNG SẢN ĐẶT TRƯỚC SẮP TỚI")}
               </span>
               <span className="ml-upcoming-time">
-                Ngày nhận: <strong>{upcomingOrder.pickupDate}</strong> (
-                {upcomingOrder.slotTimeRange || "Ca sáng"})
+                {t("dashUpcomingPickupDate", "Ngày nhận:")} <strong>{upcomingOrder.pickupDate}</strong> (
+                {upcomingOrder.slotTimeRange || t("dashUpcomingMorningSlot", "Ca sáng")})
               </span>
             </div>
 
             <div className="ml-upcoming-body">
               <div className="ml-upcoming-info">
                 <h3 className="ml-upcoming-market">
-                  🎪 {upcomingOrder.marketName || "Phiên Chợ Nông Sản"} •{" "}
-                  {upcomingOrder.stallName || "Sạp nông dân"}
+                  🎪 {localizeMarketName(upcomingOrder.marketName || "Phiên Chợ Nông Sản")} •{" "}
+                  {localizeStallName(upcomingOrder.stallName || "Sạp nông dân")}
                 </h3>
                 <p className="ml-upcoming-desc">
-                  Mã đơn:{" "}
+                  {t("dashUpcomingOrderCode", "Mã đơn:")}{" "}
                   <strong>
                     #{upcomingOrder.orderCode || upcomingOrder.orderId}
                   </strong>{" "}
-                  • Trạng thái:{" "}
+                  • {t("dashUpcomingStatus", "Trạng thái:")}{" "}
                   <span
                     style={{
                       color: "#16a34a",
@@ -452,18 +460,18 @@ export default function CustomerDashboardPage({
                     }}
                   >
                     {upcomingOrder.orderStatus === "READY_FOR_PICKUP"
-                      ? "Sẵn sàng tại sạp"
-                      : "Đang thu hoạch & đóng gói"}
+                      ? t("dashUpcomingReady", "Sẵn sàng tại sạp")
+                      : t("dashUpcomingHarvesting", "Đang thu hoạch & đóng gói")}
                   </span>
                 </p>
                 <div className="ml-upcoming-stall-note">
-                  Chủ sạp:{" "}
+                  {t("dashUpcomingOwner", "Chủ sạp:")}{" "}
                   <strong>
-                    {upcomingOrder.farmerName || "Nhà vườn hữu cơ"}
+                    {localizeStallName(upcomingOrder.farmerName || "Nhà vườn hữu cơ")}
                   </strong>{" "}
-                  • Tổng thanh toán:{" "}
+                  • {t("dashUpcomingTotal", "Tổng thanh toán:")}{" "}
                   <strong>{formatCurrency(upcomingOrder.totalAmount)}</strong>{" "}
-                  (Thanh toán tại sạp khi nhận hàng).
+                  {t("dashUpcomingPayHint", "(Thanh toán tại sạp khi nhận hàng).")}
                 </div>
               </div>
 
@@ -473,7 +481,7 @@ export default function CustomerDashboardPage({
                   size="md"
                   onClick={() => onNavigate("orders")}
                 >
-                  📱 Xem mã lấy hàng QR
+                  📱 {t("dashUpcomingQrBtn", "Xem mã lấy hàng QR")}
                 </Button>
               </div>
             </div>
@@ -487,28 +495,28 @@ export default function CustomerDashboardPage({
               className={`ml-dash-tab ${activeTab === "upcoming" ? "active" : ""}`}
               onClick={() => setActiveTab("upcoming")}
             >
-              💚 Sạp nông dân đã lưu ({favoriteFarmers.length})
+              💚 {t("dashTabSavedFarms", "Sạp nông dân đã lưu")} ({favoriteFarmers.length})
             </button>
             <button
               type="button"
               className={`ml-dash-tab ${activeTab === "products" ? "active" : ""}`}
               onClick={() => setActiveTab("products")}
             >
-              🍓 Nông sản yêu thích ({favoriteProducts.length})
+              🍓 {t("dashTabFavProducts", "Nông sản yêu thích")} ({favoriteProducts.length})
             </button>
             <button
               type="button"
               className={`ml-dash-tab ${activeTab === "family" ? "active" : ""}`}
               onClick={() => setActiveTab("family")}
             >
-              👨‍👩‍👧‍👦 Gia đình đi chợ ({familyMembers.length})
+              👨‍👩‍👧‍👦 {t("dashTabFamily", "Gia đình đi chợ")} ({familyMembers.length})
             </button>
             <button
               type="button"
               className={`ml-dash-tab ${activeTab === "profile" ? "active" : ""}`}
               onClick={() => setActiveTab("profile")}
             >
-              ⚙️ Cài đặt hồ sơ & địa chỉ
+              ⚙️ {t("dashTabProfile", "Cài đặt hồ sơ & địa chỉ")}
             </button>
           </div>
 
@@ -517,17 +525,19 @@ export default function CustomerDashboardPage({
               {favoriteFarmers.length === 0 ? (
                 <div className="ml-card ml-orders-empty">
                   <span className="ml-orders-empty-icon">💚</span>
-                  <h3>Chưa có nhà vườn yêu thích nào</h3>
+                  <h3>{t("dashNoSavedFarms", "Chưa có nhà vườn yêu thích nào")}</h3>
                   <p>
-                    Khi ghé các sạp nông dân ưng ý, hãy nhấn nút yêu thích để
-                    theo dõi lịch họp chợ của họ.
+                    {t(
+                      "dashNoSavedFarmsDesc",
+                      "Khi ghé các sạp nông dân ưng ý, hãy nhấn nút yêu thích để theo dõi lịch họp chợ của họ."
+                    )}
                   </p>
                   <Button
                     variant="primary"
                     size="md"
                     onClick={() => onNavigate("farmers")}
                   >
-                    Khám phá nhà vườn
+                    {t("dashDiscoverFarmsBtn", "Khám phá nhà vườn")}
                   </Button>
                 </div>
               ) : (
@@ -548,12 +558,12 @@ export default function CustomerDashboardPage({
                           className="ml-fav-avatar"
                         />
                         <div className="ml-fav-info">
-                          <h4 className="ml-fav-name">{f.targetName}</h4>
+                          <h4 className="ml-fav-name">{localizeStallName(f.targetName)}</h4>
                           <div className="ml-fav-market">
-                            📍 {f.targetMeta || "Phiên chợ nông sản"}
+                            📍 {localizeMarketName(f.targetMeta || "Phiên chợ nông sản")}
                           </div>
                           <div className="ml-fav-produce">
-                            🌿 Nông trại xanh canh tác chuẩn hữu cơ
+                            🌿 {isEn ? "Green family farm with verified sustainable cultivation" : "Nông trại xanh canh tác chuẩn hữu cơ"}
                           </div>
                         </div>
                         <div
@@ -568,7 +578,7 @@ export default function CustomerDashboardPage({
                             size="sm"
                             onClick={() => onNavigate("farmers")}
                           >
-                            Xem sạp
+                            {t("dashViewStallBtn", "Xem sạp")}
                           </Button>
                           <Button
                             variant="ghost"
@@ -576,7 +586,7 @@ export default function CustomerDashboardPage({
                             className="btn-danger-text"
                             onClick={() => handleRemoveFavorite("FARMER", fid)}
                           >
-                            Bỏ lưu
+                            {t("dashRemoveFavBtn", "Bỏ lưu")}
                           </Button>
                         </div>
                       </div>
@@ -592,17 +602,19 @@ export default function CustomerDashboardPage({
               {favoriteProducts.length === 0 ? (
                 <div className="ml-card ml-orders-empty">
                   <span className="ml-orders-empty-icon">🍓</span>
-                  <h3>Chưa có nông sản lưu sẵn</h3>
+                  <h3>{t("dashNoFavProds", "Chưa có nông sản lưu sẵn")}</h3>
                   <p>
-                    Hãy lưu các loại rau quả mùa vụ bạn muốn đặt trước để dễ
-                    dàng thêm vào giỏ khi chợ họp.
+                    {t(
+                      "dashNoFavProdsDesc",
+                      "Hãy lưu các loại rau quả mùa vụ bạn muốn đặt trước để dễ dàng thêm vào giỏ khi chợ họp."
+                    )}
                   </p>
                   <Button
                     variant="primary"
                     size="md"
                     onClick={() => onNavigate("products")}
                   >
-                    Duyệt nông sản tươi
+                    {t("dashBrowseProdsBtn", "Duyệt nông sản tươi")}
                   </Button>
                 </div>
               ) : (
@@ -623,9 +635,9 @@ export default function CustomerDashboardPage({
                           className="ml-fav-prod-img"
                         />
                         <div className="ml-fav-prod-info">
-                          <h4 className="ml-fav-prod-title">{p.targetName}</h4>
+                          <h4 className="ml-fav-prod-title">{localizeProduceName(p.targetName)}</h4>
                           <span className="ml-fav-prod-farmer">
-                            🏡 {p.targetMeta || "Sạp nông dân"}
+                            🏡 {localizeStallName(p.targetMeta || "Sạp nông dân")}
                           </span>
                         </div>
                         <div
@@ -652,7 +664,7 @@ export default function CustomerDashboardPage({
                               }
                             }}
                           >
-                            + Đặt trước
+                            {isEn ? "+ Pre-order" : "+ Đặt trước"}
                           </Button>
                           <Button
                             variant="ghost"
@@ -660,7 +672,7 @@ export default function CustomerDashboardPage({
                             className="btn-danger-text"
                             onClick={() => handleRemoveFavorite("PRODUCT", pid)}
                           >
-                            Xóa
+                            {t("dashRemoveFavBtn", "Xóa")}
                           </Button>
                         </div>
                       </div>
@@ -677,13 +689,13 @@ export default function CustomerDashboardPage({
                 <div className="ml-family-intro-icon">👨‍👩‍👧‍👦</div>
                 <div>
                   <h3 className="ml-family-intro-title">
-                    Nhóm Gia Đình Đi Chợ Chung (Family Account)
+                    {t("dashFamilyTitle", "Nhóm Gia Đình Đi Chợ Chung (Family Account)")}
                   </h3>
                   <p className="ml-family-intro-desc">
-                    Tính năng đặc biệt cho phép các thành viên trong gia đình
-                    cùng xem đơn đặt trước, cùng nhận thông báo khi nông sản đã
-                    sẵn sàng tại sạp, và bất kỳ ai cũng có thể xuất trình mã QR
-                    để nhận rau củ giúp nhau.
+                    {t(
+                      "dashFamilyDesc",
+                      "Tính năng đặc biệt cho phép các thành viên trong gia đình cùng xem đơn đặt trước, cùng nhận thông báo khi nông sản đã sẵn sàng tại sạp, và bất kỳ ai cũng có thể xuất trình mã QR để nhận rau củ giúp nhau."
+                    )}
                   </p>
                 </div>
               </div>
@@ -691,7 +703,7 @@ export default function CustomerDashboardPage({
               <div className="ml-family-grid">
                 <div className="ml-card ml-family-members-card">
                   <div className="ml-family-card-title">
-                    <span>Thành viên trong nhóm ({familyMembers.length})</span>
+                    <span>{t("dashFamilyMembersTitle", "Thành viên trong nhóm")} ({familyMembers.length})</span>
                     {familyMembers.length > 1 && (
                       <Button
                         variant="ghost"
@@ -699,7 +711,7 @@ export default function CustomerDashboardPage({
                         className="btn-danger-text"
                         onClick={handleLeaveFamily}
                       >
-                        Rời nhóm
+                        {t("dashFamilyLeaveBtn", "Rời nhóm")}
                       </Button>
                     )}
                   </div>
@@ -712,14 +724,16 @@ export default function CustomerDashboardPage({
                         color: "var(--color-text-muted)",
                       }}
                     >
-                      <p>Bạn chưa liên kết tài khoản gia đình nào.</p>
+                      <p>{t("dashFamilyNoMembers", "Bạn chưa liên kết tài khoản gia đình nào.")}</p>
                       <p
                         style={{
                           fontSize: "12px",
                         }}
                       >
-                        Hãy gửi lời mời bằng email hoặc nhập mã lời mời bạn nhận
-                        được ở khung bên phải!
+                        {t(
+                          "dashFamilyNoMembersHelp",
+                          "Hãy gửi lời mời bằng email hoặc nhập mã lời mời bạn nhận được ở khung bên phải!"
+                        )}
                       </p>
                     </div>
                   ) : (
@@ -740,7 +754,7 @@ export default function CustomerDashboardPage({
                                 {m.fullName || m.email}
                                 {m.isHeadOfFamily && (
                                   <Badge variant="organic" size="sm">
-                                    Chủ nhóm
+                                    {t("dashFamilyLeaderBadge", "Chủ nhóm")}
                                   </Badge>
                                 )}
                               </div>
@@ -758,7 +772,7 @@ export default function CustomerDashboardPage({
                               className="btn-danger-text"
                               onClick={() => handleRemoveMember(m.customerId)}
                             >
-                              Xóa
+                              {isEn ? "Remove" : "Xóa"}
                             </Button>
                           )}
                         </div>
@@ -769,7 +783,7 @@ export default function CustomerDashboardPage({
 
                 <div className="ml-card ml-family-invite-card">
                   <h4 className="ml-family-card-title">
-                    Mời người thân vào nhóm
+                    {t("dashFamilyInviteTitle", "Mời người thân vào nhóm")}
                   </h4>
                   <form
                     onSubmit={handleSendFamilyInvite}
@@ -781,12 +795,12 @@ export default function CustomerDashboardPage({
                   >
                     <div className="ml-form-group">
                       <label className="ml-form-label">
-                        Email thành viên muốn mời:
+                        {t("dashFamilyEmailLabel", "Email thành viên muốn mời:")}
                       </label>
                       <input
                         type="email"
                         className="ml-form-input"
-                        placeholder="VD: vo_yeu@gmail.com"
+                        placeholder={isEn ? "e.g. member@gmail.com" : "VD: vo_yeu@gmail.com"}
                         value={inviteEmail}
                         onChange={(e) => setInviteEmail(e.target.value)}
                         required
@@ -798,7 +812,7 @@ export default function CustomerDashboardPage({
                       size="md"
                       loading={familyLoading}
                     >
-                      Gửi lời mời tham gia
+                      {isEn ? (familyLoading ? "Sending..." : "Send Invitation") : (familyLoading ? "Đang gửi..." : "Gửi lời mời tham gia")}
                     </Button>
                   </form>
 
@@ -810,7 +824,7 @@ export default function CustomerDashboardPage({
                         marginBottom: "8px",
                       }}
                     >
-                      Bạn có mã token lời mời gia đình?
+                      {t("dashFamilyTokenTitle", "Bạn có mã token lời mời gia đình?")}
                     </h5>
                     <div
                       style={{
@@ -821,7 +835,7 @@ export default function CustomerDashboardPage({
                       <input
                         type="text"
                         className="ml-form-input"
-                        placeholder="Nhập mã token lời mời..."
+                        placeholder={t("dashFamilyTokenPlaceholder", "Nhập mã token lời mời...")}
                         value={acceptToken}
                         onChange={(e) => setAcceptToken(e.target.value)}
                       />
@@ -831,7 +845,7 @@ export default function CustomerDashboardPage({
                         disabled={!acceptToken.trim()}
                         onClick={() => handleAcceptInvite(acceptToken.trim())}
                       >
-                        Gia nhập
+                        {t("dashFamilyJoinBtn", "Gia nhập")}
                       </Button>
                     </div>
                   </div>
@@ -845,7 +859,7 @@ export default function CustomerDashboardPage({
                           marginBottom: "8px",
                         }}
                       >
-                        Lời mời đang chờ ({familyInvitations.length})
+                        {t("dashFamilyPendingTitle", "Lời mời đang chờ")} ({familyInvitations.length})
                       </h5>
                       {familyInvitations.map((inv) => (
                         <div
@@ -853,16 +867,16 @@ export default function CustomerDashboardPage({
                           className="ml-invitation-item"
                         >
                           <div>
-                            Gửi tới: <strong>{inv.inviteeEmail}</strong>
+                            {t("dashFamilySentTo", "Gửi tới:")} <strong>{inv.inviteeEmail}</strong>
                           </div>
                           <div>
-                            Trạng thái:{" "}
+                            {t("dashUpcomingStatus", "Trạng thái:")}{" "}
                             <Badge variant="pending" size="sm">
                               {inv.status}
                             </Badge>
                           </div>
                           <div className="ml-invitation-token-row">
-                            <span>Mã: {inv.invitationToken}</span>
+                            <span>{isEn ? "Code: " : "Mã: "}{inv.invitationToken}</span>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -870,10 +884,10 @@ export default function CustomerDashboardPage({
                                 navigator.clipboard.writeText(
                                   inv.invitationToken,
                                 );
-                                showStatus("✓ Đã sao chép mã token lời mời!");
+                                showStatus(isEn ? "✓ Invitation token copied!" : "✓ Đã sao chép mã token lời mời!");
                               }}
                             >
-                              Sao chép
+                              {t("dashFamilyCopyToken", "Sao chép")}
                             </Button>
                           </div>
                         </div>
@@ -890,11 +904,13 @@ export default function CustomerDashboardPage({
               <div className="ml-profile-settings-header-flex">
                 <div>
                   <h3 className="ml-subcard-title">
-                    Cài đặt hồ sơ & địa chỉ nhận hàng
+                    {t("dashProfileTitle", "Cài đặt hồ sơ & địa chỉ nhận hàng")}
                   </h3>
                   <p className="ml-profile-settings-subdesc">
-                    Quản lý thông tin tài khoản, ảnh đại diện và địa chỉ nhận
-                    hàng nông sản tại các phiên chợ
+                    {t(
+                      "dashProfileDesc",
+                      "Quản lý thông tin tài khoản, ảnh đại diện và địa chỉ nhận hàng nông sản tại các phiên chợ"
+                    )}
                   </p>
                 </div>
                 <Button
@@ -904,7 +920,7 @@ export default function CustomerDashboardPage({
                   onClick={handleOpenEditProfileModal}
                   className="ml-btn-open-modal-settings"
                 >
-                  ✏️ Chỉnh sửa hồ sơ (Mở hộp thoại)
+                  {t("dashProfileOpenModalBtn", "✏️ Chỉnh sửa hồ sơ (Mở hộp thoại)")}
                 </Button>
               </div>
 
@@ -912,7 +928,7 @@ export default function CustomerDashboardPage({
                 <div
                   className="ml-overview-avatar-wrapper"
                   onClick={handleOpenEditProfileModal}
-                  title="Nhấn để đổi ảnh đại diện"
+                  title={isEn ? "Click to change avatar" : "Nhấn để đổi ảnh đại diện"}
                 >
                   {profile?.avatarUrl ? (
                     <img
@@ -930,30 +946,30 @@ export default function CustomerDashboardPage({
                   <div className="ml-overview-name-row">
                     <h4 className="ml-overview-name">{displayUserName}</h4>
                     <span className="ml-overview-badge">
-                      Khách hàng thành viên
+                      {t("dashProfileMemberBadge", "Khách hàng thành viên")}
                     </span>
                   </div>
                   <div className="ml-overview-meta-list">
                     <div className="ml-overview-meta-item">
-                      <span className="ml-meta-label">Email tài khoản:</span>
+                      <span className="ml-meta-label">{t("dashProfileEmailLabel", "Email tài khoản:")}</span>
                       <strong className="ml-meta-value">
                         ✉️ {displayUserEmail}
                       </strong>
                     </div>
                     <div className="ml-overview-meta-item">
                       <span className="ml-meta-label">
-                        Số điện thoại liên hệ:
+                        {t("dashProfilePhoneLabel", "Số điện thoại liên hệ:")}
                       </span>
                       <strong className="ml-meta-value">
-                        📞 {phone || "Chưa cập nhật"}
+                        📞 {phone || t("dashProfileNotProvided", "Chưa cập nhật")}
                       </strong>
                     </div>
                     <div className="ml-overview-meta-item">
                       <span className="ml-meta-label">
-                        Địa chỉ nhận hàng mặc định:
+                        {t("dashProfileAddressLabel", "Địa chỉ nhận hàng mặc định:")}
                       </span>
                       <span className="ml-meta-value">
-                        📍 {defaultAddress || "Chưa thiết lập địa chỉ"}
+                        📍 {defaultAddress || t("dashProfileNoAddress", "Chưa thiết lập địa chỉ")}
                       </span>
                     </div>
                   </div>
@@ -966,21 +982,21 @@ export default function CustomerDashboardPage({
                     size="sm"
                     onClick={handleOpenEditProfileModal}
                   >
-                    ✏️ Thay đổi
+                    ✏️ {isEn ? "Edit" : "Thay đổi"}
                   </Button>
                 </div>
               </div>
 
               <div className="ml-profile-inline-form-wrap">
                 <h4 className="ml-inline-form-title">
-                  📝 Cập nhật nhanh thông tin:
+                  {t("dashProfileQuickTitle", "📝 Cập nhật nhanh thông tin:")}
                 </h4>
                 <form
                   onSubmit={handleUpdateProfile}
                   className="ml-profile-form"
                 >
                   <div className="ml-form-group">
-                    <label className="ml-form-label">Họ và tên của bạn:</label>
+                    <label className="ml-form-label">{t("dashProfileFullNameLabel", "Họ và tên của bạn:")}</label>
                     <input
                       type="text"
                       className="ml-form-input"
@@ -992,25 +1008,25 @@ export default function CustomerDashboardPage({
 
                   <div className="ml-form-group">
                     <label className="ml-form-label">
-                      Số điện thoại liên hệ (để nông dân liên hệ khi có rau):
+                      {t("dashProfilePhoneHelp", "Số điện thoại liên hệ (để nông dân liên hệ khi có rau):")}
                     </label>
                     <input
                       type="text"
                       className="ml-form-input"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="VD: 0912 345 678"
+                      placeholder={isEn ? "e.g. 0912 345 678" : "VD: 0912 345 678"}
                     />
                   </div>
 
                   <div className="ml-form-group">
-                    <label className="ml-form-label">Địa chỉ mặc định:</label>
+                    <label className="ml-form-label">{t("dashProfileAddressLabel", "Địa chỉ mặc định:")}</label>
                     <input
                       type="text"
                       className="ml-form-input"
                       value={defaultAddress}
                       onChange={(e) => setDefaultAddress(e.target.value)}
-                      placeholder="VD: 123 Đường Láng, Đống Đa, Hà Nội"
+                      placeholder={isEn ? "e.g. 123 Main St, Hanoi" : "VD: 123 Đường Láng, Đống Đa, Hà Nội"}
                     />
                   </div>
 
@@ -1021,7 +1037,7 @@ export default function CustomerDashboardPage({
                       size="md"
                       loading={savingProfile}
                     >
-                      Lưu thay đổi hồ sơ
+                      {savingProfile ? t("dashModalSaving", "Đang lưu...") : t("dashProfileSaveBtn", "Lưu thay đổi hồ sơ")}
                     </Button>
                     <Button
                       type="button"
@@ -1029,7 +1045,7 @@ export default function CustomerDashboardPage({
                       size="md"
                       onClick={handleOpenEditProfileModal}
                     >
-                      🖼️ Đổi ảnh đại diện (Mở hộp thoại)
+                      {t("dashProfileChangeAvatarBtn", "🖼️ Đổi ảnh đại diện (Mở hộp thoại)")}
                     </Button>
                   </div>
                 </form>
@@ -1049,7 +1065,7 @@ export default function CustomerDashboardPage({
                     marginBottom: "16px",
                   }}
                 >
-                  Đổi mật khẩu tài khoản
+                  {t("dashPasswordTitle", "Đổi mật khẩu tài khoản")}
                 </h4>
                 {passwordMessage && (
                   <div
@@ -1074,7 +1090,7 @@ export default function CustomerDashboardPage({
                   }}
                 >
                   <div className="ml-form-group">
-                    <label className="ml-form-label">Mật khẩu hiện tại:</label>
+                    <label className="ml-form-label">{t("dashPasswordCurrent", "Mật khẩu hiện tại:")}</label>
                     <input
                       type="password"
                       className="ml-form-input"
@@ -1084,7 +1100,7 @@ export default function CustomerDashboardPage({
                     />
                   </div>
                   <div className="ml-form-group">
-                    <label className="ml-form-label">Mật khẩu mới:</label>
+                    <label className="ml-form-label">{t("dashPasswordNew", "Mật khẩu mới:")}</label>
                     <input
                       type="password"
                       className="ml-form-input"
@@ -1095,7 +1111,7 @@ export default function CustomerDashboardPage({
                   </div>
                   <div className="ml-form-group">
                     <label className="ml-form-label">
-                      Nhập lại mật khẩu mới:
+                      {t("dashPasswordConfirm", "Nhập lại mật khẩu mới:")}
                     </label>
                     <input
                       type="password"
@@ -1106,7 +1122,7 @@ export default function CustomerDashboardPage({
                     />
                   </div>
                   <Button type="submit" variant="outline" size="md">
-                    Cập nhật mật khẩu mới
+                    {t("dashPasswordSubmit", "Cập nhật mật khẩu mới")}
                   </Button>
                 </form>
               </div>
@@ -1129,17 +1145,19 @@ export default function CustomerDashboardPage({
           >
             <div className="ml-modal-header">
               <div>
-                <h3>✏️ Chỉnh sửa hồ sơ & Ảnh đại diện</h3>
+                <h3>{t("dashModalEditTitle", "✏️ Chỉnh sửa hồ sơ & Ảnh đại diện")}</h3>
                 <p className="ml-modal-subtitle">
-                  Cập nhật họ và tên, số điện thoại, địa chỉ nhận hàng và hình
-                  ảnh đại diện của bạn
+                  {t(
+                    "dashModalEditSubtitle",
+                    "Cập nhật họ và tên, số điện thoại, địa chỉ nhận hàng và hình ảnh đại diện của bạn"
+                  )}
                 </p>
               </div>
               <button
                 type="button"
                 className="ml-modal-close"
                 onClick={() => setIsEditProfileModalOpen(false)}
-                aria-label="Đóng hộp thoại"
+                aria-label={isEn ? "Close dialog" : "Đóng hộp thoại"}
               >
                 ✕
               </button>
@@ -1168,7 +1186,7 @@ export default function CustomerDashboardPage({
                         fontWeight: 700,
                       }}
                     >
-                      Ảnh đại diện tài khoản (Avatar):
+                      {t("dashModalAvatarLabel", "Ảnh đại diện tài khoản (Avatar):")}
                     </label>
                     <ImageUploadInput
                       folder="avatars"
@@ -1185,13 +1203,16 @@ export default function CustomerDashboardPage({
                           avatarUrl: url,
                         }))
                       }
-                      helpText="Tải lên ảnh chân dung cá nhân (JPG, PNG, WebP) hoặc dán đường dẫn ảnh trực tiếp"
+                      helpText={t(
+                        "dashModalAvatarHelp",
+                        "Tải lên ảnh chân dung cá nhân (JPG, PNG, WebP) hoặc dán đường dẫn ảnh trực tiếp"
+                      )}
                     />
                   </div>
                 </div>
 
                 <div className="ml-form-group">
-                  <label className="ml-form-label">Họ và tên của bạn:</label>
+                  <label className="ml-form-label">{t("dashProfileFullNameLabel", "Họ và tên của bạn:")}</label>
                   <div className="ml-input-wrapper">
                     <span className="ml-input-icon">👤</span>
                     <input
@@ -1204,7 +1225,7 @@ export default function CustomerDashboardPage({
                           fullName: e.target.value,
                         })
                       }
-                      placeholder="VD: Nguyễn Nhựt Quang"
+                      placeholder={isEn ? "e.g. John Doe" : "VD: Nguyễn Nhựt Quang"}
                       required
                     />
                   </div>
@@ -1213,7 +1234,7 @@ export default function CustomerDashboardPage({
                 <div className="ml-form-grid-2">
                   <div className="ml-form-group">
                     <label className="ml-form-label">
-                      Email tài khoản (Cố định):
+                      {t("dashModalFixedEmail", "Email tài khoản (Cố định):")}
                     </label>
                     <div className="ml-input-wrapper">
                       <span className="ml-input-icon">✉️</span>
@@ -1233,7 +1254,7 @@ export default function CustomerDashboardPage({
 
                   <div className="ml-form-group">
                     <label className="ml-form-label">
-                      Số điện thoại liên hệ:
+                      {t("dashProfilePhoneLabel", "Số điện thoại liên hệ:")}
                     </label>
                     <div className="ml-input-wrapper">
                       <span className="ml-input-icon">📞</span>
@@ -1247,7 +1268,7 @@ export default function CustomerDashboardPage({
                             phone: e.target.value,
                           })
                         }
-                        placeholder="VD: 0901234567"
+                        placeholder={isEn ? "e.g. 0901234567" : "VD: 0901234567"}
                       />
                     </div>
                   </div>
@@ -1255,7 +1276,7 @@ export default function CustomerDashboardPage({
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Địa chỉ nhận hàng mặc định:
+                    {t("dashProfileAddressLabel", "Địa chỉ nhận hàng mặc định:")}
                   </label>
                   <div className="ml-input-wrapper">
                     <span className="ml-input-icon">📍</span>
@@ -1269,12 +1290,14 @@ export default function CustomerDashboardPage({
                           defaultAddress: e.target.value,
                         })
                       }
-                      placeholder="VD: 123 Đường Láng, Đống Đa, Hà Nội"
+                      placeholder={isEn ? "e.g. 123 Main St, Hanoi" : "VD: 123 Đường Láng, Đống Đa, Hà Nội"}
                     />
                   </div>
                   <span className="ml-form-help">
-                    Địa chỉ này sẽ được dùng để tự động điền khi bạn đặt mua
-                    nông sản tại các sạp chợ.
+                    {t(
+                      "dashModalAddressHelp",
+                      "Địa chỉ này sẽ được dùng để tự động điền khi bạn đặt mua nông sản tại các sạp chợ."
+                    )}
                   </span>
                 </div>
               </div>
@@ -1286,10 +1309,10 @@ export default function CustomerDashboardPage({
                   onClick={() => setIsEditProfileModalOpen(false)}
                   disabled={savingProfile}
                 >
-                  Hủy bỏ
+                  {t("dashModalCancel", "Hủy bỏ")}
                 </Button>
                 <Button type="submit" variant="primary" loading={savingProfile}>
-                  {savingProfile ? "Đang lưu..." : "Lưu thay đổi hồ sơ"}
+                  {savingProfile ? t("dashModalSaving", "Đang lưu...") : t("dashProfileSaveBtn", "Lưu thay đổi hồ sơ")}
                 </Button>
               </div>
             </form>

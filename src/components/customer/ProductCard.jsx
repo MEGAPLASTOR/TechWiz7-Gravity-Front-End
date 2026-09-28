@@ -2,12 +2,16 @@ import React from "react";
 import "@/assets/styles/components/customer/ProductCard.css";
 import Badge from "../common/Badge";
 import Button from "../common/Button";
+import { useLanguage } from "@/context";
+
 export default function ProductCard({
   product,
   onAddToCart,
   cartQuantity = 0,
   onUpdateCartQty,
 }) {
+  const { isEn, t, localizeProduceName, localizeMarketName, localizeStallName, localizeUnit } = useLanguage();
+
   const {
     id,
     name,
@@ -22,15 +26,39 @@ export default function ProductCard({
     imageUrl,
     organicCertified = true,
   } = product;
+
+  const displayName = localizeProduceName(name);
+  const displayFarmer = localizeStallName(farmerName);
+  const displayMarket = localizeMarketName(marketName);
+  const displayUnit = localizeUnit(unit);
+  const displayHarvest = isEn
+    ? (harvestTime
+        ? harvestTime
+            .replace(/Thu hoạch lúc 4h30 sáng/gi, "Harvested 4:30 AM")
+            .replace(/Thu hoạch 5h sáng/gi, "Harvested 5:00 AM")
+            .replace(/Thu hoạch sáng nay/gi, "Harvested this morning")
+            .replace(/Thu hoạch hôm qua/gi, "Harvested yesterday")
+            .replace(/Thu hái sáng sớm/gi, "Early morning harvest")
+            .replace(/Hái tự nhiên trên núi/gi, "Mountain harvest")
+            .replace(/Thu hoạch sớm/gi, "Early morning harvest")
+        : "Early morning harvest")
+    : harvestTime;
+
   const fallbackImg =
     "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80";
+
   const isOutOfStock = stockQuantity <= 0;
-  const formatCurrency = (amount) => {
+
+  const formatPrice = (amount) => {
+    if (isEn) {
+      return `${Number(amount).toLocaleString()} VND`;
+    }
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(amount);
   };
+
   return (
     <div
       className={`ml-card ml-product-card ${isOutOfStock ? "is-out-of-stock" : ""}`}
@@ -38,7 +66,7 @@ export default function ProductCard({
       <div className="ml-product-img-wrap">
         <img
           src={imageUrl || fallbackImg}
-          alt={name}
+          alt={displayName}
           className="ml-product-img"
           loading="lazy"
           onError={(e) => {
@@ -49,54 +77,56 @@ export default function ProductCard({
         <div className="ml-product-badges">
           {organicCertified && (
             <Badge variant="organic" size="sm">
-              🌿 Hữu cơ
+              🌿 {t("organicTag", "Hữu cơ")}
             </Badge>
           )}
           {isOutOfStock ? (
             <Badge variant="cancelled" size="sm">
-              Hết hàng
+              {t("outOfStock", "Hết hàng")}
             </Badge>
           ) : (
-            <span className="ml-harvest-tag">⚡ {harvestTime}</span>
+            <span className="ml-harvest-tag">⚡ {displayHarvest}</span>
           )}
         </div>
       </div>
 
       <div className="ml-product-body">
         <div className="ml-product-origin">
-          <span className="ml-farmer-name">🏡 {farmerName}</span>
-          <span className="ml-stall-code">{stallCode}</span>
+          <span className="ml-farmer-name">🏡 {displayFarmer}</span>
+          <span className="ml-stall-code">
+            {isEn ? stallCode.replace(/Sạp/gi, "Stall") : stallCode}
+          </span>
         </div>
 
-        <h4 className="ml-product-title" title={name}>
-          {name}
+        <h4 className="ml-product-title" title={displayName}>
+          {displayName}
         </h4>
 
         <div className="ml-product-market-hint">
           <span>
-            🎪 Nhận tại: <strong>{marketName}</strong>
+            🎪 {t("pickupAt", "Nhận tại:")} <strong>{displayMarket}</strong>
           </span>
         </div>
 
         <div className="ml-product-stock-wrap">
           {!isOutOfStock ? (
             <span className="ml-stock-text">
-              Còn lại:{" "}
+              {t("inStock", "Còn lại:")}{" "}
               <strong>
-                {stockQuantity} {unit}
+                {stockQuantity} {displayUnit}
               </strong>
             </span>
           ) : (
             <span className="ml-stock-text out">
-              Sạp sẽ bổ sung vào phiên sau
+              {t("restocking", "Sạp sẽ bổ sung vào phiên sau")}
             </span>
           )}
         </div>
 
         <div className="ml-product-footer">
           <div className="ml-product-price-box">
-            <span className="ml-product-price">{formatCurrency(price)}</span>
-            <span className="ml-product-unit">/ {unit}</span>
+            <span className="ml-product-price">{formatPrice(price)}</span>
+            <span className="ml-product-unit">/ {displayUnit}</span>
           </div>
 
           {onAddToCart && (
@@ -114,11 +144,11 @@ export default function ProductCard({
                       onUpdateCartQty &&
                         onUpdateCartQty(product, cartQuantity - 1);
                     }}
-                    aria-label="Giảm số lượng"
+                    aria-label={isEn ? "Decrease quantity" : "Giảm số lượng"}
                   >
                     -
                   </button>
-                  <span className="ml-qty-num">{cartQuantity}</span>
+                  <span className="ml-qty-val">{cartQuantity}</span>
                   <button
                     type="button"
                     className="ml-qty-btn"
@@ -128,23 +158,22 @@ export default function ProductCard({
                       onUpdateCartQty &&
                         onUpdateCartQty(product, cartQuantity + 1);
                     }}
-                    aria-label="Tăng số lượng"
+                    aria-label={isEn ? "Increase quantity" : "Tăng số lượng"}
                   >
                     +
                   </button>
                 </div>
               ) : (
                 <Button
-                  variant="accent"
+                  variant="primary"
                   size="sm"
                   disabled={isOutOfStock}
                   onClick={(e) => {
                     e.stopPropagation();
                     onAddToCart(product);
                   }}
-                  icon={<span>+</span>}
                 >
-                  Đặt trước
+                  {t("addToCart", "Đặt trước")}
                 </Button>
               )}
             </div>

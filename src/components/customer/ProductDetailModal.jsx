@@ -3,6 +3,8 @@ import "@/assets/styles/components/customer/ProductDetailModal.css";
 import Modal from "../common/Modal";
 import Badge from "../common/Badge";
 import Button from "../common/Button";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function ProductDetailModal({
   isOpen,
   onClose,
@@ -11,6 +13,7 @@ export default function ProductDetailModal({
   cartQuantity = 0,
   onUpdateCartQty,
 }) {
+  const { t, isEn, localizeProduceName, localizeUnit, localizeStallName, localizeMarketName } = useLanguage();
   const [selectedQty, setSelectedQty] = useState(1);
   const {
     id,
@@ -50,8 +53,12 @@ export default function ProductDetailModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={name}
-      subtitle={`Thuộc sạp ${farmerName} • ${stallCode}`}
+      title={localizeProduceName(name, isEn)}
+      subtitle={
+        isEn
+          ? `From ${localizeStallName(farmerName, isEn)} • ${stallCode}`
+          : `Thuộc sạp ${farmerName} • ${stallCode}`
+      }
       maxWidth="680px"
     >
       <div className="ml-product-detail-modal">
@@ -68,53 +75,63 @@ export default function ProductDetailModal({
             <div className="ml-detail-img-badges">
               {organicCertified && (
                 <Badge variant="organic" size="sm">
-                  🌿 Hữu cơ kiểm định
+                  {t("prodModalOrganicBadge", "🌿 Hữu cơ kiểm định")}
                 </Badge>
               )}
-              <span className="ml-cutoff-pill">⏰ {cutoffTime}</span>
+              <span className="ml-cutoff-pill">
+                ⏰ {isEn ? "Pre-order cutoff before market" : cutoffTime}
+              </span>
             </div>
           </div>
 
           <div className="ml-detail-info-col">
             <div className="ml-detail-price-row">
               <span className="ml-detail-price">{formatCurrency(price)}</span>
-              <span className="ml-detail-unit">/ {unit}</span>
+              <span className="ml-detail-unit">/ {localizeUnit(unit, isEn)}</span>
             </div>
 
             <div className="ml-detail-meta-list">
               <div className="ml-detail-meta-item">
-                <span className="ml-meta-label">Nhà vườn:</span>
-                <span className="ml-meta-val">🏡 {farmerName}</span>
+                <span className="ml-meta-label">{isEn ? "Farm / Grower:" : "Nhà vườn:"}</span>
+                <span className="ml-meta-val">🏡 {localizeStallName(farmerName, isEn)}</span>
               </div>
               <div className="ml-detail-meta-item">
-                <span className="ml-meta-label">Điểm nhận hàng:</span>
+                <span className="ml-meta-label">{t("prodModalPickupLocation", "Điểm nhận hàng:")}</span>
                 <span className="ml-meta-val">
-                  🎪 {marketName} ({stallCode})
+                  🎪 {localizeMarketName(marketName, isEn)} ({stallCode})
                 </span>
               </div>
               <div className="ml-detail-meta-item">
-                <span className="ml-meta-label">Thời điểm cắt:</span>
-                <span className="ml-meta-val">⚡ {harvestTime}</span>
+                <span className="ml-meta-label">{t("prodModalHarvestTime", "Thời điểm cắt:")}</span>
+                <span className="ml-meta-val">
+                  ⚡ {isEn ? "Dawn harvest at 4:30 AM" : harvestTime}
+                </span>
               </div>
               <div className="ml-detail-meta-item">
-                <span className="ml-meta-label">Tình trạng kho:</span>
+                <span className="ml-meta-label">{t("prodModalStockStatus", "Tình trạng kho:")}</span>
                 <span className={`ml-meta-val ${isOutOfStock ? "out" : "in"}`}>
                   {isOutOfStock
-                    ? "Đã hết hàng cho phiên này"
-                    : `Còn ${stockQuantity} ${unit}`}
+                    ? t("prodModalSoldOut", "Đã hết hàng cho phiên này")
+                    : isEn
+                      ? `Stock: ${stockQuantity} ${localizeUnit(unit, isEn)}`
+                      : `Còn ${stockQuantity} ${unit}`}
                 </span>
               </div>
             </div>
 
             <div className="ml-detail-desc-box">
-              <h5 className="ml-desc-title">Mô tả nông sản:</h5>
-              <p className="ml-desc-text">{description}</p>
+              <h5 className="ml-desc-title">{t("prodModalDescTitle", "Mô tả nông sản:")}</h5>
+              <p className="ml-desc-text">
+                {isEn
+                  ? "Naturally grown without synthetic pesticides, watered with natural mountain springs. Harvested fresh at dawn and brought directly to market stalls to preserve natural sweetness and crisp dew-freshness."
+                  : description}
+              </p>
             </div>
 
             {onAddToCart ? (
               <div className="ml-detail-order-actions">
                 <div className="ml-detail-qty-picker">
-                  <label className="ml-qty-label">Số lượng đặt:</label>
+                  <label className="ml-qty-label">{t("prodModalQtyLabel", "Số lượng đặt:")}</label>
                   <div className="ml-qty-control">
                     <button
                       type="button"
@@ -149,12 +166,12 @@ export default function ProductDetailModal({
                   icon={<span>🧺</span>}
                 >
                   {isOutOfStock
-                    ? "Tạm hết hàng"
-                    : `Đặt trước • ${formatCurrency(price * selectedQty)}`}
+                    ? t("prodModalSoldOutBtn", "Tạm hết hàng")
+                    : `${t("prodModalOrderBtn", "Đặt trước")} • ${formatCurrency(price * selectedQty)}`}
                 </Button>
 
                 <div className="ml-detail-guarantee">
-                  ✓ Nhận tại sạp chợ • Kiểm tra độ tươi trước khi trả tiền mặt
+                  {t("prodModalGuarantee", "✓ Nhận tại sạp chợ • Kiểm tra độ tươi trước khi trả tiền mặt")}
                 </div>
               </div>
             ) : (
@@ -168,8 +185,9 @@ export default function ProductDetailModal({
                   borderRadius: "12px",
                 }}
               >
-                🌾 Chế độ quản lý (Admin / Farmer): Chỉ xem thông tin niêm yết
-                của sạp
+                {isEn
+                  ? "🌾 Management Mode (Admin / Farmer): Listing preview only"
+                  : "🌾 Chế độ quản lý (Admin / Farmer): Chỉ xem thông tin niêm yết của sạp"}
               </div>
             )}
           </div>

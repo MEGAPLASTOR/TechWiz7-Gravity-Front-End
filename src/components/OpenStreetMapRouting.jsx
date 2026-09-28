@@ -4,6 +4,8 @@ import {
   notificationService,
   playNotificationChime,
 } from "../services/notificationService";
+import { useLanguage } from "../context";
+
 export default function OpenStreetMapRouting({
   token,
   callApi,
@@ -11,6 +13,7 @@ export default function OpenStreetMapRouting({
   targetMarket,
   onSelectMarketProducts,
 }) {
+  const { isEn, localizeMarketName } = useLanguage();
   const mapRef = useRef(null);
   const leafletMap = useRef(null);
   const userMarkerRef = useRef(null);
@@ -611,7 +614,7 @@ export default function OpenStreetMapRouting({
                     fontWeight: 600,
                   }}
                 >
-                  Đang dò tìm tọa độ GPS thực tế của thiết bị...
+                  {isEn ? "Detecting device GPS coordinates..." : "Đang dò tìm tọa độ GPS thực tế của thiết bị..."}
                 </span>
               ) : gpsStatus.active ? (
                 <span
@@ -620,7 +623,7 @@ export default function OpenStreetMapRouting({
                     fontWeight: 600,
                   }}
                 >
-                  GPS Thực Tế (±{gpsStatus.accuracy}m) • Đang theo dõi trực tiếp
+                  {isEn ? `Live GPS (±${gpsStatus.accuracy}m) • Real-time tracking` : `GPS Thực Tế (±${gpsStatus.accuracy}m) • Đang theo dõi trực tiếp`}
                 </span>
               ) : (
                 <span
@@ -628,8 +631,9 @@ export default function OpenStreetMapRouting({
                     color: "#fde68a",
                   }}
                 >
-                  Chưa cấp quyền GPS (
-                  {gpsStatus.error || "Dùng vị trí mặc định"})
+                  {isEn
+                    ? `GPS permission needed (${gpsStatus.error || "Using default position"})`
+                    : `Chưa cấp quyền GPS (${gpsStatus.error || "Dùng vị trí mặc định"})`}
                 </span>
               )}
             </div>
@@ -645,7 +649,7 @@ export default function OpenStreetMapRouting({
             }}
             onClick={() => requestRealGps(false)}
           >
-            🔄 Dò lại GPS
+            {isEn ? "🔄 Re-scan GPS" : "🔄 Dò lại GPS"}
           </button>
         </div>
 
@@ -664,7 +668,7 @@ export default function OpenStreetMapRouting({
           }}
         >
           <div>
-            📍 Vị trí hiện tại:{" "}
+            {isEn ? "📍 Current location: " : "📍 Vị trí hiện tại: "}
             <b
               style={{
                 color: "#f1f5f9",
@@ -684,7 +688,7 @@ export default function OpenStreetMapRouting({
             }}
             onClick={() => requestRealGps(false)}
           >
-            📡 Cập nhật GPS
+            {isEn ? "📡 Update GPS" : "📡 Cập nhật GPS"}
           </button>
         </div>
 
@@ -696,13 +700,13 @@ export default function OpenStreetMapRouting({
               color: "#38bdf8",
             }}
           >
-            ⏳ Đang giải thuật tìm đoạn đường ngắn nhất qua OpenStreetMap...
+            {isEn ? "⏳ Finding shortest route via OpenStreetMap..." : "⏳ Đang giải thuật tìm đoạn đường ngắn nhất qua OpenStreetMap..."}
           </div>
         ) : routeInfo ? (
           <div>
             <div className="route-stat-grid">
               <div className="route-stat-item">
-                <div className="route-stat-label">Chợ Đón Tiếp</div>
+                <div className="route-stat-label">{isEn ? "Market Destination" : "Chợ Đón Tiếp"}</div>
                 <div
                   className="route-stat-val"
                   style={{
@@ -710,24 +714,24 @@ export default function OpenStreetMapRouting({
                     color: "#10b981",
                   }}
                 >
-                  {routeInfo.marketName?.split(" ")[1] || "Ba Đình"}
+                  {localizeMarketName(routeInfo.marketName)}
                 </div>
               </div>
               <div className="route-stat-item">
-                <div className="route-stat-label">Quãng Đường</div>
+                <div className="route-stat-label">{isEn ? "Distance" : "Quãng Đường"}</div>
                 <div className="route-stat-val">
                   {routeInfo.distanceKilometers} km
                 </div>
               </div>
               <div className="route-stat-item">
-                <div className="route-stat-label">Thời Gian Dự Kiến</div>
+                <div className="route-stat-label">{isEn ? "Estimated Time" : "Thời Gian Dự Kiến"}</div>
                 <div
                   className="route-stat-val"
                   style={{
                     color: "#f59e0b",
                   }}
                 >
-                  ~{routeInfo.estimatedMinutes} phút
+                  ~{routeInfo.estimatedMinutes} {isEn ? "mins" : "phút"}
                 </div>
               </div>
               <div className="route-stat-item">
@@ -739,7 +743,9 @@ export default function OpenStreetMapRouting({
                     color: routeInfo.inGeofence ? "#10b981" : "#ef4444",
                   }}
                 >
-                  {routeInfo.inGeofence ? "✅ ĐÃ VÀO VÙNG" : "❌ NGOÀI VÙNG"}
+                  {routeInfo.inGeofence
+                    ? (isEn ? "✅ INSIDE" : "✅ ĐÃ VÀO VÙNG")
+                    : (isEn ? "❌ OUTSIDE" : "❌ NGOÀI VÙNG")}
                 </div>
               </div>
             </div>
@@ -758,7 +764,7 @@ export default function OpenStreetMapRouting({
                   color: "#f8fafc",
                 }}
               >
-                🎯 {routeInfo.marketName}
+                🎯 {localizeMarketName(routeInfo.marketName)}
               </div>
               <div
                 style={{
@@ -785,7 +791,7 @@ export default function OpenStreetMapRouting({
                   marginBottom: 6,
                 }}
               >
-                🚦 Hướng dẫn lộ trình chi tiết:
+                {isEn ? "🚦 Turn-by-turn navigation instructions:" : "🚦 Hướng dẫn lộ trình chi tiết:"}
               </div>
               <ol className="steps-list">
                 {routeInfo.navigationSteps?.slice(0, 5).map((step, idx) => (
@@ -817,7 +823,7 @@ export default function OpenStreetMapRouting({
                     color: "#38bdf8",
                   }}
                 >
-                  🧭 Mở Google Maps Dẫn Đường
+                  {isEn ? "🧭 Open Google Maps Navigation" : "🧭 Mở Google Maps Dẫn Đường"}
                 </a>
               )}
               {onSelectMarketProducts && (
@@ -845,7 +851,7 @@ export default function OpenStreetMapRouting({
                     onSelectMarketProducts(currentM);
                   }}
                 >
-                  🧺 Xem sản phẩm sạp tại chợ này →
+                  {isEn ? "🧺 View stalls & produce at this market →" : "🧺 Xem sản phẩm sạp tại chợ này →"}
                 </button>
               )}
             </div>

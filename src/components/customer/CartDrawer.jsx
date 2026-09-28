@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import "@/assets/styles/components/customer/CartDrawer.css";
 import Button from "../common/Button";
 import marketService from "../../services/marketService";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function CartDrawer({
   isOpen,
   onClose,
@@ -13,6 +15,7 @@ export default function CartDrawer({
   isLoggedIn = false,
   onOpenLogin,
 }) {
+  const { t, isEn, localizeProduceName, localizeUnit, localizeStallName, localizeMarketName } = useLanguage();
   const [markets, setMarkets] = useState([]);
   const [selectedMarketId, setSelectedMarketId] = useState("");
   const [slots, setSlots] = useState([]);
@@ -153,9 +156,9 @@ export default function CartDrawer({
           <div className="ml-cart-title-wrap">
             <span className="ml-cart-header-icon">🧺</span>
             <div>
-              <h3 className="ml-cart-title">Giỏ Nông Sản Đặt Trước</h3>
+              <h3 className="ml-cart-title">{t("cartDrawerTitle", "Giỏ Nông Sản Đặt Trước")}</h3>
               <p className="ml-cart-subtitle">
-                {cartItems.length} loại nông sản đã chọn
+                {cartItems.length} {t("cartDrawerSubtitle", "loại nông sản đã chọn")}
               </p>
             </div>
           </div>
@@ -163,7 +166,7 @@ export default function CartDrawer({
             type="button"
             className="ml-cart-close"
             onClick={onClose}
-            aria-label="Đóng giỏ hàng"
+            aria-label={isEn ? "Close Cart" : "Đóng giỏ hàng"}
           >
             ✕
           </button>
@@ -173,20 +176,22 @@ export default function CartDrawer({
           {cartItems.length === 0 ? (
             <div className="ml-cart-empty">
               <span className="ml-empty-basket-icon">🥕</span>
-              <h4>Giỏ hàng của bạn đang rỗng</h4>
+              <h4>{t("cartEmptyTitle", "Giỏ hàng của bạn đang rỗng")}</h4>
               <p>
-                Hãy khám phá các sạp nông dân gần bạn và đặt trước để giữ phần
-                rau củ ngon nhất cho buổi chợ sớm!
+                {t(
+                  "cartEmptyDesc",
+                  "Hãy khám phá các sạp nông dân gần bạn và đặt trước để giữ phần rau củ ngon nhất cho buổi chợ sớm!"
+                )}
               </p>
               <Button variant="primary" size="md" onClick={onClose}>
-                Duyệt nông sản ngay
+                {t("cartBrowseBtn", "Duyệt nông sản ngay")}
               </Button>
             </div>
           ) : (
             <>
               <div className="ml-cart-items-section">
                 <div className="ml-cart-section-label">
-                  Nông sản thu hoạch sớm từ nhà vườn
+                  {t("cartSectionLabelItems", "Nông sản thu hoạch sớm từ nhà vườn")}
                 </div>
                 <div className="ml-cart-list">
                   {cartItems.map((item) => (
@@ -201,14 +206,14 @@ export default function CartDrawer({
                       />
 
                       <div className="ml-cart-item-info">
-                        <div className="ml-cart-item-name">{item.name}</div>
+                        <div className="ml-cart-item-name">{localizeProduceName(item.name, isEn)}</div>
                         <div className="ml-cart-item-farmer">
-                          🏡 {item.farmerName || "Nông Trại Hữu Cơ"} •{" "}
-                          {item.stallCode || "Sạp nông dân"}
+                          🏡 {localizeStallName(item.farmerName, isEn) || (isEn ? "Organic Farm" : "Nông Trại Hữu Cơ")} •{" "}
+                          {item.stallCode || (isEn ? "Farmer Stall" : "Sạp nông dân")}
                         </div>
                         <div className="ml-cart-item-price">
                           {formatCurrency(item.price)}{" "}
-                          <span className="ml-unit">/ {item.unit || "kg"}</span>
+                          <span className="ml-unit">/ {localizeUnit(item.unit, isEn) || "kg"}</span>
                         </div>
                       </div>
 
@@ -234,7 +239,7 @@ export default function CartDrawer({
                           type="button"
                           className="ml-item-del-btn"
                           onClick={() => onRemoveItem(item.id)}
-                          title="Xóa món này"
+                          title={t("cartDeleteTip", "Xóa món này")}
                         >
                           🗑️
                         </button>
@@ -246,12 +251,12 @@ export default function CartDrawer({
 
               <div className="ml-pickup-config">
                 <div className="ml-cart-section-label">
-                  Thông tin nhận hàng tại chợ
+                  {t("cartSectionLabelPickup", "Thông tin nhận hàng tại chợ")}
                 </div>
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Điểm chợ bạn sẽ đến lấy hàng:
+                    {t("cartMarketLabel", "Điểm chợ bạn sẽ đến lấy hàng:")}
                   </label>
                   <select
                     className="ml-form-select"
@@ -263,19 +268,19 @@ export default function CartDrawer({
                         key={m.marketId || m.id}
                         value={m.marketId || m.id}
                       >
-                        {m.name} {m.address ? `(${m.address})` : ""}
+                        {localizeMarketName(m.name, isEn)} {m.address ? `(${m.address})` : ""}
                       </option>
                     ))}
                     {markets.length === 0 && (
                       <option value="" disabled>
-                        Chưa tải được danh sách chợ
+                        {isEn ? "Loading market locations..." : "Chưa tải được danh sách chợ"}
                       </option>
                     )}
                   </select>
                 </div>
 
                 <div className="ml-form-group">
-                  <label className="ml-form-label">Ngày bạn sẽ ghé chợ:</label>
+                  <label className="ml-form-label">{t("cartDateLabel", "Ngày bạn sẽ ghé chợ:")}</label>
                   <input
                     type="date"
                     className="ml-form-input"
@@ -288,7 +293,7 @@ export default function CartDrawer({
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Chọn ca nhận hàng (khung giờ ghé sạp):
+                    {t("cartSlotLabel", "Chọn ca nhận hàng (khung giờ ghé sạp):")}
                     {loadingSlots && (
                       <span
                         style={{
@@ -297,7 +302,7 @@ export default function CartDrawer({
                           marginLeft: "6px",
                         }}
                       >
-                        Đang tải...
+                        {t("cartSlotLoading", "Đang tải ca...")}
                       </span>
                     )}
                   </label>
@@ -317,11 +322,11 @@ export default function CartDrawer({
                           />
                           <span>
                             <strong>
-                              Ca{" "}
+                              {t("cartSlotItem", "Ca")}{" "}
                               {slot.timeRange ||
                                 `${slot.startTime} - ${slot.endTime}`}
                             </strong>
-                            {slot.farmerName ? ` • ${slot.farmerName}` : ""}
+                            {slot.farmerName ? ` • ${localizeStallName(slot.farmerName, isEn)}` : ""}
                           </span>
                         </label>
                       );
@@ -331,12 +336,12 @@ export default function CartDrawer({
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Ghi chú gửi người bán (nếu có):
+                    {t("cartNoteLabel", "Ghi chú gửi người bán (nếu có):")}
                   </label>
                   <input
                     type="text"
                     className="ml-form-input"
-                    placeholder="VD: Nhặt giúp bó rau non, đóng riêng từng túi..."
+                    placeholder={t("cartNotePlaceholder", "VD: Nhặt giúp bó rau non, đóng riêng từng túi...")}
                     value={customerNote}
                     onChange={(e) => setCustomerNote(e.target.value)}
                   />
@@ -346,10 +351,12 @@ export default function CartDrawer({
               <div className="ml-payment-pledge">
                 <span className="ml-pledge-icon">💵</span>
                 <div className="ml-pledge-text">
-                  <strong>Thanh toán trực tiếp tại sạp chợ</strong>
+                  <strong>{t("cartCashPledgeTitle", "Thanh toán trực tiếp tại sạp chợ")}</strong>
                   <p>
-                    Khi ra chợ nhận hàng, bạn được tận mắt kiểm tra độ tươi ngon
-                    rồi mới thanh toán tiền mặt hoặc quét mã VietQR cho chủ sạp.
+                    {t(
+                      "cartCashPledgeDesc",
+                      "Khi ra chợ nhận hàng, bạn được tận mắt kiểm tra độ tươi ngon rồi mới thanh toán tiền mặt hoặc quét mã VietQR cho chủ sạp."
+                    )}
                   </p>
                 </div>
               </div>
@@ -360,7 +367,7 @@ export default function CartDrawer({
         {cartItems.length > 0 && (
           <div className="ml-cart-footer">
             <div className="ml-cart-summary-row">
-              <span className="ml-summary-label">Tổng tiền tạm tính:</span>
+              <span className="ml-summary-label">{t("cartSubtotal", "Tổng tiền tạm tính:")}</span>
               <span className="ml-summary-amount">
                 {formatCurrency(totalAmount)}
               </span>
@@ -375,7 +382,7 @@ export default function CartDrawer({
                 onClick={handleSubmit}
                 icon={<span>✓</span>}
               >
-                Xác nhận đặt trước ({formatCurrency(totalAmount)})
+                {t("cartConfirmOrder", "Xác nhận đặt trước")} ({formatCurrency(totalAmount)})
               </Button>
             ) : (
               <Button
@@ -387,12 +394,12 @@ export default function CartDrawer({
                 }}
                 icon={<span>🔑</span>}
               >
-                Đăng nhập để đặt trước
+                {t("cartLoginToOrder", "Đăng nhập để đặt trước")}
               </Button>
             )}
 
             <div className="ml-cart-guarantee">
-              🌿 Không cần thẻ ngân hàng • Giữ nông sản tươi tới khi bạn đến
+              {t("cartPledgeGuarantee", "🌿 Không cần thẻ ngân hàng • Giữ nông sản tươi tới khi bạn đến")}
             </div>
           </div>
         )}

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "@/assets/styles/layout/Header.css";
 import NotificationBell from "./NotificationBell";
+import { useLanguage } from "@/context";
+
 export default function Header({
   currentRole = "GUEST",
   userName = "Khách vãng lai",
@@ -22,6 +24,7 @@ export default function Header({
   theme = "light",
   onToggleTheme,
 }) {
+  const { language, isEn, toggleLanguage, t } = useLanguage();
   const [showLocationMenu, setShowLocationMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -34,28 +37,28 @@ export default function Header({
   ];
   const roleLabels = {
     GUEST: {
-      label: "Khách vãng lai",
+      label: t("roleGuest", "Khách vãng lai"),
       icon: "👤",
       color: "neutral",
     },
     CUSTOMER: {
-      label: "Khách hàng",
+      label: t("roleCustomer", "Khách hàng"),
       icon: "🛒",
       color: "primary",
     },
     FARMER: {
-      label: "Nông dân (Chủ sạp)",
+      label: t("roleFarmer", "Nông dân (Chủ sạp)"),
       icon: "👨‍🌾",
       color: "accent",
     },
     ADMIN: {
-      label: "Quản trị viên",
+      label: t("roleAdmin", "Quản trị viên"),
       icon: "🛡️",
       color: "dark",
     },
   };
   const formatName = (name) => {
-    if (!name || name === "Khách vãng lai") return "Khách vãng lai";
+    if (!name || name === "Khách vãng lai" || name === "Guest") return isEn ? "Guest" : "Khách vãng lai";
     return name
       .replace(/Nguy\?n\s*Nh\?t\s*Quang/gi, "Nguyễn Nhựt Quang")
       .replace(/Nguy\?n/gi, "Nguyễn")
@@ -75,7 +78,7 @@ export default function Header({
             type="button"
             className="ml-mobile-toggle"
             onClick={onOpenMobileMenu}
-            aria-label="Mở menu điều hướng"
+            aria-label={isEn ? "Open navigation menu" : "Mở menu điều hướng"}
           >
             <span className="ml-hamburger-bar" />
             <span className="ml-hamburger-bar" />
@@ -121,7 +124,9 @@ export default function Header({
               <span className="ml-brand-title">
                 Market<span className="ml-brand-title-accent">Link</span>
               </span>
-              <span className="ml-brand-tagline">Nông sản chợ phiên</span>
+              <span className="ml-brand-tagline">
+                {t("brandTagline", "Nông sản chợ phiên")}
+              </span>
             </div>
           </div>
 
@@ -138,7 +143,9 @@ export default function Header({
 
             {showLocationMenu && (
               <div className="ml-location-dropdown">
-                <div className="ml-dropdown-header">Chọn khu vực của bạn:</div>
+                <div className="ml-dropdown-header">
+                  {t("selectLocation", "Chọn khu vực của bạn:")}
+                </div>
                 {locations.map((loc) => (
                   <button
                     key={loc}
@@ -169,31 +176,31 @@ export default function Header({
                   className={`ml-nav-link ${activeNav === "home" ? "active" : ""}`}
                   onClick={() => onNavigate("home")}
                 >
-                  Trang chủ
+                  {t("navHome", "Trang chủ")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "markets" ? "active" : ""}`}
                   onClick={() => onNavigate("markets")}
-                  title="Khám phá các phiên chợ nông sản"
+                  title={isEn ? "Explore farmers' markets" : "Khám phá các phiên chợ nông sản"}
                 >
-                  Chợ phiên
+                  {t("navMarkets", "Chợ phiên")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "products" ? "active" : ""}`}
                   onClick={() => onNavigate("products")}
-                  title="Nông sản sạch theo mùa vụ"
+                  title={isEn ? "Seasonal clean produce" : "Nông sản sạch theo mùa vụ"}
                 >
-                  Nông sản
+                  {t("navProducts", "Nông sản")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "farmers" ? "active" : ""}`}
                   onClick={() => onNavigate("farmers")}
-                  title="Gian hàng các nông hộ địa phương"
+                  title={isEn ? "Local farmer stalls" : "Gian hàng các nông hộ địa phương"}
                 >
-                  Gian hàng
+                  {t("navStalls", "Gian hàng")}
                 </button>
                 {currentRole === "CUSTOMER" && (
                   <>
@@ -201,17 +208,17 @@ export default function Header({
                       type="button"
                       className={`ml-nav-link ${activeNav === "orders" ? "active" : ""}`}
                       onClick={() => onNavigate("orders")}
-                      title="Danh sách đơn đặt trước của tôi"
+                      title={isEn ? "My pre-orders" : "Danh sách đơn đặt trước của tôi"}
                     >
-                      Đơn hàng
+                      {t("navOrders", "Đơn hàng")}
                     </button>
                     <button
                       type="button"
                       className={`ml-nav-link ml-nav-desktop-extra ${activeNav === "dashboard" ? "active" : ""}`}
                       onClick={() => onNavigate("dashboard")}
-                      title="Trang quản lý cá nhân"
+                      title={isEn ? "Personal dashboard" : "Trang quản lý cá nhân"}
                     >
-                      Cá nhân
+                      {t("navDashboard", "Cá nhân")}
                     </button>
                   </>
                 )}
@@ -224,49 +231,49 @@ export default function Header({
                   type="button"
                   className={`ml-nav-link ${activeNav === "farmer-dashboard" ? "active" : ""}`}
                   onClick={() => onNavigate("farmer-dashboard")}
-                  title="Bảng tổng quan doanh số và sạp hàng"
+                  title={isEn ? "Sales & stall overview" : "Bảng tổng quan doanh số và sạp hàng"}
                 >
-                  📊 Tổng quan
+                  📊 {t("navFarmerDashboard", "Tổng quan")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "farmer-orders" ? "active" : ""}`}
                   onClick={() => onNavigate("farmer-orders")}
-                  title="Danh sách đơn khách đặt trước"
+                  title={isEn ? "Customer pre-orders" : "Danh sách đơn khách đặt trước"}
                 >
-                  📦 Đơn đặt
+                  📦 {t("navFarmerOrders", "Đơn đặt")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "farmer-inventory" ? "active" : ""}`}
                   onClick={() => onNavigate("farmer-inventory")}
-                  title="Quản lý kho nông sản & định mức sạp"
+                  title={isEn ? "Inventory & quotas" : "Quản lý kho nông sản & định mức sạp"}
                 >
-                  🥬 Kho hàng
+                  🥬 {t("navFarmerInventory", "Kho hàng")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "farmer-stall" ? "active" : ""}`}
                   onClick={() => onNavigate("farmer-stall")}
-                  title="Hồ sơ sạp và đăng ký phiên chợ"
+                  title={isEn ? "Stall profile & registration" : "Hồ sơ sạp và đăng ký phiên chợ"}
                 >
-                  🎪 Sạp hàng
+                  🎪 {t("navFarmerStall", "Sạp hàng")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "farmer-reviews" ? "active" : ""}`}
                   onClick={() => onNavigate("farmer-reviews")}
-                  title="Đánh giá từ khách hàng"
+                  title={isEn ? "Customer reviews" : "Đánh giá từ khách hàng"}
                 >
-                  💬 Đánh giá
+                  💬 {t("navFarmerReviews", "Đánh giá")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "markets" ? "active" : ""}`}
                   onClick={() => onNavigate("markets")}
-                  title="Xem các phiên chợ đang mở"
+                  title={isEn ? "View active markets" : "Xem các phiên chợ đang mở"}
                 >
-                  🏪 Xem chợ
+                  🏪 {t("navViewMarket", "Xem chợ")}
                 </button>
               </>
             )}
@@ -277,49 +284,49 @@ export default function Header({
                   type="button"
                   className={`ml-nav-link ${activeNav === "admin-dashboard" ? "active" : ""}`}
                   onClick={() => onNavigate("admin-dashboard")}
-                  title="Bảng điều hành tổng quan hệ thống"
+                  title={isEn ? "System overview" : "Bảng điều hành tổng quan hệ thống"}
                 >
-                  📊 Tổng quan
+                  📊 {t("navAdminDashboard", "Tổng quan")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "admin-markets" ? "active" : ""}`}
                   onClick={() => onNavigate("admin-markets")}
-                  title="Quản lý các phiên chợ và phân bổ sạp"
+                  title={isEn ? "Manage markets & allocations" : "Quản lý các phiên chợ và phân bổ sạp"}
                 >
-                  🎪 Chợ & Sạp
+                  🎪 {t("navAdminMarkets", "Chợ & Sạp")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "admin-users" ? "active" : ""}`}
                   onClick={() => onNavigate("admin-users")}
-                  title="Thẩm định hồ sơ nông hộ & Quản lý người dùng"
+                  title={isEn ? "User moderation & KYC" : "Thẩm định hồ sơ nông hộ & Quản lý người dùng"}
                 >
-                  👥 Người dùng & KYC
+                  👥 {t("navAdminUsers", "Người dùng & KYC")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "admin-orders" ? "active" : ""}`}
                   onClick={() => onNavigate("admin-orders")}
-                  title="Giám sát đơn đặt trước toàn sàn"
+                  title={isEn ? "Platform-wide orders" : "Giám sát đơn đặt trước toàn sàn"}
                 >
-                  📦 Đơn toàn sàn
+                  📦 {t("navAdminOrders", "Đơn toàn sàn")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "admin-content" ? "active" : ""}`}
                   onClick={() => onNavigate("admin-content")}
-                  title="Kiểm duyệt đánh giá, danh mục & thông báo"
+                  title={isEn ? "Moderate reviews & announcements" : "Kiểm duyệt đánh giá, danh mục & thông báo"}
                 >
-                  🛡️ Kiểm duyệt
+                  🛡️ {t("navAdminContent", "Kiểm duyệt")}
                 </button>
                 <button
                   type="button"
                   className={`ml-nav-link ${activeNav === "home" ? "active" : ""}`}
                   onClick={() => onNavigate("home")}
-                  title="Xem trang chủ góc nhìn người mua"
+                  title={isEn ? "View customer homepage" : "Xem trang chủ góc nhìn người mua"}
                 >
-                  🏠 Xem chợ
+                  🏠 {t("navViewMarket", "Xem chợ")}
                 </button>
               </>
             )}
@@ -328,15 +335,27 @@ export default function Header({
 
         <div className="ml-header-right">
           <button
+            id="ml-header-lang-btn"
+            type="button"
+            className="ml-lang-toggle"
+            onClick={toggleLanguage}
+            aria-label={t("languageToggle")}
+            title={isEn ? "Chuyển sang Tiếng Việt (VI)" : "Switch to English (EN)"}
+          >
+            <span className="ml-lang-flag">{isEn ? "🇬🇧" : "🇻🇳"}</span>
+            <span className="ml-lang-code">{isEn ? "EN" : "VI"}</span>
+          </button>
+
+          <button
             type="button"
             className="ml-theme-toggle"
             onClick={onToggleTheme}
             aria-label={
               theme === "dark"
-                ? "Chuyển sang giao diện sáng"
-                : "Chuyển sang giao diện tối"
+                ? t("themeToggleLight", "Chuyển sang giao diện sáng")
+                : t("themeToggleDark", "Chuyển sang giao diện tối")
             }
-            title="Đổi giao diện sáng / tối"
+            title={t("themeToggleDark", "Đổi giao diện sáng / tối")}
           >
             <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
           </button>
@@ -346,7 +365,7 @@ export default function Header({
               type="button"
               className="ml-cart-trigger"
               onClick={onOpenCart}
-              aria-label={`Giỏ hàng đặt trước với ${cartCount} sản phẩm`}
+              aria-label={isEn ? `Pre-order cart with ${cartCount} items` : `Giỏ hàng đặt trước với ${cartCount} sản phẩm`}
             >
               <div className="ml-cart-icon-wrap">
                 <svg
@@ -369,7 +388,7 @@ export default function Header({
                   </span>
                 )}
               </div>
-              <span className="ml-cart-label">Giỏ đặt trước</span>
+              <span className="ml-cart-label">{t("cartTitle", "Giỏ đặt trước")}</span>
             </button>
           )}
 
@@ -391,7 +410,7 @@ export default function Header({
                 type="button"
                 className={`ml-header-user-btn ml-header-user-btn--${roleLabels[currentRole]?.color || "primary"} ${showUserMenu ? "active" : ""}`}
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                title="Tài khoản cá nhân & Đăng xuất"
+                title={isEn ? "Personal Account & Logout" : "Tài khoản cá nhân & Đăng xuất"}
                 aria-expanded={showUserMenu}
               >
                 <div className="ml-header-avatar">{avatarLetter}</div>
@@ -440,7 +459,7 @@ export default function Header({
                             setShowUserMenu(false);
                           }}
                         >
-                          <span>👤</span> Dashboard cá nhân
+                          <span>👤</span> {isEn ? "Personal Dashboard" : "Dashboard cá nhân"}
                         </button>
                         <button
                           type="button"
@@ -450,7 +469,7 @@ export default function Header({
                             setShowUserMenu(false);
                           }}
                         >
-                          <span>📦</span> Đơn đặt trước của tôi
+                          <span>📦</span> {isEn ? "My Pre-orders" : "Đơn đặt trước của tôi"}
                         </button>
                       </>
                     )}
@@ -465,7 +484,7 @@ export default function Header({
                             setShowUserMenu(false);
                           }}
                         >
-                          <span>📊</span> Tổng quan hoạt động sạp
+                          <span>📊</span> {isEn ? "Stall Operations Overview" : "Tổng quan hoạt động sạp"}
                         </button>
                         <button
                           type="button"
@@ -475,7 +494,7 @@ export default function Header({
                             setShowUserMenu(false);
                           }}
                         >
-                          <span>🥬</span> Kho nông sản & định mức
+                          <span>🥬</span> {isEn ? "Produce Inventory & Quotas" : "Kho nông sản & định mức"}
                         </button>
                       </>
                     )}
@@ -490,7 +509,7 @@ export default function Header({
                             setShowUserMenu(false);
                           }}
                         >
-                          <span>📊</span> Bảng điều hành tổng quan sàn
+                          <span>📊</span> {isEn ? "System Operations Dashboard" : "Bảng điều hành tổng quan sàn"}
                         </button>
                         <button
                           type="button"
@@ -500,7 +519,7 @@ export default function Header({
                             setShowUserMenu(false);
                           }}
                         >
-                          <span>🎪</span> Quản lý các phiên chợ
+                          <span>🎪</span> {isEn ? "Manage Markets" : "Quản lý các phiên chợ"}
                         </button>
                       </>
                     )}
@@ -514,7 +533,7 @@ export default function Header({
                         if (onLogout) onLogout();
                       }}
                     >
-                      <span>🚪</span> Đăng xuất tài khoản
+                      <span>🚪</span> {t("logout", isEn ? "Sign out" : "Đăng xuất tài khoản")}
                     </button>
                   </div>
                 </div>
@@ -527,14 +546,14 @@ export default function Header({
                 className="ml-login-action-btn"
                 onClick={() => onOpenAuthModal && onOpenAuthModal("LOGIN")}
               >
-                Đăng nhập
+                {t("login", "Đăng nhập")}
               </button>
               <button
                 type="button"
                 className="ml-register-action-btn"
                 onClick={() => onOpenAuthModal && onOpenAuthModal("REGISTER")}
               >
-                Đăng ký
+                {t("register", "Đăng ký")}
               </button>
             </div>
           )}
