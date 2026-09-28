@@ -30,6 +30,7 @@ export async function apiRequest(
     ? endpoint
     : `${BASE_URL}${cleanEndpoint.startsWith("/") ? "" : "/"}${cleanEndpoint}`;
   const requestHeaders = {
+    "ngrok-skip-browser-warning": "true",
     ...headers,
   };
   const activeToken =
@@ -79,8 +80,12 @@ export async function apiRequest(
   } catch (err) {
     console.warn(`[API ${method}] ${url} failed:`, err.message);
     if (err.message === "Failed to fetch") {
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const isHttpTarget = url.startsWith("http://");
       const friendlyErr = new Error(
-        "Không thể kết nối đến máy chủ Backend (Port 8081). Vui lòng đảm bảo Spring Boot backend đang chạy.",
+        isHttps && isHttpTarget
+          ? "Trình duyệt đang chặn gọi HTTP từ HTTPS (Mixed Content). Hãy bấm vào icon Cài đặt bên trái thanh URL -> Cho phép 'Nội dung không an toàn' (Insecure content) để kết nối backend 172.16.2.89."
+          : "Không thể kết nối đến máy chủ Backend (Port 8081). Vui lòng đảm bảo Spring Boot backend đang chạy.",
       );
       friendlyErr.status = 0;
       throw friendlyErr;
