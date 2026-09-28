@@ -12,6 +12,7 @@ export const translations = {
     navMarkets: "Chợ phiên",
     navProducts: "Nông sản",
     navStalls: "Gian hàng",
+    navAnnouncements: "Bảng tin",
     navOrders: "Đơn hàng",
     navDashboard: "Cá nhân",
 
@@ -443,6 +444,7 @@ export const translations = {
     navMarkets: "Markets",
     navProducts: "Produce",
     navStalls: "Stalls",
+    navAnnouncements: "Announcements",
     navOrders: "Orders",
     navDashboard: "Account",
 

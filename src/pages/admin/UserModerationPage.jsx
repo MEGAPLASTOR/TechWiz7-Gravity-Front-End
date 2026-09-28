@@ -5,8 +5,10 @@ import Badge from "../../components/common/Badge";
 import Modal from "../../components/common/Modal";
 import Pagination from "../../components/common/Pagination";
 import adminService from "../../services/adminService";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function UserModerationPage({ onNavigate }) {
+  const { isEn } = useLanguage();
   const [mainTab, setMainTab] = useState("users");
   const [users, setUsers] = useState([]);
   const [usersPage, setUsersPage] = useState(1);
@@ -74,7 +76,12 @@ export default function UserModerationPage({ onNavigate }) {
       setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.warn("Failed to load users", err);
-      showToast("error", "Không thể tải danh sách người dùng từ máy chủ.");
+      showToast(
+        "error",
+        isEn
+          ? "Failed to load users list from server."
+          : "Không thể tải danh sách người dùng từ máy chủ.",
+      );
     } finally {
       setLoadingUsers(false);
     }
@@ -86,7 +93,12 @@ export default function UserModerationPage({ onNavigate }) {
       setKycList(Array.isArray(data) ? data : []);
     } catch (err) {
       console.warn("Failed to load KYC pending list", err);
-      showToast("error", "Không thể tải danh sách hồ sơ KYC chờ duyệt.");
+      showToast(
+        "error",
+        isEn
+          ? "Failed to load pending KYC documents list."
+          : "Không thể tải danh sách hồ sơ KYC chờ duyệt.",
+      );
     } finally {
       setLoadingKyc(false);
     }
@@ -114,7 +126,8 @@ export default function UserModerationPage({ onNavigate }) {
     } catch (err) {
       showToast(
         "error",
-        "Không thể tải chi tiết người dùng: " + (err.message || ""),
+        (isEn ? "Failed to load user details: " : "Không thể tải chi tiết người dùng: ") +
+          (err.message || ""),
       );
     }
   };
@@ -135,14 +148,16 @@ export default function UserModerationPage({ onNavigate }) {
       );
       showToast(
         "success",
-        `Đã ${newStatus === "ACTIVE" ? "kích hoạt lại" : "tạm khóa"} tài khoản #${userStatusTarget.userId} thành công.`,
+        isEn
+          ? `Successfully ${newStatus === "ACTIVE" ? "reactivated" : "suspended"} account #${userStatusTarget.userId}.`
+          : `Đã ${newStatus === "ACTIVE" ? "kích hoạt lại" : "tạm khóa"} tài khoản #${userStatusTarget.userId} thành công.`,
       );
       setIsUserStatusModalOpen(false);
       loadUsers();
     } catch (err) {
       showToast(
         "error",
-        "Lỗi cập nhật trạng thái: " +
+        (isEn ? "Status update error: " : "Lỗi cập nhật trạng thái: ") +
           (err.response?.data?.message || err.message),
       );
     }
@@ -164,7 +179,11 @@ export default function UserModerationPage({ onNavigate }) {
         return Object.values(errMap).join("; ");
       }
     }
-    return err.response?.data?.message || err.message || "Lỗi không xác định";
+    return (
+      err.response?.data?.message ||
+      err.message ||
+      (isEn ? "Unknown error" : "Lỗi không xác định")
+    );
   };
   const handleOpenApproveModal = (farmer) => {
     setApproveTarget(farmer);
@@ -177,18 +196,26 @@ export default function UserModerationPage({ onNavigate }) {
       await adminService.reviewFarmerKyc(
         farmerId,
         "APPROVE",
-        "Hồ sơ chứng nhận VietGAP hợp lệ.",
+        isEn
+          ? "Valid VietGAP certification document."
+          : "Hồ sơ chứng nhận VietGAP hợp lệ.",
       );
       showToast(
         "success",
-        `Đã phê duyệt KYC thành công cho nông dân #${farmerId}. Sạp hàng đã được kích hoạt!`,
+        isEn
+          ? `Successfully approved KYC for farmer #${farmerId}. Market stall is now activated!`
+          : `Đã phê duyệt KYC thành công cho nông dân #${farmerId}. Sạp hàng đã được kích hoạt!`,
       );
       setIsApproveModalOpen(false);
       setApproveTarget(null);
       setIsKycDetailModalOpen(false);
       loadKyc();
     } catch (err) {
-      showToast("error", "Lỗi phê duyệt: " + extractErrorMessage(err));
+      showToast(
+        "error",
+        (isEn ? "Approval error: " : "Lỗi phê duyệt: ") +
+          extractErrorMessage(err),
+      );
     }
   };
   const handleOpenRejectModal = (farmer) => {
@@ -199,7 +226,12 @@ export default function UserModerationPage({ onNavigate }) {
   const handleConfirmRejectKyc = async (actionType = "REJECT") => {
     if (!selectedFarmerKyc) return;
     if (!rejectReason.trim()) {
-      showToast("error", "Vui lòng nhập lý do để phản hồi cho nông dân!");
+      showToast(
+        "error",
+        isEn
+          ? "Please enter a reason to provide feedback to the farmer!"
+          : "Vui lòng nhập lý do để phản hồi cho nông dân!",
+      );
       return;
     }
     try {
@@ -210,34 +242,40 @@ export default function UserModerationPage({ onNavigate }) {
       );
       showToast(
         "success",
-        `Đã gửi kết quả [${actionType}] hồ sơ tới nông dân #${selectedFarmerKyc.farmerId}.`,
+        isEn
+          ? `Sent [${actionType}] result to farmer #${selectedFarmerKyc.farmerId}.`
+          : `Đã gửi kết quả [${actionType}] hồ sơ tới nông dân #${selectedFarmerKyc.farmerId}.`,
       );
       setIsRejectModalOpen(false);
       setIsKycDetailModalOpen(false);
       loadKyc();
     } catch (err) {
-      showToast("error", "Lỗi xử lý hồ sơ: " + extractErrorMessage(err));
+      showToast(
+        "error",
+        (isEn ? "Document processing error: " : "Lỗi xử lý hồ sơ: ") +
+          extractErrorMessage(err),
+      );
     }
   };
   const renderRoleBadges = (roles = []) => {
     if (!roles || roles.length === 0)
-      return <Badge variant="neutral">Khách hàng</Badge>;
+      return <Badge variant="neutral">{isEn ? "Customer" : "Khách hàng"}</Badge>;
     return roles.map((r, i) => {
       if (r === "ROLE_ADMIN" || r === "ADMIN")
         return (
           <Badge key={i} variant="accent">
-            🛡️ Quản trị viên
+            🛡️ {isEn ? "Admin" : "Quản trị viên"}
           </Badge>
         );
       if (r === "ROLE_FARMER" || r === "FARMER")
         return (
           <Badge key={i} variant="organic">
-            👨‍🌾 Nông dân
+            👨‍🌾 {isEn ? "Farmer" : "Nông dân"}
           </Badge>
         );
       return (
         <Badge key={i} variant="primary">
-          🛒 Khách hàng
+          🛒 {isEn ? "Customer" : "Khách hàng"}
         </Badge>
       );
     });
@@ -246,25 +284,41 @@ export default function UserModerationPage({ onNavigate }) {
     if (status === "ACTIVE")
       return (
         <Badge variant="ready" dot>
-          Đang hoạt động
+          {isEn ? "Active" : "Đang hoạt động"}
         </Badge>
       );
     return (
       <Badge variant="cancelled" dot>
-        Tạm khóa
+        {isEn ? "Suspended" : "Tạm khóa"}
       </Badge>
     );
   };
   const renderKycBadge = (kycStatus) => {
     switch (kycStatus) {
       case "VERIFIED":
-        return <Badge variant="ready">✓ Đã định danh (VERIFIED)</Badge>;
+        return (
+          <Badge variant="ready">
+            {isEn ? "✓ Verified (VERIFIED)" : "✓ Đã định danh (VERIFIED)"}
+          </Badge>
+        );
       case "PENDING":
-        return <Badge variant="pending">⏳ Chờ duyệt (PENDING)</Badge>;
+        return (
+          <Badge variant="pending">
+            {isEn ? "⏳ Pending (PENDING)" : "⏳ Chờ duyệt (PENDING)"}
+          </Badge>
+        );
       case "REJECTED":
-        return <Badge variant="cancelled">✕ Bị từ chối (REJECTED)</Badge>;
+        return (
+          <Badge variant="cancelled">
+            {isEn ? "✕ Rejected (REJECTED)" : "✕ Bị từ chối (REJECTED)"}
+          </Badge>
+        );
       default:
-        return <Badge variant="neutral">Chưa định danh</Badge>;
+        return (
+          <Badge variant="neutral">
+            {isEn ? "Unverified" : "Chưa định danh"}
+          </Badge>
+        );
     }
   };
   const filteredKycList = kycList;
@@ -310,25 +364,34 @@ export default function UserModerationPage({ onNavigate }) {
                 color: "#86efac",
               }}
             >
-              Ban Quản Trị Hệ Thống MarketLink
+              {isEn
+                ? "MarketLink System Administration"
+                : "Ban Quản Trị Hệ Thống MarketLink"}
             </span>
             <h1 className="ml-mod-title">
-              Quản Lý Người Dùng & Thẩm Định Nông Hộ
+              {isEn
+                ? "User Management & Farmer Moderation"
+                : "Quản Lý Người Dùng & Thẩm Định Nông Hộ"}
             </h1>
             <p className="ml-mod-desc">
-              Tra cứu tài khoản toàn sàn, kiểm soát quyền truy cập, xác thực
-              giấy tờ chứng nhận VietGAP / Hữu cơ và cấp quyền mở sạp chợ phiên.
+              {isEn
+                ? "Search platform accounts, regulate access permissions, verify VietGAP / Organic certifications, and authorize market stall operations."
+                : "Tra cứu tài khoản toàn sàn, kiểm soát quyền truy cập, xác thực giấy tờ chứng nhận VietGAP / Hữu cơ và cấp quyền mở sạp chợ phiên."}
             </p>
           </div>
 
           <div className="ml-mod-stats-strip">
             <div className="ml-mod-stat-pill">
               <span className="ml-mod-stat-num">{users.length}</span>
-              <span className="ml-mod-stat-lbl">Tài khoản</span>
+              <span className="ml-mod-stat-lbl">
+                {isEn ? "Accounts" : "Tài khoản"}
+              </span>
             </div>
             <div className="ml-mod-stat-pill">
               <span className="ml-mod-stat-num">{kycList.length}</span>
-              <span className="ml-mod-stat-lbl">Hồ sơ chờ duyệt</span>
+              <span className="ml-mod-stat-lbl">
+                {isEn ? "Pending KYC" : "Hồ sơ chờ duyệt"}
+              </span>
             </div>
           </div>
         </div>
@@ -343,7 +406,9 @@ export default function UserModerationPage({ onNavigate }) {
               onClick={() => setMainTab("users")}
             >
               <span className="ml-user-mod-tab-icon">👥</span>
-              <span className="ml-user-mod-tab-label">Người dùng hệ thống</span>
+              <span className="ml-user-mod-tab-label">
+                {isEn ? "System Users" : "Người dùng hệ thống"}
+              </span>
               <span className="ml-tab-badge ml-tab-badge-users">
                 {users.length}
               </span>
@@ -355,12 +420,16 @@ export default function UserModerationPage({ onNavigate }) {
             >
               <span className="ml-user-mod-tab-icon">📜</span>
               <span className="ml-user-mod-tab-label">
-                Thẩm định hồ sơ VietGAP
+                {isEn
+                  ? "VietGAP KYC Verification"
+                  : "Thẩm định hồ sơ VietGAP"}
               </span>
               <span
                 className={`ml-tab-badge ${kycList.length > 0 ? "ml-tab-badge-kyc-alert" : "ml-tab-badge-kyc"}`}
               >
-                {kycList.length} chờ duyệt
+                {isEn
+                  ? `${kycList.length} pending`
+                  : `${kycList.length} chờ duyệt`}
               </span>
             </button>
           </div>
@@ -374,12 +443,18 @@ export default function UserModerationPage({ onNavigate }) {
                   <div className="ml-filter-card-icon-badge">🔍</div>
                   <div>
                     <h3 className="ml-filter-card-title">
-                      Bộ Lọc & Tra Cứu Tài Khoản
+                      {isEn
+                        ? "Filter & Search Accounts"
+                        : "Bộ Lọc & Tra Cứu Tài Khoản"}
                     </h3>
                     <p className="ml-filter-card-subtitle">
                       {loadingUsers
-                        ? "Đang tìm kiếm dữ liệu..."
-                        : `Tìm thấy ${users.length} tài khoản phù hợp với điều kiện`}
+                        ? isEn
+                          ? "Searching data..."
+                          : "Đang tìm kiếm dữ liệu..."
+                        : isEn
+                          ? `Found ${users.length} accounts matching filters`
+                          : `Tìm thấy ${users.length} tài khoản phù hợp với điều kiện`}
                     </p>
                   </div>
                 </div>
@@ -390,21 +465,25 @@ export default function UserModerationPage({ onNavigate }) {
                       type="button"
                       className="ml-filter-reset-btn"
                       onClick={handleResetUserFilters}
-                      title="Xóa tất cả bộ lọc về mặc định"
+                      title={
+                        isEn
+                          ? "Clear all filters to default"
+                          : "Xóa tất cả bộ lọc về mặc định"
+                      }
                     >
                       <span className="ml-reset-icon">✕</span>
-                      <span>Xóa bộ lọc</span>
+                      <span>{isEn ? "Clear filters" : "Xóa bộ lọc"}</span>
                     </button>
                   )}
                   <button
                     type="button"
                     className="ml-filter-reload-btn"
                     onClick={loadUsers}
-                    title="Tải lại dữ liệu"
+                    title={isEn ? "Reload data" : "Tải lại dữ liệu"}
                     disabled={loadingUsers}
                   >
                     <span className={loadingUsers ? "ml-spin" : ""}>🔄</span>
-                    <span>Làm mới</span>
+                    <span>{isEn ? "Refresh" : "Làm mới"}</span>
                   </button>
                 </div>
               </div>
@@ -412,8 +491,8 @@ export default function UserModerationPage({ onNavigate }) {
               <div className="ml-user-filter-grid">
                 <div className="ml-filter-field ml-filter-field-search">
                   <label className="ml-filter-label">
-                    <span className="ml-label-icon">🔎</span> Tìm kiếm người
-                    dùng
+                    <span className="ml-label-icon">🔎</span>{" "}
+                    {isEn ? "Search users" : "Tìm kiếm người dùng"}
                   </label>
                   <div className="ml-search-input-wrapper">
                     <span className="ml-search-leading-icon">
@@ -434,7 +513,11 @@ export default function UserModerationPage({ onNavigate }) {
                     <input
                       type="text"
                       className="ml-filter-input"
-                      placeholder="Nhập tên, email, SĐT..."
+                      placeholder={
+                        isEn
+                          ? "Enter name, email, phone..."
+                          : "Nhập tên, email, SĐT..."
+                      }
                       value={userFilters.keyword}
                       onChange={(e) =>
                         setUserFilters({
@@ -453,7 +536,7 @@ export default function UserModerationPage({ onNavigate }) {
                             keyword: "",
                           })
                         }
-                        title="Xóa tìm kiếm"
+                        title={isEn ? "Clear search" : "Xóa tìm kiếm"}
                       >
                         ✕
                       </button>
@@ -463,7 +546,8 @@ export default function UserModerationPage({ onNavigate }) {
 
                 <div className="ml-filter-field">
                   <label className="ml-filter-label">
-                    <span className="ml-label-icon">🎭</span> Vai trò tài khoản
+                    <span className="ml-label-icon">🎭</span>{" "}
+                    {isEn ? "Account role" : "Vai trò tài khoản"}
                   </label>
                   <div className="ml-select-wrapper">
                     <select
@@ -480,10 +564,24 @@ export default function UserModerationPage({ onNavigate }) {
                         })
                       }
                     >
-                      <option value="ALL">Tất cả vai trò</option>
-                      <option value="FARMER">👨‍🌾 Nông dân (FARMER)</option>
-                      <option value="CUSTOMER">🛒 Khách hàng (CUSTOMER)</option>
-                      <option value="ADMIN">🛡️ Quản trị viên (ADMIN)</option>
+                      <option value="ALL">
+                        {isEn ? "All roles" : "Tất cả vai trò"}
+                      </option>
+                      <option value="FARMER">
+                        {isEn
+                          ? "👨‍🌾 Farmer (FARMER)"
+                          : "👨‍🌾 Nông dân (FARMER)"}
+                      </option>
+                      <option value="CUSTOMER">
+                        {isEn
+                          ? "🛒 Customer (CUSTOMER)"
+                          : "🛒 Khách hàng (CUSTOMER)"}
+                      </option>
+                      <option value="ADMIN">
+                        {isEn
+                          ? "🛡️ Administrator (ADMIN)"
+                          : "🛡️ Quản trị viên (ADMIN)"}
+                      </option>
                     </select>
                     <span className="ml-select-arrow">▼</span>
                   </div>
@@ -491,8 +589,8 @@ export default function UserModerationPage({ onNavigate }) {
 
                 <div className="ml-filter-field">
                   <label className="ml-filter-label">
-                    <span className="ml-label-icon">⚡</span> Trạng thái tài
-                    khoản
+                    <span className="ml-label-icon">⚡</span>{" "}
+                    {isEn ? "Account status" : "Trạng thái tài khoản"}
                   </label>
                   <div className="ml-select-wrapper">
                     <select
@@ -505,10 +603,18 @@ export default function UserModerationPage({ onNavigate }) {
                         })
                       }
                     >
-                      <option value="ALL">Tất cả trạng thái</option>
-                      <option value="ACTIVE">🟢 Đang hoạt động (ACTIVE)</option>
+                      <option value="ALL">
+                        {isEn ? "All statuses" : "Tất cả trạng thái"}
+                      </option>
+                      <option value="ACTIVE">
+                        {isEn
+                          ? "🟢 Active (ACTIVE)"
+                          : "🟢 Đang hoạt động (ACTIVE)"}
+                      </option>
                       <option value="SUSPENDED">
-                        🔴 Bị tạm khóa (SUSPENDED)
+                        {isEn
+                          ? "🔴 Suspended (SUSPENDED)"
+                          : "🔴 Bị tạm khóa (SUSPENDED)"}
                       </option>
                     </select>
                     <span className="ml-select-arrow">▼</span>
@@ -517,7 +623,8 @@ export default function UserModerationPage({ onNavigate }) {
 
                 <div className="ml-filter-field">
                   <label className="ml-filter-label">
-                    <span className="ml-label-icon">🛡️</span> Định danh KYC
+                    <span className="ml-label-icon">🛡️</span>{" "}
+                    {isEn ? "KYC Verification" : "Định danh KYC"}
                   </label>
                   <div className="ml-select-wrapper">
                     <select
@@ -530,15 +637,29 @@ export default function UserModerationPage({ onNavigate }) {
                         })
                       }
                     >
-                      <option value="ALL">Tất cả KYC</option>
+                      <option value="ALL">
+                        {isEn ? "All KYC" : "Tất cả KYC"}
+                      </option>
                       <option value="VERIFIED">
-                        ✅ Đã xác thực (VERIFIED)
+                        {isEn
+                          ? "✅ Verified (VERIFIED)"
+                          : "✅ Đã xác thực (VERIFIED)"}
                       </option>
-                      <option value="PENDING">⏳ Chờ duyệt (PENDING)</option>
+                      <option value="PENDING">
+                        {isEn
+                          ? "⏳ Pending (PENDING)"
+                          : "⏳ Chờ duyệt (PENDING)"}
+                      </option>
                       <option value="UNVERIFIED">
-                        ⚪ Chưa nộp (UNVERIFIED)
+                        {isEn
+                          ? "⚪ Unverified (UNVERIFIED)"
+                          : "⚪ Chưa nộp (UNVERIFIED)"}
                       </option>
-                      <option value="REJECTED">❌ Bị từ chối (REJECTED)</option>
+                      <option value="REJECTED">
+                        {isEn
+                          ? "❌ Rejected (REJECTED)"
+                          : "❌ Bị từ chối (REJECTED)"}
+                      </option>
                     </select>
                     <span className="ml-select-arrow">▼</span>
                   </div>
@@ -546,14 +667,16 @@ export default function UserModerationPage({ onNavigate }) {
               </div>
 
               <div className="ml-quick-filters-row">
-                <span className="ml-quick-filters-title">Lọc nhanh:</span>
+                <span className="ml-quick-filters-title">
+                  {isEn ? "Quick filter:" : "Lọc nhanh:"}
+                </span>
                 <div className="ml-quick-chips-list">
                   <button
                     type="button"
                     className={`ml-filter-chip ${!hasActiveFilters ? "active" : ""}`}
                     onClick={handleResetUserFilters}
                   >
-                    Tất cả
+                    {isEn ? "All" : "Tất cả"}
                   </button>
                   <button
                     type="button"
@@ -568,7 +691,7 @@ export default function UserModerationPage({ onNavigate }) {
                       });
                     }}
                   >
-                    👨‍🌾 Nông dân
+                    {isEn ? "👨‍🌾 Farmers" : "👨‍🌾 Nông dân"}
                   </button>
                   <button
                     type="button"
@@ -583,7 +706,7 @@ export default function UserModerationPage({ onNavigate }) {
                       });
                     }}
                   >
-                    🛒 Khách hàng
+                    {isEn ? "🛒 Customers" : "🛒 Khách hàng"}
                   </button>
                   <button
                     type="button"
@@ -598,7 +721,7 @@ export default function UserModerationPage({ onNavigate }) {
                       });
                     }}
                   >
-                    🛡️ Quản trị viên
+                    {isEn ? "🛡️ Admins" : "🛡️ Quản trị viên"}
                   </button>
                   <button
                     type="button"
@@ -613,7 +736,7 @@ export default function UserModerationPage({ onNavigate }) {
                       })
                     }
                   >
-                    ⏳ Chờ duyệt KYC
+                    {isEn ? "⏳ Pending KYC" : "⏳ Chờ duyệt KYC"}
                   </button>
                   <button
                     type="button"
@@ -628,7 +751,7 @@ export default function UserModerationPage({ onNavigate }) {
                       })
                     }
                   >
-                    🔴 Bị tạm khóa
+                    {isEn ? "🔴 Suspended" : "🔴 Bị tạm khóa"}
                   </button>
                 </div>
               </div>
@@ -636,7 +759,9 @@ export default function UserModerationPage({ onNavigate }) {
 
             {loadingUsers ? (
               <div className="ml-inv-loading">
-                Đang tải danh sách người dùng từ máy chủ...
+                {isEn
+                  ? "Loading users list from server..."
+                  : "Đang tải danh sách người dùng từ máy chủ..."}
               </div>
             ) : users.length === 0 ? (
               <div
@@ -647,7 +772,9 @@ export default function UserModerationPage({ onNavigate }) {
                   color: "#64748b",
                 }}
               >
-                Không tìm thấy người dùng nào phù hợp với bộ lọc tìm kiếm.
+                {isEn
+                  ? "No users found matching the search filters."
+                  : "Không tìm thấy người dùng nào phù hợp với bộ lọc tìm kiếm."}
               </div>
             ) : (
               <>
@@ -679,42 +806,42 @@ export default function UserModerationPage({ onNavigate }) {
                           padding: "12px 16px",
                         }}
                       >
-                        Mã & Người dùng
+                        {isEn ? "ID & User" : "Mã & Người dùng"}
                       </th>
                       <th
                         style={{
                           padding: "12px 16px",
                         }}
                       >
-                        Liên hệ (Email / SĐT)
+                        {isEn ? "Contact (Email / Phone)" : "Liên hệ (Email / SĐT)"}
                       </th>
                       <th
                         style={{
                           padding: "12px 16px",
                         }}
                       >
-                        Vai trò
+                        {isEn ? "Role" : "Vai trò"}
                       </th>
                       <th
                         style={{
                           padding: "12px 16px",
                         }}
                       >
-                        Trạng thái
+                        {isEn ? "Status" : "Trạng thái"}
                       </th>
                       <th
                         style={{
                           padding: "12px 16px",
                         }}
                       >
-                        Định danh KYC
+                        {isEn ? "KYC Verification" : "Định danh KYC"}
                       </th>
                       <th
                         style={{
                           padding: "12px 16px",
                         }}
                       >
-                        Ngày tạo
+                        {isEn ? "Created Date" : "Ngày tạo"}
                       </th>
                       <th
                         style={{
@@ -722,7 +849,7 @@ export default function UserModerationPage({ onNavigate }) {
                           textAlign: "right",
                         }}
                       >
-                        Thao tác
+                        {isEn ? "Actions" : "Thao tác"}
                       </th>
                     </tr>
                   </thead>
@@ -775,7 +902,7 @@ export default function UserModerationPage({ onNavigate }) {
                                   color: "#1e293b",
                                 }}
                               >
-                                {u.fullName || "Chưa cập nhật tên"}
+                                {u.fullName || (isEn ? "Unnamed user" : "Chưa cập nhật tên")}
                               </div>
                               <div
                                 style={{
@@ -807,7 +934,7 @@ export default function UserModerationPage({ onNavigate }) {
                               color: "#64748b",
                             }}
                           >
-                            {u.phoneNumber || "Chưa có SĐT"}
+                            {u.phoneNumber || (isEn ? "No phone" : "Chưa có SĐT")}
                           </div>
                         </td>
 
@@ -852,7 +979,7 @@ export default function UserModerationPage({ onNavigate }) {
                         >
                           {u.createdAt
                             ? u.createdAt.replace("T", " ").substring(0, 16)
-                            : "Mới tạo"}
+                            : isEn ? "New" : "Mới tạo"}
                         </td>
 
                         <td
@@ -872,7 +999,7 @@ export default function UserModerationPage({ onNavigate }) {
                               size="sm"
                               onClick={() => handleViewUserDetail(u.userId)}
                             >
-                              👁️ Chi tiết
+                              👁️ {isEn ? "Details" : "Chi tiết"}
                             </Button>
                             <Button
                               variant={
@@ -887,7 +1014,9 @@ export default function UserModerationPage({ onNavigate }) {
                               }}
                               onClick={() => handleOpenStatusModal(u)}
                             >
-                              {u.status === "ACTIVE" ? "🔒 Khóa" : "🔓 Mở khóa"}
+                              {u.status === "ACTIVE"
+                                ? (isEn ? "🔒 Suspend" : "🔒 Khóa")
+                                : (isEn ? "🔓 Unsuspend" : "🔓 Mở khóa")}
                             </Button>
                           </div>
                         </td>
@@ -929,12 +1058,16 @@ export default function UserModerationPage({ onNavigate }) {
                   </div>
                   <div>
                     <h3 className="ml-filter-card-title">
-                      Tra Cứu Hồ Sơ VietGAP Chờ Thẩm Định
+                      {isEn
+                        ? "Pending VietGAP KYC Applications"
+                        : "Tra Cứu Hồ Sơ VietGAP Chờ Thẩm Định"}
                     </h3>
                     <p className="ml-filter-card-subtitle">
                       {loadingKyc
-                        ? "Đang tải hồ sơ..."
-                        : `Có ${filteredKycList.length} hồ sơ nông hộ đang chờ duyệt`}
+                        ? (isEn ? "Loading applications..." : "Đang tải hồ sơ...")
+                        : (isEn
+                            ? `${filteredKycList.length} farmer applications pending verification`
+                            : `Có ${filteredKycList.length} hồ sơ nông hộ đang chờ duyệt`)}
                     </p>
                   </div>
                 </div>
@@ -944,11 +1077,11 @@ export default function UserModerationPage({ onNavigate }) {
                     type="button"
                     className="ml-filter-reload-btn"
                     onClick={() => loadKyc(kycSearch)}
-                    title="Tải lại dữ liệu"
+                    title={isEn ? "Reload data" : "Tải lại dữ liệu"}
                     disabled={loadingKyc}
                   >
                     <span className={loadingKyc ? "ml-spin" : ""}>🔄</span>
-                    <span>Làm mới danh sách</span>
+                    <span>{isEn ? "Refresh list" : "Làm mới danh sách"}</span>
                   </button>
                 </div>
               </div>
@@ -983,7 +1116,11 @@ export default function UserModerationPage({ onNavigate }) {
                   <input
                     type="text"
                     className="ml-filter-input"
-                    placeholder="Tìm kiếm nhanh theo tên nông dân, tên gian hàng / sạp, số điện thoại..."
+                    placeholder={
+                      isEn
+                        ? "Quick search by farmer name, stall name, phone number..."
+                        : "Tìm kiếm nhanh theo tên nông dân, tên gian hàng / sạp, số điện thoại..."
+                    }
                     value={kycSearch}
                     onChange={(e) => setKycSearch(e.target.value)}
                   />
@@ -992,7 +1129,7 @@ export default function UserModerationPage({ onNavigate }) {
                       type="button"
                       className="ml-input-clear-btn"
                       onClick={() => setKycSearch("")}
-                      title="Xóa tìm kiếm"
+                      title={isEn ? "Clear search" : "Xóa tìm kiếm"}
                     >
                       ✕
                     </button>
@@ -1002,7 +1139,9 @@ export default function UserModerationPage({ onNavigate }) {
             </div>
 
             {loadingKyc ? (
-              <div className="ml-inv-loading">Đang tải hồ sơ thẩm định...</div>
+              <div className="ml-inv-loading">
+                {isEn ? "Loading applications for verification..." : "Đang tải hồ sơ thẩm định..."}
+              </div>
             ) : filteredKycList.length === 0 ? (
               <div
                 className="ml-card"
@@ -1012,8 +1151,9 @@ export default function UserModerationPage({ onNavigate }) {
                   color: "#64748b",
                 }}
               >
-                🎉 Tuyệt vời! Hiện không có hồ sơ nông hộ nào đang chờ thẩm
-                định.
+                {isEn
+                  ? "🎉 Excellent! There are currently no pending farmer applications."
+                  : "🎉 Tuyệt vời! Hiện không có hồ sơ nông hộ nào đang chờ thẩm định."}
               </div>
             ) : (
               <>
@@ -1050,7 +1190,7 @@ export default function UserModerationPage({ onNavigate }) {
                             color: "#1e293b",
                           }}
                         >
-                          🏡 {k.stallName || "Nông Trại Đăng Ký"}
+                          🏡 {k.stallName || (isEn ? "Registered Farm" : "Nông Trại Đăng Ký")}
                         </h3>
                         <div
                           style={{
@@ -1058,11 +1198,12 @@ export default function UserModerationPage({ onNavigate }) {
                             color: "#64748b",
                           }}
                         >
-                          Chủ sạp: <strong>{k.fullName}</strong> • ID: #
-                          {k.farmerId}
+                          {isEn ? "Stall owner: " : "Chủ sạp: "}<strong>{k.fullName}</strong> • ID: #{k.farmerId}
                         </div>
                       </div>
-                      <Badge variant="pending">Chờ thẩm định</Badge>
+                      <Badge variant="pending">
+                        {isEn ? "Pending Review" : "Chờ thẩm định"}
+                      </Badge>
                     </div>
 
                     <div
@@ -1078,25 +1219,25 @@ export default function UserModerationPage({ onNavigate }) {
                       }}
                     >
                       <div>
-                        📞 <strong>Điện thoại:</strong>{" "}
-                        {k.phoneNumber || "Chưa cung cấp"}
+                        📞 <strong>{isEn ? "Phone:" : "Điện thoại:"}</strong>{" "}
+                        {k.phoneNumber || (isEn ? "Not provided" : "Chưa cung cấp")}
                       </div>
                       <div>
-                        ✉️ <strong>Email:</strong> {k.email || "Chưa cung cấp"}
+                        ✉️ <strong>Email:</strong> {k.email || (isEn ? "Not provided" : "Chưa cung cấp")}
                       </div>
                       <div>
-                        📍 <strong>Địa chỉ vườn:</strong>{" "}
-                        {k.farmAddress || "Chưa cập nhật"}
+                        📍 <strong>{isEn ? "Farm address:" : "Địa chỉ vườn:"}</strong>{" "}
+                        {k.farmAddress || (isEn ? "Not updated" : "Chưa cập nhật")}
                       </div>
                       <div>
-                        📜 <strong>Tài liệu đã nộp:</strong>{" "}
-                        {k.documentCount || 0} tệp ảnh chứng nhận
+                        📜 <strong>{isEn ? "Documents submitted:" : "Tài liệu đã nộp:"}</strong>{" "}
+                        {k.documentCount || 0} {isEn ? "certificate files" : "tệp ảnh chứng nhận"}
                       </div>
                       <div>
-                        ⏰ <strong>Gửi lúc:</strong>{" "}
+                        ⏰ <strong>{isEn ? "Submitted at:" : "Gửi lúc:"}</strong>{" "}
                         {k.lastSubmittedAt
                           ? k.lastSubmittedAt.replace("T", " ").substring(0, 16)
-                          : "Mới nộp"}
+                          : isEn ? "Just submitted" : "Mới nộp"}
                       </div>
                     </div>
 
@@ -1116,14 +1257,14 @@ export default function UserModerationPage({ onNavigate }) {
                         }}
                         onClick={() => handleViewKycDetail(k)}
                       >
-                        🔎 Thẩm định chi tiết
+                        🔎 {isEn ? "View Details" : "Thẩm định chi tiết"}
                       </Button>
                       <Button
                         variant="accent"
                         size="sm"
                         onClick={() => handleOpenApproveModal(k)}
                       >
-                        ✓ Duyệt nhanh
+                        ✓ {isEn ? "Quick Approve" : "Duyệt nhanh"}
                       </Button>
                       <Button
                         variant="ghost"
@@ -1133,7 +1274,7 @@ export default function UserModerationPage({ onNavigate }) {
                         }}
                         onClick={() => handleOpenRejectModal(k)}
                       >
-                        ✕ Từ chối
+                        ✕ {isEn ? "Reject" : "Từ chối"}
                       </Button>
                     </div>
                   </div>
@@ -1156,8 +1297,16 @@ export default function UserModerationPage({ onNavigate }) {
         <Modal
           isOpen={isUserDetailModalOpen}
           onClose={() => setIsUserDetailModalOpen(false)}
-          title={`Hồ Sơ Chi Tiết Người Dùng #${selectedUserDetail.userId}`}
-          subtitle="Thông tin tài khoản, phân quyền và lịch sử kiểm duyệt trên MarketLink"
+          title={
+            isEn
+              ? `User Profile Details #${selectedUserDetail.userId}`
+              : `Hồ Sơ Chi Tiết Người Dùng #${selectedUserDetail.userId}`
+          }
+          subtitle={
+            isEn
+              ? "Account information, permissions, and moderation history on MarketLink"
+              : "Thông tin tài khoản, phân quyền và lịch sử kiểm duyệt trên MarketLink"
+          }
           maxWidth="680px"
         >
           <div
@@ -1221,7 +1370,8 @@ export default function UserModerationPage({ onNavigate }) {
                   }}
                 >
                   {selectedUserDetail.email} • 📞{" "}
-                  {selectedUserDetail.phoneNumber || "Chưa có SĐT"}
+                  {selectedUserDetail.phoneNumber ||
+                    (isEn ? "No phone" : "Chưa có SĐT")}
                 </div>
                 <div
                   style={{
@@ -1251,7 +1401,9 @@ export default function UserModerationPage({ onNavigate }) {
                     color: "#166534",
                   }}
                 >
-                  🏡 Thông tin Nông trại / Sạp hàng:
+                  {isEn
+                    ? "🏡 Farm & Stall Information:"
+                    : "🏡 Thông tin Nông trại / Sạp hàng:"}
                 </h4>
                 <div
                   style={{
@@ -1262,25 +1414,25 @@ export default function UserModerationPage({ onNavigate }) {
                   }}
                 >
                   <div>
-                    <strong>Tên sạp:</strong>{" "}
+                    <strong>{isEn ? "Stall name:" : "Tên sạp:"}</strong>{" "}
                     {selectedUserDetail.farmerProfile.stallName}
                   </div>
                   <div>
-                    <strong>Địa chỉ:</strong>{" "}
+                    <strong>{isEn ? "Address:" : "Địa chỉ:"}</strong>{" "}
                     {selectedUserDetail.farmerProfile.farmAddress}
                   </div>
                   <div>
-                    <strong>Trạng thái phê duyệt:</strong>{" "}
+                    <strong>{isEn ? "Approval status:" : "Trạng thái phê duyệt:"}</strong>{" "}
                     {selectedUserDetail.farmerProfile.isApproved
-                      ? "✅ Đã kích hoạt sạp"
-                      : "⏳ Chưa kích hoạt"}
+                      ? (isEn ? "✅ Stall activated" : "✅ Đã kích hoạt sạp")
+                      : (isEn ? "⏳ Not activated" : "⏳ Chưa kích hoạt")}
                   </div>
                   <div
                     style={{
                       gridColumn: "1 / -1",
                     }}
                   >
-                    <strong>Giới thiệu:</strong>{" "}
+                    <strong>{isEn ? "Bio:" : "Giới thiệu:"}</strong>{" "}
                     {selectedUserDetail.farmerProfile.bio}
                   </div>
                 </div>
@@ -1301,7 +1453,9 @@ export default function UserModerationPage({ onNavigate }) {
                     color: "#1e40af",
                   }}
                 >
-                  🛒 Thông tin Khách hàng đặt trước:
+                  {isEn
+                    ? "🛒 Customer Pre-order Information:"
+                    : "🛒 Thông tin Khách hàng đặt trước:"}
                 </h4>
                 <div
                   style={{
@@ -1312,15 +1466,15 @@ export default function UserModerationPage({ onNavigate }) {
                   }}
                 >
                   <div>
-                    <strong>Địa chỉ mặc định:</strong>{" "}
+                    <strong>{isEn ? "Default address:" : "Địa chỉ mặc định:"}</strong>{" "}
                     {selectedUserDetail.customerProfile.defaultAddress ||
-                      "Chưa cung cấp"}
+                      (isEn ? "Not provided" : "Chưa cung cấp")}
                   </div>
                   <div>
-                    <strong>Tài khoản gia đình:</strong>{" "}
+                    <strong>{isEn ? "Family account:" : "Tài khoản gia đình:"}</strong>{" "}
                     {selectedUserDetail.customerProfile.familyAccountId
                       ? `#${selectedUserDetail.customerProfile.familyAccountId}`
-                      : "Độc lập"}
+                      : (isEn ? "Independent" : "Độc lập")}
                   </div>
                 </div>
               </div>
@@ -1339,7 +1493,9 @@ export default function UserModerationPage({ onNavigate }) {
                   color: "#334155",
                 }}
               >
-                📋 Lịch sử kiểm duyệt (Audit Logs):
+                {isEn
+                  ? "📋 Moderation History (Audit Logs):"
+                  : "📋 Lịch sử kiểm duyệt (Audit Logs):"}
               </h4>
               {!selectedUserDetail.auditLogs ||
               selectedUserDetail.auditLogs.length === 0 ? (
@@ -1349,7 +1505,9 @@ export default function UserModerationPage({ onNavigate }) {
                     color: "#94a3b8",
                   }}
                 >
-                  Chưa có nhật ký kiểm duyệt nào cho tài khoản này.
+                  {isEn
+                    ? "No moderation history recorded for this account."
+                    : "Chưa có nhật ký kiểm duyệt nào cho tài khoản này."}
                 </div>
               ) : (
                 <div
@@ -1380,7 +1538,7 @@ export default function UserModerationPage({ onNavigate }) {
                         }}
                       >
                         <span>
-                          Hành động: {log.action} ({log.decision})
+                          {isEn ? "Action:" : "Hành động:"} {log.action} ({log.decision})
                         </span>
                         <span
                           style={{
@@ -1398,7 +1556,7 @@ export default function UserModerationPage({ onNavigate }) {
                           marginTop: 2,
                         }}
                       >
-                        {log.notes || "Không có ghi chú thêm."}
+                        {log.notes || (isEn ? "No additional notes." : "Không có ghi chú thêm.")}
                       </div>
                       <div
                         style={{
@@ -1407,7 +1565,7 @@ export default function UserModerationPage({ onNavigate }) {
                           marginTop: 2,
                         }}
                       >
-                        Thực hiện bởi:{" "}
+                        {isEn ? "Executed by: " : "Thực hiện bởi: "}
                         {log.adminName || `Admin #${log.adminId}`}
                       </div>
                     </div>
@@ -1428,7 +1586,7 @@ export default function UserModerationPage({ onNavigate }) {
                 variant="ghost"
                 onClick={() => setIsUserDetailModalOpen(false)}
               >
-                Đóng
+                {isEn ? "Close" : "Đóng"}
               </Button>
             </div>
           </div>
@@ -1441,10 +1599,18 @@ export default function UserModerationPage({ onNavigate }) {
           onClose={() => setIsUserStatusModalOpen(false)}
           title={
             userStatusTarget.status === "ACTIVE"
-              ? `Khóa Tài Khoản #${userStatusTarget.userId}`
-              : `Mở Khóa Tài Khoản #${userStatusTarget.userId}`
+              ? isEn
+                ? `Suspend Account #${userStatusTarget.userId}`
+                : `Khóa Tài Khoản #${userStatusTarget.userId}`
+              : isEn
+                ? `Unsuspend Account #${userStatusTarget.userId}`
+                : `Mở Khóa Tài Khoản #${userStatusTarget.userId}`
           }
-          subtitle={`Người dùng: ${userStatusTarget.fullName} (${userStatusTarget.email})`}
+          subtitle={
+            isEn
+              ? `User: ${userStatusTarget.fullName} (${userStatusTarget.email})`
+              : `Người dùng: ${userStatusTarget.fullName} (${userStatusTarget.email})`
+          }
           maxWidth="500px"
         >
           <div
@@ -1462,18 +1628,28 @@ export default function UserModerationPage({ onNavigate }) {
               }}
             >
               {userStatusTarget.status === "ACTIVE"
-                ? "Khi khóa tài khoản, người dùng sẽ không thể đăng nhập hoặc thực hiện bất kỳ giao dịch nào trên sàn."
-                : "Mở khóa sẽ khôi phục lại toàn bộ quyền sử dụng tài khoản cho người dùng."}
+                ? isEn
+                  ? "When suspended, the user cannot log in or perform any transactions on the platform."
+                  : "Khi khóa tài khoản, người dùng sẽ không thể đăng nhập hoặc thực hiện bất kỳ giao dịch nào trên sàn."
+                : isEn
+                  ? "Unsuspending will restore full access and platform privileges for this user."
+                  : "Mở khóa sẽ khôi phục lại toàn bộ quyền sử dụng tài khoản cho người dùng."}
             </p>
 
             <div className="ml-form-group">
               <label className="ml-form-label">
-                Lý do xử lý (Lưu vào nhật ký kiểm duyệt):
+                {isEn
+                  ? "Reason (Saved in moderation audit logs):"
+                  : "Lý do xử lý (Lưu vào nhật ký kiểm duyệt):"}
               </label>
               <textarea
                 className="ml-form-textarea"
                 rows={3}
-                placeholder="Nhập lý do khóa / mở khóa (vd: Vi phạm quy định chợ, giải quyết khiếu nại...)"
+                placeholder={
+                  isEn
+                    ? "Enter reason for suspension/unsuspension (e.g., Policy violation, dispute resolution...)"
+                    : "Nhập lý do khóa / mở khóa (vd: Vi phạm quy định chợ, giải quyết khiếu nại...)"
+                }
                 value={userStatusReason}
                 onChange={(e) => setUserStatusReason(e.target.value)}
               />
@@ -1490,7 +1666,7 @@ export default function UserModerationPage({ onNavigate }) {
                 variant="ghost"
                 onClick={() => setIsUserStatusModalOpen(false)}
               >
-                Hủy
+                {isEn ? "Cancel" : "Hủy"}
               </Button>
               <Button
                 variant={
@@ -1505,8 +1681,12 @@ export default function UserModerationPage({ onNavigate }) {
                 onClick={handleConfirmUserStatus}
               >
                 {userStatusTarget.status === "ACTIVE"
-                  ? "Xác nhận khóa tài khoản"
-                  : "Xác nhận mở khóa"}
+                  ? isEn
+                    ? "Confirm Suspension"
+                    : "Xác nhận khóa tài khoản"
+                  : isEn
+                    ? "Confirm Unsuspension"
+                    : "Xác nhận mở khóa"}
               </Button>
             </div>
           </div>
@@ -1517,8 +1697,16 @@ export default function UserModerationPage({ onNavigate }) {
         <Modal
           isOpen={isKycDetailModalOpen}
           onClose={() => setIsKycDetailModalOpen(false)}
-          title={`Thẩm Định Hồ Sơ Nông Hộ: ${selectedFarmerKyc.stallName || selectedFarmerKyc.fullName}`}
-          subtitle={`Chủ sạp: ${selectedFarmerKyc.fullName} • SĐT: ${selectedFarmerKyc.phoneNumber || "N/A"}`}
+          title={
+            isEn
+              ? `Farmer Application Review: ${selectedFarmerKyc.stallName || selectedFarmerKyc.fullName}`
+              : `Thẩm Định Hồ Sơ Nông Hộ: ${selectedFarmerKyc.stallName || selectedFarmerKyc.fullName}`
+          }
+          subtitle={
+            isEn
+              ? `Stall owner: ${selectedFarmerKyc.fullName} • Phone: ${selectedFarmerKyc.phoneNumber || "N/A"}`
+              : `Chủ sạp: ${selectedFarmerKyc.fullName} • SĐT: ${selectedFarmerKyc.phoneNumber || "N/A"}`
+          }
           maxWidth="760px"
         >
           <div
@@ -1540,15 +1728,15 @@ export default function UserModerationPage({ onNavigate }) {
               }}
             >
               <div>
-                <strong>Tên nhà vườn / Hợp tác xã:</strong>{" "}
-                {selectedFarmerKyc.stallName || "Nông Trại Đăng Ký"}
+                <strong>{isEn ? "Farm / Cooperative name:" : "Tên nhà vườn / Hợp tác xã:"}</strong>{" "}
+                {selectedFarmerKyc.stallName || (isEn ? "Registered Farm" : "Nông Trại Đăng Ký")}
               </div>
               <div>
-                <strong>Đại diện:</strong> {selectedFarmerKyc.fullName}
+                <strong>{isEn ? "Representative:" : "Đại diện:"}</strong> {selectedFarmerKyc.fullName}
               </div>
               <div>
-                <strong>Số điện thoại:</strong>{" "}
-                {selectedFarmerKyc.phoneNumber || "Chưa cung cấp"}
+                <strong>{isEn ? "Phone number:" : "Số điện thoại:"}</strong>{" "}
+                {selectedFarmerKyc.phoneNumber || (isEn ? "Not provided" : "Chưa cung cấp")}
               </div>
               <div>
                 <strong>Email:</strong> {selectedFarmerKyc.email}
@@ -1558,8 +1746,8 @@ export default function UserModerationPage({ onNavigate }) {
                   gridColumn: "1 / -1",
                 }}
               >
-                <strong>Địa chỉ vùng trồng:</strong>{" "}
-                {selectedFarmerKyc.farmAddress || "Chưa cập nhật"}
+                <strong>{isEn ? "Cultivation address:" : "Địa chỉ vùng trồng:"}</strong>{" "}
+                {selectedFarmerKyc.farmAddress || (isEn ? "Not updated" : "Chưa cập nhật")}
               </div>
             </div>
 
@@ -1576,7 +1764,9 @@ export default function UserModerationPage({ onNavigate }) {
                   color: "#166534",
                 }}
               >
-                📜 Giấy tờ chứng nhận & Ảnh chụp tài liệu đính kèm:
+                {isEn
+                  ? "📜 Certification Documents & Attached Images:"
+                  : "📜 Giấy tờ chứng nhận & Ảnh chụp tài liệu đính kèm:"}
               </h4>
 
               {farmerKycDetail?.documents &&
@@ -1606,7 +1796,7 @@ export default function UserModerationPage({ onNavigate }) {
                         }}
                       >
                         <span>
-                          Mã giấy tờ:{" "}
+                          {isEn ? "Document code: " : "Mã giấy tờ: "}
                           <strong>
                             {doc.documentNumber || `DOC-${idx + 1}`}
                           </strong>
@@ -1616,8 +1806,7 @@ export default function UserModerationPage({ onNavigate }) {
                             color: "#64748b",
                           }}
                         >
-                          Ngày cấp: {doc.issuedDate || "N/A"} - Hạn dùng:{" "}
-                          {doc.expiryDate || "N/A"}
+                          {isEn ? "Issued: " : "Ngày cấp: "}{doc.issuedDate || "N/A"} - {isEn ? "Expiry: " : "Hạn dùng: "}{doc.expiryDate || "N/A"}
                         </span>
                       </div>
                       <div
@@ -1651,7 +1840,7 @@ export default function UserModerationPage({ onNavigate }) {
                           color: "#64748b",
                         }}
                       >
-                        🔗 Đường dẫn ảnh:{" "}
+                        {isEn ? "🔗 Image URL: " : "🔗 Đường dẫn ảnh: "}
                         <a
                           href={doc.documentUrl}
                           target="_blank"
@@ -1685,8 +1874,9 @@ export default function UserModerationPage({ onNavigate }) {
                     }}
                   />
                   <div>
-                    Hồ sơ đã nộp ảnh chứng chỉ chất lượng nông sản. Hãy kiểm tra
-                    tính xác thực trước khi duyệt.
+                    {isEn
+                      ? "Application submitted quality certificates. Please verify authenticity before approving."
+                      : "Hồ sơ đã nộp ảnh chứng chỉ chất lượng nông sản. Hãy kiểm tra tính xác thực trước khi duyệt."}
                   </div>
                 </div>
               )}
@@ -1705,7 +1895,7 @@ export default function UserModerationPage({ onNavigate }) {
                 variant="ghost"
                 onClick={() => setIsKycDetailModalOpen(false)}
               >
-                Đóng lại
+                {isEn ? "Close" : "Đóng lại"}
               </Button>
               <div
                 style={{
@@ -1721,7 +1911,7 @@ export default function UserModerationPage({ onNavigate }) {
                   }}
                   onClick={() => handleOpenRejectModal(selectedFarmerKyc)}
                 >
-                  🔄 Yêu cầu chỉnh sửa
+                  {isEn ? "🔄 Request Revision" : "🔄 Yêu cầu chỉnh sửa"}
                 </Button>
                 <Button
                   variant="ghost"
@@ -1730,13 +1920,15 @@ export default function UserModerationPage({ onNavigate }) {
                   }}
                   onClick={() => handleOpenRejectModal(selectedFarmerKyc)}
                 >
-                  ✕ Từ chối hồ sơ
+                  {isEn ? "✕ Reject Application" : "✕ Từ chối hồ sơ"}
                 </Button>
                 <Button
                   variant="primary"
                   onClick={() => handleOpenApproveModal(selectedFarmerKyc)}
                 >
-                  ✓ Phê duyệt hồ sơ (Cấp quyền mở sạp)
+                  {isEn
+                    ? "✓ Approve Application (Authorize Stall)"
+                    : "✓ Phê duyệt hồ sơ (Cấp quyền mở sạp)"}
                 </Button>
               </div>
             </div>
@@ -1751,8 +1943,8 @@ export default function UserModerationPage({ onNavigate }) {
             setIsApproveModalOpen(false);
             setApproveTarget(null);
           }}
-          title="Xác nhận phê duyệt hồ sơ KYC"
-          subtitle={`Nông hộ: ${approveTarget.stallName || approveTarget.fullName || `#${approveTarget.farmerId}`}`}
+          title={isEn ? "Confirm KYC Approval" : "Xác nhận phê duyệt hồ sơ KYC"}
+          subtitle={`${isEn ? "Farmer:" : "Nông hộ:"} ${approveTarget.stallName || approveTarget.fullName || `#${approveTarget.farmerId}`}`}
           maxWidth="520px"
         >
           <div
@@ -1772,8 +1964,9 @@ export default function UserModerationPage({ onNavigate }) {
                 lineHeight: 1.6,
               }}
             >
-              Hồ sơ hợp lệ sẽ được chuyển sang trạng thái đã xác minh. Nông
-              dân sẽ được cấp quyền đăng ký sạp và đăng bán sản phẩm.
+              {isEn
+                ? "Valid documents will transition to verified status. The farmer will be granted privileges to register market stalls and list fresh produce."
+                : "Hồ sơ hợp lệ sẽ được chuyển sang trạng thái đã xác minh. Nông dân sẽ được cấp quyền đăng ký sạp và đăng bán sản phẩm."}
             </div>
             <div
               style={{
@@ -1789,10 +1982,10 @@ export default function UserModerationPage({ onNavigate }) {
                   setApproveTarget(null);
                 }}
               >
-                Hủy
+                {isEn ? "Cancel" : "Hủy"}
               </Button>
               <Button variant="primary" onClick={handleApproveKyc}>
-                ✓ Xác nhận phê duyệt
+                {isEn ? "✓ Confirm Approval" : "✓ Xác nhận phê duyệt"}
               </Button>
             </div>
           </div>
@@ -1803,8 +1996,16 @@ export default function UserModerationPage({ onNavigate }) {
         <Modal
           isOpen={isRejectModalOpen}
           onClose={() => setIsRejectModalOpen(false)}
-          title={`Xử Lý Từ Chối / Bổ Sung Hồ Sơ: ${selectedFarmerKyc.stallName || selectedFarmerKyc.fullName}`}
-          subtitle="Nông dân sẽ nhận được thông báo kèm lý do chi tiết để khắc phục"
+          title={
+            isEn
+              ? `Process Application Rejection / Revision: ${selectedFarmerKyc.stallName || selectedFarmerKyc.fullName}`
+              : `Xử Lý Từ Chối / Bổ Sung Hồ Sơ: ${selectedFarmerKyc.stallName || selectedFarmerKyc.fullName}`
+          }
+          subtitle={
+            isEn
+              ? "The farmer will receive a notification with detailed reasons to make corrections"
+              : "Nông dân sẽ nhận được thông báo kèm lý do chi tiết để khắc phục"
+          }
           maxWidth="520px"
         >
           <div
@@ -1816,12 +2017,18 @@ export default function UserModerationPage({ onNavigate }) {
           >
             <div className="ml-form-group">
               <label className="ml-form-label">
-                Lý do từ chối hoặc hướng dẫn bổ sung:
+                {isEn
+                  ? "Reason for rejection or revision instructions:"
+                  : "Lý do từ chối hoặc hướng dẫn bổ sung:"}
               </label>
               <textarea
                 className="ml-form-textarea"
                 rows={4}
-                placeholder="Ví dụ: Giấy chứng nhận đã hết hạn, ảnh chụp mờ không thấy rõ mã số VietGAP, vui lòng chụp lại 2 mặt..."
+                placeholder={
+                  isEn
+                    ? "Example: Certificate expired, blurred image unreadable, please provide both sides..."
+                    : "Ví dụ: Giấy chứng nhận đã hết hạn, ảnh chụp mờ không thấy rõ mã số VietGAP, vui lòng chụp lại 2 mặt..."
+                }
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 required
@@ -1839,7 +2046,7 @@ export default function UserModerationPage({ onNavigate }) {
                 variant="ghost"
                 onClick={() => setIsRejectModalOpen(false)}
               >
-                Hủy bỏ
+                {isEn ? "Cancel" : "Hủy bỏ"}
               </Button>
               <Button
                 variant="outline"
@@ -1849,7 +2056,7 @@ export default function UserModerationPage({ onNavigate }) {
                 }}
                 onClick={() => handleConfirmRejectKyc("REQUEST_REVISION")}
               >
-                Gửi yêu cầu bổ sung
+                {isEn ? "Request Revision" : "Gửi yêu cầu bổ sung"}
               </Button>
               <Button
                 variant="primary"
@@ -1858,7 +2065,7 @@ export default function UserModerationPage({ onNavigate }) {
                 }}
                 onClick={() => handleConfirmRejectKyc("REJECT")}
               >
-                Xác nhận từ chối hồ sơ
+                {isEn ? "Confirm Rejection" : "Xác nhận từ chối hồ sơ"}
               </Button>
             </div>
           </div>

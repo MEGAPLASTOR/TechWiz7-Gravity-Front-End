@@ -24,6 +24,7 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import UserModerationPage from "./pages/admin/UserModerationPage";
 import ContentModerationPage from "./pages/admin/ContentModerationPage";
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
+import AnnouncementsPage from "./pages/AnnouncementsPage";
 import AdminMarketStudio from "./components/AdminMarketStudio";
 import OpenStreetMapRouting from "./components/OpenStreetMapRouting";
 import ImageUploadStudio from "./components/ImageUploadStudio";
@@ -697,13 +698,18 @@ export default function App() {
         {(activeNav === "admin-markets" || activeNav === "admin-studio") && (
           <div className="ml-container ml-page-view">
             <div className="ml-page-header">
-              <span className="ml-section-subtitle">Phân hệ Quản trị viên</span>
+              <span className="ml-section-subtitle">
+                {isEn ? "Administrator Module" : "Phân hệ Quản trị viên"}
+              </span>
               <h2 className="ml-section-title">
-                Quản Lý Hệ Thống Chợ Phiên & Sạp Hàng
+                {isEn
+                  ? "Manage Farmers Markets & Stall Allocations"
+                  : "Quản Lý Hệ Thống Chợ Phiên & Sạp Hàng"}
               </h2>
               <p className="ml-section-desc">
-                Quản lý hệ thống chợ nông sản, phân bổ sạp bán cho nông dân và
-                ghim tọa độ bản đồ.
+                {isEn
+                  ? "Manage agricultural market schedules, allocate stalls to registered farmers, and pin GPS map coordinates."
+                  : "Quản lý hệ thống chợ nông sản, phân bổ sạp bán cho nông dân và ghim tọa độ bản đồ."}
               </p>
             </div>
             <AdminMarketStudio
@@ -728,6 +734,13 @@ export default function App() {
 
         {activeNav === "admin-content" && (
           <ContentModerationPage onNavigate={(nav) => setActiveNav(nav)} />
+        )}
+
+        {activeNav === "announcements" && (
+          <AnnouncementsPage
+            onNavigate={handleNavigate}
+            currentRole={currentRole}
+          />
         )}
       </main>
 

@@ -176,7 +176,7 @@ export default function Header({
                   className={`ml-nav-link ${activeNav === "home" ? "active" : ""}`}
                   onClick={() => onNavigate("home")}
                 >
-                  {t("navHome", "Trang chủ")}
+                  🏠 {t("navHome", "Trang chủ")}
                 </button>
                 <button
                   type="button"
@@ -184,7 +184,7 @@ export default function Header({
                   onClick={() => onNavigate("markets")}
                   title={isEn ? "Explore farmers' markets" : "Khám phá các phiên chợ nông sản"}
                 >
-                  {t("navMarkets", "Chợ phiên")}
+                  🏪 {t("navMarkets", "Chợ phiên")}
                 </button>
                 <button
                   type="button"
@@ -192,7 +192,7 @@ export default function Header({
                   onClick={() => onNavigate("products")}
                   title={isEn ? "Seasonal clean produce" : "Nông sản sạch theo mùa vụ"}
                 >
-                  {t("navProducts", "Nông sản")}
+                  🥦 {t("navProducts", "Nông sản")}
                 </button>
                 <button
                   type="button"
@@ -200,7 +200,15 @@ export default function Header({
                   onClick={() => onNavigate("farmers")}
                   title={isEn ? "Local farmer stalls" : "Gian hàng các nông hộ địa phương"}
                 >
-                  {t("navStalls", "Gian hàng")}
+                  👨‍🌾 {t("navStalls", "Gian hàng")}
+                </button>
+                <button
+                  type="button"
+                  className={`ml-nav-link ${activeNav === "announcements" ? "active" : ""}`}
+                  onClick={() => onNavigate("announcements")}
+                  title={isEn ? "Platform news & announcements" : "Tin tức & thông báo nền tảng"}
+                >
+                  📋 {t("navAnnouncements", "Bảng tin")}
                 </button>
                 {currentRole === "CUSTOMER" && (
                   <>
@@ -210,7 +218,7 @@ export default function Header({
                       onClick={() => onNavigate("orders")}
                       title={isEn ? "My pre-orders" : "Danh sách đơn đặt trước của tôi"}
                     >
-                      {t("navOrders", "Đơn hàng")}
+                      📦 {t("navOrders", "Đơn hàng")}
                     </button>
                     <button
                       type="button"
@@ -218,7 +226,7 @@ export default function Header({
                       onClick={() => onNavigate("dashboard")}
                       title={isEn ? "Personal dashboard" : "Trang quản lý cá nhân"}
                     >
-                      {t("navDashboard", "Cá nhân")}
+                      👤 {t("navDashboard", "Cá nhân")}
                     </button>
                   </>
                 )}
@@ -275,6 +283,14 @@ export default function Header({
                 >
                   🏪 {t("navViewMarket", "Xem chợ")}
                 </button>
+                <button
+                  type="button"
+                  className={`ml-nav-link ${activeNav === "announcements" ? "active" : ""}`}
+                  onClick={() => onNavigate("announcements")}
+                  title={isEn ? "Platform news & announcements" : "Tin tức & thông báo nền tảng"}
+                >
+                  📋 {t("navAnnouncements", "Bảng tin")}
+                </button>
               </>
             )}
 
@@ -319,6 +335,14 @@ export default function Header({
                   title={isEn ? "Moderate reviews & announcements" : "Kiểm duyệt đánh giá, danh mục & thông báo"}
                 >
                   🛡️ {t("navAdminContent", "Kiểm duyệt")}
+                </button>
+                <button
+                  type="button"
+                  className={`ml-nav-link ${activeNav === "announcements" ? "active" : ""}`}
+                  onClick={() => onNavigate("announcements")}
+                  title={isEn ? "Platform news & announcements" : "Tin tức & thông báo nền tảng"}
+                >
+                  📋 {t("navAnnouncements", "Bảng tin")}
                 </button>
                 <button
                   type="button"

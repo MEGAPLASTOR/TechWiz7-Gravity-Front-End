@@ -3,7 +3,10 @@ import "@/assets/styles/pages/admin/AdminDashboardPage.css";
 import Button from "../../components/common/Button";
 import Badge from "../../components/common/Badge";
 import adminService from "../../services/adminService";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function AdminDashboardPage({ onNavigate }) {
+  const { isEn, localizeMarketName, localizeProduceName } = useLanguage();
   const [metrics, setMetrics] = useState({
     totalFarmers: 0,
     totalCustomers: 0,
@@ -19,7 +22,7 @@ export default function AdminDashboardPage({ onNavigate }) {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
-    }).format(val);
+    }).format(val || 0);
   };
   const [activeFarmers, setActiveFarmers] = useState([]);
   useEffect(() => {
@@ -77,36 +80,42 @@ export default function AdminDashboardPage({ onNavigate }) {
   }, []);
   const kpis = [
     {
-      title: "Chợ phiên hoạt động",
-      value: `${metrics.totalMarkets || 0} Chợ`,
-      trend: "Đang mở nhận đặt",
+      title: isEn ? "Active Weekend Markets" : "Chợ phiên hoạt động",
+      value: `${metrics.totalMarkets || 0} ${isEn ? "Markets" : "Chợ"}`,
+      trend: isEn ? "Open for pre-orders" : "Đang mở nhận đặt",
       trendType: "positive",
       icon: "🎪",
-      hint: metrics.totalMarkets ? "Các điểm chợ đang mở" : "Chưa có chợ hoạt động",
+      hint: metrics.totalMarkets
+        ? (isEn ? "Active market locations" : "Các điểm chợ đang mở")
+        : (isEn ? "No active markets" : "Chưa có chợ hoạt động"),
     },
     {
-      title: "Nhà vườn & Nông hộ",
-      value: `${metrics.totalFarmers || 0} Sạp`,
-      trend: `${metrics.pendingKycCount || 0} hồ sơ chờ duyệt`,
+      title: isEn ? "Farms & Family Growers" : "Nhà vườn & Nông hộ",
+      value: `${metrics.totalFarmers || 0} ${isEn ? "Stalls" : "Sạp"}`,
+      trend: isEn
+        ? `${metrics.pendingKycCount || 0} KYC pending`
+        : `${metrics.pendingKycCount || 0} hồ sơ chờ duyệt`,
       trendType: "warning",
       icon: "👨‍🌾",
-      hint: `${metrics.totalFarmers || 0} nông hộ trong hệ thống`,
+      hint: isEn
+        ? `${metrics.totalFarmers || 0} registered growers`
+        : `${metrics.totalFarmers || 0} nông hộ trong hệ thống`,
     },
     {
-      title: "Đơn đặt trước toàn sàn",
-      value: `${metrics.totalOrders || 0} Đơn`,
-      trend: "Đang tăng trưởng",
+      title: isEn ? "Platform Pre-orders" : "Đơn đặt trước toàn sàn",
+      value: `${metrics.totalOrders || 0} ${isEn ? "Orders" : "Đơn"}`,
+      trend: isEn ? "Growing volume" : "Đang tăng trưởng",
       trendType: "positive",
       icon: "📦",
-      hint: "Khách nhận tại chợ",
+      hint: isEn ? "Pickup at markets" : "Khách nhận tại chợ",
     },
     {
-      title: "Giá trị nông sản giao dịch",
+      title: isEn ? "Gross Produce GMV" : "Giá trị nông sản giao dịch",
       value: formatCurrency(metrics.totalRevenue || 0),
-      trend: "Giao dịch tại sạp chợ phiên",
+      trend: isEn ? "Transacted at market stalls" : "Giao dịch tại sạp chợ phiên",
       trendType: "neutral",
       icon: "💵",
-      hint: "Thanh toán tiền mặt & VietQR",
+      hint: isEn ? "Cash & VietQR payments" : "Thanh toán tiền mặt & VietQR",
     },
   ];
   return (
@@ -116,14 +125,19 @@ export default function AdminDashboardPage({ onNavigate }) {
           <div>
             <div className="ml-admin-banner-badge">
               <span className="ml-admin-badge-dot"></span>
-              Trung Tâm Quản Trị Hệ Thống MarketLink (Dữ Liệu Thật)
+              {isEn
+                ? "MarketLink System Administration Center (Live Data)"
+                : "Trung Tâm Quản Trị Hệ Thống MarketLink (Dữ Liệu Thật)"}
             </div>
             <h1 className="ml-admin-dash-title">
-              Bảng Điều Hành Nền Tảng Chợ Nông Sản
+              {isEn
+                ? "Agricultural Market Platform Executive Dashboard"
+                : "Bảng Điều Hành Nền Tảng Chợ Nông Sản"}
             </h1>
             <p className="ml-admin-dash-desc">
-              Giám sát mạng lưới chợ phiên, thẩm định hồ sơ nông hộ VietGAP,
-              kiểm soát đơn đặt trước và điều hành toàn bộ nền tảng.
+              {isEn
+                ? "Monitor farmers' market network, review VietGAP farm KYC, supervise pre-orders, and administer platform operations."
+                : "Giám sát mạng lưới chợ phiên, thẩm định hồ sơ nông hộ VietGAP, kiểm soát đơn đặt trước và điều hành toàn bộ nền tảng."}
             </p>
           </div>
 
@@ -140,28 +154,30 @@ export default function AdminDashboardPage({ onNavigate }) {
               size="md"
               onClick={() => onNavigate && onNavigate("admin-markets")}
             >
-              🎪 Chợ & Sạp
+              🎪 {isEn ? "Markets & Stalls" : "Chợ & Sạp"}
             </Button>
             <Button
               variant="outline"
               size="md"
               onClick={() => onNavigate && onNavigate("admin-orders")}
             >
-              📦 Đơn toàn sàn
+              📦 {isEn ? "All Pre-orders" : "Đơn toàn sàn"}
             </Button>
             <Button
               variant="outline"
               size="md"
               onClick={() => onNavigate && onNavigate("admin-content")}
             >
-              🛡️ Kiểm duyệt & Danh mục
+              🛡️ {isEn ? "Moderation & Categories" : "Kiểm duyệt & Danh mục"}
             </Button>
             <Button
               variant="accent"
               size="md"
               onClick={() => onNavigate && onNavigate("admin-users")}
             >
-              👨‍🌾 Duyệt {pendingApprovals.length} hồ sơ KYC →
+              👨‍🌾 {isEn
+                ? `Review ${pendingApprovals.length} KYC profiles →`
+                : `Duyệt ${pendingApprovals.length} hồ sơ KYC →`}
             </Button>
             <a
               href="http://172.16.2.89:8081/swagger-ui/index.html"
@@ -177,7 +193,7 @@ export default function AdminDashboardPage({ onNavigate }) {
                 borderColor: "rgba(255, 255, 255, 0.4)",
                 background: "rgba(255, 255, 255, 0.1)",
               }}
-              title="Xem tài liệu API Swagger Backend"
+              title={isEn ? "View Backend Swagger API Docs" : "Xem tài liệu API Swagger Backend"}
             >
               📄 Swagger API ↗
             </a>
@@ -209,15 +225,18 @@ export default function AdminDashboardPage({ onNavigate }) {
             <div className="ml-op-card-header">
               <div>
                 <h3 className="ml-op-card-title">
-                  Hồ Sơ Nông Hộ Chờ Thẩm Định (KYC)
+                  {isEn
+                    ? "Farmer KYC Profiles Pending Approval"
+                    : "Hồ Sơ Nông Hộ Chờ Thẩm Định (KYC)"}
                 </h3>
                 <p className="ml-op-card-subtitle">
-                  Kiểm tra giấy chứng nhận VietGAP, GlobalGAP hoặc hữu cơ trước
-                  khi cấp quyền mở sạp
+                  {isEn
+                    ? "Verify VietGAP, GlobalGAP, or Organic certifications before granting stall operating privileges"
+                    : "Kiểm tra giấy chứng nhận VietGAP, GlobalGAP hoặc hữu cơ trước khi cấp quyền mở sạp"}
                 </p>
               </div>
               <Badge variant="pending">
-                {pendingApprovals.length} Chờ duyệt
+                {pendingApprovals.length} {isEn ? "Pending" : "Chờ duyệt"}
               </Badge>
             </div>
 
@@ -231,7 +250,9 @@ export default function AdminDashboardPage({ onNavigate }) {
                     fontSize: "14px",
                   }}
                 >
-                  ✓ Hiện không có hồ sơ KYC nào chờ thẩm định
+                  {isEn
+                    ? "✓ No pending KYC applications at this time"
+                    : "✓ Hiện không có hồ sơ KYC nào chờ thẩm định"}
                 </div>
               ) : (
                 pendingApprovals.map((item) => (
@@ -240,7 +261,8 @@ export default function AdminDashboardPage({ onNavigate }) {
                     <div className="ml-op-info">
                       <div className="ml-op-name">{item.farmerName}</div>
                       <div className="ml-op-meta">
-                        Đại diện: <strong>{item.repName}</strong> ({item.phone})
+                        {isEn ? "Representative:" : "Đại diện:"}{" "}
+                        <strong>{item.repName}</strong> ({item.phone})
                       </div>
                       <div className="ml-op-applied">
                         <span>📍 {item.marketApplied}</span>
@@ -253,7 +275,7 @@ export default function AdminDashboardPage({ onNavigate }) {
                         size="sm"
                         onClick={() => onNavigate && onNavigate("admin-users")}
                       >
-                        Kiểm duyệt hồ sơ
+                        {isEn ? "Review Profile" : "Kiểm duyệt hồ sơ"}
                       </Button>
                     </div>
                   </div>
@@ -268,7 +290,7 @@ export default function AdminDashboardPage({ onNavigate }) {
                 fullWidth
                 onClick={() => onNavigate && onNavigate("admin-users")}
               >
-                Xem toàn bộ hồ sơ thẩm định →
+                {isEn ? "View all pending approvals →" : "Xem toàn bộ hồ sơ thẩm định →"}
               </Button>
             </div>
           </div>
@@ -277,11 +299,12 @@ export default function AdminDashboardPage({ onNavigate }) {
             <div className="ml-op-card-header">
               <div>
                 <h3 className="ml-op-card-title">
-                  Tình Trạng Các Điểm Chợ Phiên
+                  {isEn ? "Weekend Markets Operating Status" : "Tình Trạng Các Điểm Chợ Phiên"}
                 </h3>
                 <p className="ml-op-card-subtitle">
-                  Theo dõi số lượng đơn hàng và giá trị giao dịch phân bổ theo
-                  điểm chợ
+                  {isEn
+                    ? "Track pre-order volumes and transacted GMV across market sessions"
+                    : "Theo dõi số lượng đơn hàng và giá trị giao dịch phân bổ theo điểm chợ"}
                 </p>
               </div>
             </div>
@@ -296,13 +319,13 @@ export default function AdminDashboardPage({ onNavigate }) {
                     fontSize: "14px",
                   }}
                 >
-                  Chưa có báo cáo hoạt động chợ phiên
+                  {isEn ? "No market reports available" : "Chưa có báo cáo hoạt động chợ phiên"}
                 </div>
               ) : (
                 marketReports.map((m, idx) => (
                   <div key={idx} className="ml-occupancy-item">
                     <div className="ml-occ-top">
-                      <span className="ml-occ-name">🎪 {m.marketName}</span>
+                      <span className="ml-occ-name">🎪 {localizeMarketName(m.marketName)}</span>
                       <span className="ml-occ-rate">
                         {formatCurrency(m.totalRevenue || 0)}
                       </span>
@@ -316,9 +339,9 @@ export default function AdminDashboardPage({ onNavigate }) {
                       ></div>
                     </div>
                     <div className="ml-occ-session">
-                      Đã hoàn thành:{" "}
-                      <strong>{m.totalOrders || 0} đơn đặt trước</strong> •{" "}
-                      {m.activeFarmers || 2} sạp hoạt động
+                      {isEn ? "Completed:" : "Đã hoàn thành:"}{" "}
+                      <strong>{m.totalOrders || 0} {isEn ? "pre-orders" : "đơn đặt trước"}</strong> •{" "}
+                      {m.activeFarmers || 2} {isEn ? "active stalls" : "sạp hoạt động"}
                     </div>
                   </div>
                 ))
@@ -331,11 +354,12 @@ export default function AdminDashboardPage({ onNavigate }) {
           <div className="ml-op-card-header">
             <div>
               <h3 className="ml-op-card-title">
-                Nông Sản Được Đặt Trước Nhiều Nhất Tuần
+                {isEn ? "Top Pre-ordered Produce This Week" : "Nông Sản Được Đặt Trước Nhiều Nhất Tuần"}
               </h3>
               <p className="ml-op-card-subtitle">
-                Xếp hạng các sản phẩm thu hút lượng đặt giữ chỗ cao nhất từ cư
-                dân
+                {isEn
+                  ? "Produce items attracting the highest pre-order reservations from shoppers"
+                  : "Xếp hạng các sản phẩm thu hút lượng đặt giữ chỗ cao nhất từ cư dân"}
               </p>
             </div>
             <Button
@@ -343,7 +367,7 @@ export default function AdminDashboardPage({ onNavigate }) {
               size="sm"
               onClick={() => onNavigate && onNavigate("products")}
             >
-              Xem danh mục nông sản
+              {isEn ? "View Produce Catalog" : "Xem danh mục nông sản"}
             </Button>
           </div>
 
@@ -358,20 +382,22 @@ export default function AdminDashboardPage({ onNavigate }) {
                   gridColumn: "1 / -1",
                 }}
               >
-                Chưa có dữ liệu nông sản được đặt trước trong tuần
+                {isEn
+                  ? "No produce reservation data for this week"
+                  : "Chưa có dữ liệu nông sản được đặt trước trong tuần"}
               </div>
             ) : (
               topProduce.map((p, idx) => (
                 <div key={idx} className="ml-produce-rank-item">
                   <div className="ml-rank-num">#{idx + 1}</div>
                   <div className="ml-rank-info">
-                    <div className="ml-rank-name">{p.name}</div>
+                    <div className="ml-rank-name">{localizeProduceName(p.name)}</div>
                     <div className="ml-rank-farmer">
-                      👨‍🌾 {p.farmer} • Chợ {p.market}
+                      👨‍🌾 {p.farmer} • {isEn ? "Market" : "Chợ"} {localizeMarketName(p.market)}
                     </div>
                   </div>
                   <div className="ml-rank-stat">
-                    <span className="ml-rank-count">{p.preorders} lượt</span>
+                    <span className="ml-rank-count">{p.preorders} {isEn ? "orders" : "lượt"}</span>
                     <Badge variant="organic" size="sm">
                       {p.tag}
                     </Badge>

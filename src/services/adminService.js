@@ -253,5 +253,9 @@ export const adminService = {
     const res = await apiClient.delete(`/admin/announcements/${id}`);
     return res.data || res;
   },
+  async toggleAnnouncementStatus(id) {
+    const res = await apiClient.patch(`/admin/announcements/${id}/toggle-status`, {});
+    return res.data || res;
+  },
 };
 export default adminService;

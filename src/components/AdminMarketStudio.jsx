@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import ImageUploadInput from "./ImageUploadInput";
 import Pagination from "./common/Pagination";
+import { useLanguage } from "../context/LanguageContext";
+
 export default function AdminMarketStudio({ callApi, role, token }) {
+  const { isEn } = useLanguage();
   const [markets, setMarkets] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 15;
@@ -45,11 +48,11 @@ export default function AdminMarketStudio({ callApi, role, token }) {
         setMarkets(Array.isArray(list) ? list : []);
       } else {
         setStatusMessage(
-          `[HTTP ${res.status}] ${res.data?.message || "Không thể tải danh sách chợ."}`,
+          `[HTTP ${res.status}] ${res.data?.message || (isEn ? "Failed to load markets list." : "Không thể tải danh sách chợ.")}`,
         );
       }
     } catch (err) {
-      setStatusMessage("Lỗi kết nối khi tải chợ: " + err.message);
+      setStatusMessage((isEn ? "Connection error loading markets: " : "Lỗi kết nối khi tải chợ: ") + err.message);
     } finally {
       setLoading(false);
     }
@@ -103,7 +106,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
   const handleSaveMarket = async (e) => {
     e.preventDefault();
     if (!formName.trim() || !formAddress.trim()) {
-      alert("Vui lòng điền đầy đủ Tên chợ và Địa chỉ!");
+      alert(isEn ? "Please fill in Market Name and Address!" : "Vui lòng điền đầy đủ Tên chợ và Địa chỉ!");
       return;
     }
     const payload = {
@@ -127,24 +130,24 @@ export default function AdminMarketStudio({ callApi, role, token }) {
         payload,
       );
       if (res.status === 200) {
-        alert("Cập nhật chợ nông sản thành công!");
+        alert(isEn ? "Market updated successfully!" : "Cập nhật chợ nông sản thành công!");
         setShowModal(false);
         loadMarkets();
       } else {
         alert(
-          "Cập nhật thất bại: " +
+          (isEn ? "Update failed: " : "Cập nhật thất bại: ") +
             (res.data?.message || JSON.stringify(res.data)),
         );
       }
     } else {
       const res = await callApi("/api/admin/markets", "POST", payload);
       if (res.status === 201 || res.status === 200) {
-        alert("Tạo chợ nông sản mới thành công!");
+        alert(isEn ? "Created new farmers market successfully!" : "Tạo chợ nông sản mới thành công!");
         setShowModal(false);
         loadMarkets();
       } else {
         alert(
-          "Tạo chợ thất bại: " +
+          (isEn ? "Creation failed: " : "Tạo chợ thất bại: ") +
             (res.data?.message || JSON.stringify(res.data)),
         );
       }
@@ -153,10 +156,14 @@ export default function AdminMarketStudio({ callApi, role, token }) {
   const handleToggleStatus = async (market) => {
     const newStatus = market.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     const actionName =
-      newStatus === "ACTIVE" ? "Mở lại hoạt động" : "Tạm dừng hoạt động";
+      newStatus === "ACTIVE"
+        ? (isEn ? "reactivate" : "Mở lại hoạt động")
+        : (isEn ? "pause" : "Tạm dừng hoạt động");
     if (
       !window.confirm(
-        `Bạn có chắc muốn ${actionName} cho chợ "${market.name}"?`,
+        isEn
+          ? `Are you sure you want to ${actionName} market "${market.name}"?`
+          : `Bạn có chắc muốn ${actionName} cho chợ "${market.name}"?`,
       )
     )
       return;
@@ -168,7 +175,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
       loadMarkets();
     } else {
       alert(
-        "Đổi trạng thái thất bại: " +
+        (isEn ? "Status change failed: " : "Đổi trạng thái thất bại: ") +
           (res.data?.message || JSON.stringify(res.data)),
       );
     }
@@ -176,7 +183,9 @@ export default function AdminMarketStudio({ callApi, role, token }) {
   const handleSoftDelete = async (market) => {
     if (
       !window.confirm(
-        `Xác nhận TẠM DỪNG (Xóa mềm) chợ "${market.name}"? Chợ sẽ ẩn khỏi bản đồ nhưng dữ liệu đơn hàng vẫn được bảo toàn.`,
+        isEn
+          ? `Confirm PAUSING (soft deleting) market "${market.name}"? Market will be hidden from map but past order data is kept.`
+          : `Xác nhận TẠM DỪNG (Xóa mềm) chợ "${market.name}"? Chợ sẽ ẩn khỏi bản đồ nhưng dữ liệu đơn hàng vẫn được bảo toàn.`,
       )
     )
       return;
@@ -185,20 +194,22 @@ export default function AdminMarketStudio({ callApi, role, token }) {
       "DELETE",
     );
     if (res.status === 200) {
-      alert("Đã tạm dừng hoạt động chợ thành công!");
+      alert(isEn ? "Market suspended successfully!" : "Đã tạm dừng hoạt động chợ thành công!");
       loadMarkets();
     } else {
-      alert("Lỗi: " + (res.data?.message || JSON.stringify(res.data)));
+      alert((isEn ? "Error: " : "Lỗi: ") + (res.data?.message || JSON.stringify(res.data)));
     }
   };
   const handlePermanentDelete = async (market) => {
     const confirmMsg = prompt(
-      `CẢNH BÁO NGUY HIỂM: Bạn đang chuẩn bị XÓA VĨNH VIỄN chợ "${market.name}"!\n` +
-        `Nếu chợ đã có đơn hàng trong quá khứ, hệ thống sẽ từ chối để tránh mất mát dữ liệu kế toán.\n\n` +
-        `Nhập chữ "XOA" vào ô bên dưới để xác nhận xóa vĩnh viễn:`,
+      isEn
+        ? `DANGER WARNING: You are about to PERMANENTLY DELETE market "${market.name}"!\nIf this market has past orders, the system will prevent deletion to protect financial records.\n\nType "DELETE" below to confirm:`
+        : `CẢNH BÁO NGUY HIỂM: Bạn đang chuẩn bị XÓA VĨNH VIỄN chợ "${market.name}"!\n` +
+          `Nếu chợ đã có đơn hàng trong quá khứ, hệ thống sẽ từ chối để tránh mất mát dữ liệu kế toán.\n\n` +
+          `Nhập chữ "XOA" vào ô bên dưới để xác nhận xóa vĩnh viễn:`,
     );
-    if (confirmMsg !== "XOA") {
-      alert("Đã hủy thao tác xóa vĩnh viễn.");
+    if (confirmMsg !== "DELETE" && confirmMsg !== "XOA") {
+      alert(isEn ? "Permanent deletion cancelled." : "Đã hủy thao tác xóa vĩnh viễn.");
       return;
     }
     const res = await callApi(
@@ -206,11 +217,11 @@ export default function AdminMarketStudio({ callApi, role, token }) {
       "DELETE",
     );
     if (res.status === 200) {
-      alert("Đã xóa vĩnh viễn chợ nông sản thành công!");
+      alert(isEn ? "Market permanently deleted successfully!" : "Đã xóa vĩnh viễn chợ nông sản thành công!");
       loadMarkets();
     } else {
       alert(
-        "Không thể xóa vĩnh viễn: " +
+        (isEn ? "Cannot permanently delete: " : "Không thể xóa vĩnh viễn: ") +
           (res.data?.message || JSON.stringify(res.data)),
       );
     }
@@ -257,7 +268,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
   const handleAssignFarmer = async (e) => {
     e.preventDefault();
     if (!assignFarmerId || !assignStallNumber.trim()) {
-      alert("Vui lòng nhập ID nông dân và Tên sạp!");
+      alert(isEn ? "Please enter Farmer User ID and Stall Number!" : "Vui lòng nhập ID nông dân và Tên sạp!");
       return;
     }
     const payload = {
@@ -272,13 +283,13 @@ export default function AdminMarketStudio({ callApi, role, token }) {
       payload,
     );
     if (res.status === 200 || res.status === 201) {
-      alert("Phân sạp cho nông dân thành công!");
+      alert(isEn ? "Stall allocated to farmer successfully!" : "Phân sạp cho nông dân thành công!");
       setAssignFarmerId("");
       setAssignStallNumber("");
       openStallModal(selectedMarketForStalls);
       loadMarkets();
     } else {
-      alert("Lỗi phân sạp: " + (res.data?.message || JSON.stringify(res.data)));
+      alert((isEn ? "Stall allocation error: " : "Lỗi phân sạp: ") + (res.data?.message || JSON.stringify(res.data)));
     }
   };
   const handleUpdateStallStatus = async (assignmentId, newStatus) => {
@@ -290,12 +301,12 @@ export default function AdminMarketStudio({ callApi, role, token }) {
       openStallModal(selectedMarketForStalls);
     } else {
       alert(
-        "Lỗi cập nhật sạp: " + (res.data?.message || JSON.stringify(res.data)),
+        (isEn ? "Stall update error: " : "Lỗi cập nhật sạp: ") + (res.data?.message || JSON.stringify(res.data)),
       );
     }
   };
   const handleDeleteStall = async (assignmentId, stallNum) => {
-    if (!window.confirm(`Xác nhận xóa phân bổ sạp "${stallNum}"?`)) return;
+    if (!window.confirm(isEn ? `Confirm deleting stall assignment "${stallNum}"?` : `Xác nhận xóa phân bổ sạp "${stallNum}"?`)) return;
     const res = await callApi(
       `/api/admin/markets/assignments/${assignmentId}`,
       "DELETE",
@@ -304,27 +315,27 @@ export default function AdminMarketStudio({ callApi, role, token }) {
       openStallModal(selectedMarketForStalls);
       loadMarkets();
     } else {
-      alert("Lỗi xóa sạp: " + (res.data?.message || JSON.stringify(res.data)));
+      alert((isEn ? "Stall deletion error: " : "Lỗi xóa sạp: ") + (res.data?.message || JSON.stringify(res.data)));
     }
   };
   const getDayName = (d) => {
     switch (parseInt(d)) {
       case 1:
-        return "Thứ 2";
+        return isEn ? "Monday" : "Thứ 2";
       case 2:
-        return "Thứ 3";
+        return isEn ? "Tuesday" : "Thứ 3";
       case 3:
-        return "Thứ 4";
+        return isEn ? "Wednesday" : "Thứ 4";
       case 4:
-        return "Thứ 5";
+        return isEn ? "Thursday" : "Thứ 5";
       case 5:
-        return "Thứ 6";
+        return isEn ? "Friday" : "Thứ 6";
       case 6:
-        return "Thứ 7";
+        return isEn ? "Saturday" : "Thứ 7";
       case 7:
-        return "Chủ Nhật";
+        return isEn ? "Sunday" : "Chủ Nhật";
       default:
-        return `Thứ ${d}`;
+        return isEn ? `Day ${d}` : `Thứ ${d}`;
     }
   };
   return (
@@ -354,7 +365,9 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                 fontSize: "1.25rem",
               }}
             >
-              🏪 Quản Lý Chợ Nông Sản (Market Management CRUD)
+              {isEn
+                ? "🏪 Farmers Market Management"
+                : "🏪 Quản Lý Chợ Nông Sản (Market Management CRUD)"}
             </div>
             <p
               style={{
@@ -363,8 +376,9 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                 marginTop: 4,
               }}
             >
-              Hệ thống tạo lập, điều phối lịch họp định kỳ, cấp phát sạp nông
-              dân và kiểm soát trạng thái phiên chợ.
+              {isEn
+                ? "Establish, schedule, allocate stalls to farmers, and manage market operating status."
+                : "Hệ thống tạo lập, điều phối lịch họp định kỳ, cấp phát sạp nông dân và kiểm soát trạng thái phiên chợ."}
             </p>
           </div>
           <div
@@ -375,10 +389,10 @@ export default function AdminMarketStudio({ callApi, role, token }) {
             }}
           >
             <button className="btn btn-primary" onClick={openCreateModal}>
-              ➕ Thêm Điểm Chợ Mới
+              {isEn ? "➕ Add New Market" : "➕ Thêm Điểm Chợ Mới"}
             </button>
             <button className="btn btn-outline" onClick={loadMarkets}>
-              🔄 Làm Mới
+              {isEn ? "🔄 Refresh" : "🔄 Làm Mới"}
             </button>
           </div>
         </div>
@@ -402,19 +416,19 @@ export default function AdminMarketStudio({ callApi, role, token }) {
               className={`btn btn-sm ${statusFilter === "ALL" ? "btn-primary" : "btn-outline"}`}
               onClick={() => setStatusFilter("ALL")}
             >
-              Tất Cả ({markets.length})
+              {isEn ? `All (${markets.length})` : `Tất Cả (${markets.length})`}
             </button>
             <button
               className={`btn btn-sm ${statusFilter === "ACTIVE" ? "btn-primary" : "btn-outline"}`}
               onClick={() => setStatusFilter("ACTIVE")}
             >
-              🟢 Đang Hoạt Động
+              {isEn ? "🟢 Active" : "🟢 Đang Hoạt Động"}
             </button>
             <button
               className={`btn btn-sm ${statusFilter === "INACTIVE" ? "btn-primary" : "btn-outline"}`}
               onClick={() => setStatusFilter("INACTIVE")}
             >
-              🔴 Đã Tạm Dừng
+              {isEn ? "🔴 Inactive" : "🔴 Đã Tạm Dừng"}
             </button>
           </div>
 
@@ -429,7 +443,11 @@ export default function AdminMarketStudio({ callApi, role, token }) {
             <input
               type="text"
               className="input-control"
-              placeholder="🔍 Tìm kiếm theo tên chợ, quận huyện, địa chỉ..."
+              placeholder={
+                isEn
+                  ? "🔍 Search by market name, district, address..."
+                  : "🔍 Tìm kiếm theo tên chợ, quận huyện, địa chỉ..."
+              }
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               onKeyDown={(e) => {
@@ -446,7 +464,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                 loadMarkets();
               }}
             >
-              Tìm
+              {isEn ? "Search" : "Tìm"}
             </button>
           </div>
         </div>
@@ -478,7 +496,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
               color: "var(--text-muted)",
             }}
           >
-            ⏳ Đang tải danh sách chợ...
+            {isEn ? "⏳ Loading markets..." : "⏳ Đang tải danh sách chợ..."}
           </div>
         </div>
       ) : markets.length === 0 ? (
@@ -503,7 +521,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
               fontSize: "1.1rem",
             }}
           >
-            Chưa có chợ nào phù hợp với bộ lọc
+            {isEn ? "No markets matching the filters" : "Chưa có chợ nào phù hợp với bộ lọc"}
           </div>
           <p
             style={{
@@ -512,7 +530,9 @@ export default function AdminMarketStudio({ callApi, role, token }) {
               marginTop: 6,
             }}
           >
-            Bấm "Thêm Điểm Chợ Mới" để tạo phiên chợ đầu tiên trên hệ thống.
+            {isEn
+              ? "Click 'Add New Market' to create the first market on the platform."
+              : "Bấm 'Thêm Điểm Chợ Mới' để tạo phiên chợ đầu tiên trên hệ thống."}
           </p>
         </div>
       ) : (
@@ -579,7 +599,9 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                       fontWeight: 700,
                     }}
                   >
-                    {m.status === "ACTIVE" ? "🟢 HOẠT ĐỘNG" : "🔴 TẠM DỪNG"}
+                    {m.status === "ACTIVE"
+                      ? (isEn ? "🟢 ACTIVE" : "🟢 HOẠT ĐỘNG")
+                      : (isEn ? "🔴 INACTIVE" : "🔴 TẠM DỪNG")}
                   </span>
                 </div>
                 <div
@@ -673,7 +695,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                       marginBottom: 4,
                     }}
                   >
-                    LỊCH HỌP CHỢ ĐỊNH KỲ:
+                    {isEn ? "RECURRING MARKET SCHEDULE:" : "LỊCH HỌP CHỢ ĐỊNH KỲ:"}
                   </div>
                   {m.schedules && m.schedules.length > 0 ? (
                     <div
@@ -706,7 +728,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                         fontStyle: "italic",
                       }}
                     >
-                      Chưa thiết lập lịch
+                      {isEn ? "Schedule not set" : "Chưa thiết lập lịch"}
                     </span>
                   )}
                 </div>
@@ -727,7 +749,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                       border: "1px solid rgba(16, 185, 129, 0.3)",
                     }}
                   >
-                    👨‍🌾 {m.activeFarmersCount || 0} Nông dân có sạp hoạt động
+                    👨‍🌾 {m.activeFarmersCount || 0} {isEn ? "Farmers with active stalls" : "Nông dân có sạp hoạt động"}
                   </span>
                 </div>
               </div>
@@ -746,21 +768,23 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                   className="btn btn-outline btn-sm"
                   onClick={() => openEditModal(m)}
                 >
-                  ✏️ Chỉnh Sửa
+                  ✏️ {isEn ? "Edit" : "Chỉnh Sửa"}
                 </button>
 
                 <button
                   className={`btn btn-sm ${m.status === "ACTIVE" ? "btn-outline" : "btn-primary"}`}
                   onClick={() => handleToggleStatus(m)}
                 >
-                  {m.status === "ACTIVE" ? "⏸️ Tạm Dừng" : "▶️ Kích Hoạt"}
+                  {m.status === "ACTIVE"
+                    ? (isEn ? "⏸️ Pause" : "⏸️ Tạm Dừng")
+                    : (isEn ? "▶️ Activate" : "▶️ Kích Hoạt")}
                 </button>
 
                 <button
                   className="btn btn-outline btn-sm"
                   onClick={() => openStallModal(m)}
                 >
-                  🏪 Quản Lý Sạp
+                  🏪 {isEn ? "Manage Stalls" : "Quản Lý Sạp"}
                 </button>
 
                 <div
@@ -777,9 +801,13 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                       fontSize: "0.75rem",
                     }}
                     onClick={() => handleSoftDelete(m)}
-                    title="Xóa mềm (chuyển sang INACTIVE để bảo toàn dữ liệu)"
+                    title={
+                      isEn
+                        ? "Soft delete (switch to INACTIVE to preserve data)"
+                        : "Xóa mềm (chuyển sang INACTIVE để bảo toàn dữ liệu)"
+                    }
                   >
-                    🗑️ Ẩn Chợ
+                    🗑️ {isEn ? "Hide" : "Ẩn Chợ"}
                   </button>
                   <button
                     className="btn btn-danger btn-sm"
@@ -790,9 +818,13 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                       fontSize: "0.75rem",
                     }}
                     onClick={() => handlePermanentDelete(m)}
-                    title="Xóa vĩnh viễn (Chỉ xóa được nếu chưa có đơn hàng)"
+                    title={
+                      isEn
+                        ? "Permanent delete (only possible if no orders exist)"
+                        : "Xóa vĩnh viễn (Chỉ xóa được nếu chưa có đơn hàng)"
+                    }
                   >
-                    ❌ Xóa Hẳn
+                    ❌ {isEn ? "Delete" : "Xóa Hẳn"}
                   </button>
                 </div>
               </div>
@@ -840,8 +872,10 @@ export default function AdminMarketStudio({ callApi, role, token }) {
             <div className="card-top">
               <div className="card-heading">
                 {isEditing
-                  ? `✏️ Cập Nhật Chợ Nông Sản (ID #${currentMarketId})`
-                  : "➕ Tạo Mới Chợ Nông Sản"}
+                  ? (isEn
+                      ? `✏️ Update Market (ID #${currentMarketId})`
+                      : `✏️ Cập Nhật Chợ Nông Sản (ID #${currentMarketId})`)
+                  : (isEn ? "➕ Create New Farmers Market" : "➕ Tạo Mới Chợ Nông Sản")}
               </div>
               <button
                 className="btn btn-outline btn-sm"
@@ -856,11 +890,17 @@ export default function AdminMarketStudio({ callApi, role, token }) {
 
             <form onSubmit={handleSaveMarket}>
               <div className="form-item">
-                <label>Tên Chợ Nông Sản (*):</label>
+                <label>
+                  {isEn ? "Market Name (*):" : "Tên Chợ Nông Sản (*):"}
+                </label>
                 <input
                   type="text"
                   className="input-control"
-                  placeholder="Ví dụ: Chợ Phiên Nông Sản Ba Đình"
+                  placeholder={
+                    isEn
+                      ? "e.g.: Ba Dinh Farmers Weekend Market"
+                      : "Ví dụ: Chợ Phiên Nông Sản Ba Đình"
+                  }
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   required
@@ -868,11 +908,17 @@ export default function AdminMarketStudio({ callApi, role, token }) {
               </div>
 
               <div className="form-item">
-                <label>Địa Chỉ Thực Tế (*):</label>
+                <label>
+                  {isEn ? "Physical Address (*):" : "Địa Chỉ Thực Tế (*):"}
+                </label>
                 <input
                   type="text"
                   className="input-control"
-                  placeholder="Ví dụ: Cung Thể Thao Quần Ngựa, Văn Cao, Liễu Giai, Ba Đình, Hà Nội"
+                  placeholder={
+                    isEn
+                      ? "e.g.: Quan Ngua Sports Complex, Van Cao, Ba Dinh, Hanoi"
+                      : "Ví dụ: Cung Thể Thao Quần Ngựa, Văn Cao, Liễu Giai, Ba Đình, Hà Nội"
+                  }
                   value={formAddress}
                   onChange={(e) => setFormAddress(e.target.value)}
                   required
@@ -880,7 +926,11 @@ export default function AdminMarketStudio({ callApi, role, token }) {
               </div>
 
               <div className="form-item">
-                <label>Tọa Độ GPS (Vĩ độ Lat, Kinh độ Long):</label>
+                <label>
+                  {isEn
+                    ? "GPS Coordinates (Latitude, Longitude):"
+                    : "Tọa Độ GPS (Vĩ độ Lat, Kinh độ Long):"}
+                </label>
                 <div
                   style={{
                     display: "flex",
@@ -921,7 +971,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                       color: "var(--text-muted)",
                     }}
                   >
-                    Gợi ý tọa độ:
+                    {isEn ? "Suggested coordinates:" : "Gợi ý tọa độ:"}
                   </span>
                   <button
                     type="button"
@@ -978,26 +1028,30 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                           (pos) => {
                             setFormLat(pos.coords.latitude.toFixed(6));
                             setFormLng(pos.coords.longitude.toFixed(6));
-                            alert("Đã lấy tọa độ thực từ thiết bị!");
+                            alert(isEn ? "Acquired device GPS coordinates!" : "Đã lấy tọa độ thực từ thiết bị!");
                           },
-                          (err) => alert("Không lấy được GPS: " + err.message),
+                          (err) => alert((isEn ? "GPS error: " : "Không lấy được GPS: ") + err.message),
                         );
                       }
                     }}
                   >
-                    🎯 GPS Thiết Bị
+                    🎯 {isEn ? "Device GPS" : "GPS Thiết Bị"}
                   </button>
                 </div>
               </div>
 
               <div className="form-item">
-                <label>Mô Tả Chợ:</label>
+                <label>{isEn ? "Market Description:" : "Mô Tả Chợ:"}</label>
                 <textarea
                   className="input-control"
                   style={{
                     minHeight: 70,
                   }}
-                  placeholder="Mô tả phiên chợ, loại đặc sản bày bán..."
+                  placeholder={
+                    isEn
+                      ? "Describe the market, types of fresh produce sold..."
+                      : "Mô tả phiên chợ, loại đặc sản bày bán..."
+                  }
                   value={formDesc}
                   onChange={(e) => setFormDesc(e.target.value)}
                 />
@@ -1007,20 +1061,26 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                 value={formImage}
                 onChange={setFormImage}
                 folder="markets"
-                label="Ảnh Bìa Chợ Nông Sản:"
-                helpText="Chọn ảnh chụp thực tế chợ từ máy tính hoặc điện thoại (hoặc nhập URL)"
+                label={isEn ? "Market Cover Photo:" : "Ảnh Bìa Chợ Nông Sản:"}
+                helpText={
+                  isEn
+                    ? "Upload real market photo from computer/phone (or paste URL)"
+                    : "Chọn ảnh chụp thực tế chợ từ máy tính hoặc điện thoại (hoặc nhập URL)"
+                }
               />
 
               <div className="form-item">
-                <label>Trạng Thái Ban Đầu:</label>
+                <label>{isEn ? "Initial Status:" : "Trạng Thái Ban Đầu:"}</label>
                 <select
                   className="input-control"
                   value={formStatus}
                   onChange={(e) => setFormStatus(e.target.value)}
                 >
-                  <option value="ACTIVE">🟢 ACTIVE (Đang hoạt động)</option>
+                  <option value="ACTIVE">
+                    {isEn ? "🟢 ACTIVE (Operational)" : "🟢 ACTIVE (Đang hoạt động)"}
+                  </option>
                   <option value="INACTIVE">
-                    🔴 INACTIVE (Tạm ngưng hoạt động)
+                    {isEn ? "🔴 INACTIVE (Suspended)" : "🔴 INACTIVE (Tạm ngưng hoạt động)"}
                   </option>
                 </select>
               </div>
@@ -1048,14 +1108,16 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                       color: "#34d399",
                     }}
                   >
-                    📅 Cấu Hình Lịch Họp Chợ Trong Tuần:
+                    {isEn
+                      ? "📅 Weekly Market Session Schedule:"
+                      : "📅 Cấu Hình Lịch Họp Chợ Trong Tuần:"}
                   </label>
                   <button
                     type="button"
                     className="btn btn-outline btn-sm"
                     onClick={addScheduleRow}
                   >
-                    ➕ Thêm Buổi Họp
+                    {isEn ? "➕ Add Session" : "➕ Thêm Buổi Họp"}
                   </button>
                 </div>
 
@@ -1079,13 +1141,13 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                         updateScheduleRow(idx, "dayOfWeek", e.target.value)
                       }
                     >
-                      <option value={1}>Thứ 2</option>
-                      <option value={2}>Thứ 3</option>
-                      <option value={3}>Thứ 4</option>
-                      <option value={4}>Thứ 5</option>
-                      <option value={5}>Thứ 6</option>
-                      <option value={6}>Thứ 7</option>
-                      <option value={7}>Chủ Nhật</option>
+                      <option value={1}>{isEn ? "Monday" : "Thứ 2"}</option>
+                      <option value={2}>{isEn ? "Tuesday" : "Thứ 3"}</option>
+                      <option value={3}>{isEn ? "Wednesday" : "Thứ 4"}</option>
+                      <option value={4}>{isEn ? "Thursday" : "Thứ 5"}</option>
+                      <option value={5}>{isEn ? "Friday" : "Thứ 6"}</option>
+                      <option value={6}>{isEn ? "Saturday" : "Thứ 7"}</option>
+                      <option value={7}>{isEn ? "Sunday" : "Chủ Nhật"}</option>
                     </select>
 
                     <input
@@ -1106,7 +1168,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                         color: "var(--text-muted)",
                       }}
                     >
-                      đến
+                      {isEn ? "to" : "đến"}
                     </span>
 
                     <input
@@ -1149,10 +1211,12 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                   className="btn btn-outline"
                   onClick={() => setShowModal(false)}
                 >
-                  Hủy Bỏ
+                  {isEn ? "Cancel" : "Hủy Bỏ"}
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  {isEditing ? "Lưu Thay Đổi (PUT)" : "Tạo Chợ (POST)"}
+                  {isEditing
+                    ? (isEn ? "Save Changes" : "Lưu Thay Đổi (PUT)")
+                    : (isEn ? "Create Market" : "Tạo Chợ (POST)")}
                 </button>
               </div>
             </form>
@@ -1188,7 +1252,9 @@ export default function AdminMarketStudio({ callApi, role, token }) {
           >
             <div className="card-top">
               <div>
-                <div className="card-heading">🏪 Quản Lý Phân Sạp Nông Dân</div>
+                <div className="card-heading">
+                  {isEn ? "🏪 Farmer Stall Allocations" : "🏪 Quản Lý Phân Sạp Nông Dân"}
+                </div>
                 <div
                   style={{
                     fontSize: "0.85rem",
@@ -1196,7 +1262,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                     marginTop: 2,
                   }}
                 >
-                  Chợ: <b>{selectedMarketForStalls.name}</b> (ID #
+                  {isEn ? "Market: " : "Chợ: "}<b>{selectedMarketForStalls.name}</b> (ID #
                   {selectedMarketForStalls.marketId})
                 </div>
               </div>
@@ -1229,7 +1295,9 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                   marginBottom: 10,
                 }}
               >
-                ➕ Chỉ Định Nông Dân Vào Gian Hàng / Sạp Mới:
+                {isEn
+                  ? "➕ Assign Farmer to New Stall:"
+                  : "➕ Chỉ Định Nông Dân Vào Gian Hàng / Sạp Mới:"}
               </div>
               <div
                 style={{
@@ -1242,7 +1310,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                 <input
                   type="number"
                   className="input-control"
-                  placeholder="User ID Nông Dân"
+                  placeholder={isEn ? "Farmer User ID" : "User ID Nông Dân"}
                   value={assignFarmerId}
                   onChange={(e) => setAssignFarmerId(e.target.value)}
                   required
@@ -1250,7 +1318,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                 <input
                   type="text"
                   className="input-control"
-                  placeholder="Mã số sạp (vd: Sạp A-08)"
+                  placeholder={isEn ? "Stall number (e.g. Stall A-08)" : "Mã số sạp (vd: Sạp A-08)"}
                   value={assignStallNumber}
                   onChange={(e) => setAssignStallNumber(e.target.value)}
                   required
@@ -1260,12 +1328,18 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                   value={assignStatus}
                   onChange={(e) => setAssignStatus(e.target.value)}
                 >
-                  <option value="ACTIVE">ACTIVE (Hoạt động)</option>
-                  <option value="REGISTERED">REGISTERED (Chờ duyệt)</option>
-                  <option value="REVOKED">REVOKED (Thu hồi)</option>
+                  <option value="ACTIVE">
+                    {isEn ? "ACTIVE (Operational)" : "ACTIVE (Hoạt động)"}
+                  </option>
+                  <option value="REGISTERED">
+                    {isEn ? "REGISTERED (Pending)" : "REGISTERED (Chờ duyệt)"}
+                  </option>
+                  <option value="REVOKED">
+                    {isEn ? "REVOKED" : "REVOKED (Thu hồi)"}
+                  </option>
                 </select>
                 <button type="submit" className="btn btn-primary">
-                  Gán Sạp
+                  {isEn ? "Assign Stall" : "Gán Sạp"}
                 </button>
               </div>
             </form>
@@ -1277,7 +1351,9 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                 marginBottom: 10,
               }}
             >
-              📋 Danh Sách Sạp Đã Phân Bổ ({marketAssignments.length}):
+              {isEn
+                ? `📋 Allocated Stalls (${marketAssignments.length}):`
+                : `📋 Danh Sách Sạp Đã Phân Bổ (${marketAssignments.length}):`}
             </div>
 
             {stallLoading ? (
@@ -1288,7 +1364,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                   color: "var(--text-muted)",
                 }}
               >
-                Đang tải danh sách sạp...
+                {isEn ? "Loading stalls..." : "Đang tải danh sách sạp..."}
               </div>
             ) : marketAssignments.length === 0 ? (
               <div
@@ -1299,7 +1375,9 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                   fontStyle: "italic",
                 }}
               >
-                Chưa có nông dân nào được phân sạp tại chợ này.
+                {isEn
+                  ? "No farmers allocated to stalls at this market yet."
+                  : "Chưa có nông dân nào được phân sạp tại chợ này."}
               </div>
             ) : (
               <div
@@ -1339,7 +1417,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                             fontSize: "0.95rem",
                           }}
                         >
-                          🎪 {a.stallNumber || "Chưa đặt số sạp"}
+                          🎪 {a.stallNumber || (isEn ? "Stall unassigned" : "Chưa đặt số sạp")}
                         </span>
                         <span
                           className="badge-tag"
@@ -1363,9 +1441,9 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                           marginTop: 2,
                         }}
                       >
-                        👨‍🌾 {a.farmerName || "Nông dân"} (ID: #{a.farmerId}) •
-                        SĐT: {a.phoneNumber || "N/A"} • Gian hàng:{" "}
-                        {a.stallName || "Chưa đặt tên"}
+                        👨‍🌾 {a.farmerName || (isEn ? "Farmer" : "Nông dân")} (ID: #{a.farmerId}) •
+                        {" "}{isEn ? "Phone: " : "SĐT: "}{a.phoneNumber || "N/A"}{isEn ? " • Stall: " : " • Gian hàng: "}
+                        {a.stallName || (isEn ? "Unnamed stall" : "Chưa đặt tên")}
                       </div>
                     </div>
 
@@ -1387,7 +1465,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                             padding: "4px 8px",
                           }}
                         >
-                          ✅ Duyệt Sạp
+                          ✅ {isEn ? "Approve Stall" : "Duyệt Sạp"}
                         </button>
                       ) : (
                         <button
@@ -1401,7 +1479,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                             color: "#fca5a5",
                           }}
                         >
-                          ⛔ Thu Hồi
+                          ⛔ {isEn ? "Revoke" : "Thu Hồi"}
                         </button>
                       )}
 
@@ -1415,7 +1493,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                           padding: "4px 8px",
                         }}
                       >
-                        🗑️ Xóa
+                        🗑️ {isEn ? "Delete" : "Xóa"}
                       </button>
                     </div>
                   </div>
@@ -1433,7 +1511,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                 className="btn btn-primary"
                 onClick={() => setShowStallModal(false)}
               >
-                Đóng
+                {isEn ? "Close" : "Đóng"}
               </button>
             </div>
           </div>

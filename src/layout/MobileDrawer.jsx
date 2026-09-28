@@ -188,6 +188,16 @@ export default function MobileDrawer({
               >
                 👨‍🌾 {isEn ? "Farmer Stalls" : "Gian hàng nông dân"}
               </button>
+              <button
+                type="button"
+                className={`ml-drawer-nav-item ${activeNav === "announcements" ? "active" : ""}`}
+                onClick={() => {
+                  onNavigate("announcements");
+                  onClose();
+                }}
+              >
+                📋 {isEn ? "Announcements Board" : "Bảng tin MarketLink"}
+              </button>
               {currentRole === "CUSTOMER" && (
                 <>
                   <button
@@ -264,6 +274,16 @@ export default function MobileDrawer({
                   >
                     💬 {isEn ? "Customer Reviews" : "Đánh giá từ khách"}
                   </button>
+                  <button
+                    type="button"
+                    className={`ml-drawer-nav-item ${activeNav === "announcements" ? "active" : ""}`}
+                    onClick={() => {
+                      onNavigate("announcements");
+                      onClose();
+                    }}
+                  >
+                    📋 {isEn ? "Announcements Board" : "Bảng tin MarketLink"}
+                  </button>
                 </>
               )}
               {currentRole === "ADMIN" && (
@@ -317,6 +337,16 @@ export default function MobileDrawer({
                     }}
                   >
                     🛡️ {isEn ? "Content Moderation" : "Kiểm duyệt & Vận hành"}
+                  </button>
+                  <button
+                    type="button"
+                    className={`ml-drawer-nav-item ${activeNav === "announcements" ? "active" : ""}`}
+                    onClick={() => {
+                      onNavigate("announcements");
+                      onClose();
+                    }}
+                  >
+                    📋 {isEn ? "Announcements Board" : "Bảng tin MarketLink"}
                   </button>
                 </>
               )}

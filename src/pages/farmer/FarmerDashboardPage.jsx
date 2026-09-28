@@ -3,7 +3,10 @@ import "@/assets/styles/pages/farmer/FarmerDashboardPage.css";
 import Button from "../../components/common/Button";
 import Badge from "../../components/common/Badge";
 import farmerService from "../../services/farmerService";
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
+  const { isEn, localizeProduceName, localizeCategoryName, localizeUnit } = useLanguage();
   const [profile, setProfile] = useState(null);
   const [kycStatus, setKycStatus] = useState(() => {
     return localStorage.getItem("ml_kyc_status") || "UNVERIFIED";
@@ -34,6 +37,7 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
       window.removeEventListener("storage", handleKycChange);
     };
   }, []);
+
   useEffect(() => {
     let isMounted = true;
     async function loadData() {
@@ -76,28 +80,31 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
       isMounted = false;
     };
   }, []);
+
   const formatCurrency = (val) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(val || 0);
   };
+
   const farmStallTitle =
-    profile?.stallName || profile?.fullName || "Chưa thiết lập sạp";
+    profile?.stallName || profile?.fullName || (isEn ? "Stall not configured yet" : "Chưa thiết lập sạp");
   const farmAddress =
-    profile?.farmAddress || "Chưa cập nhật địa chỉ trang trại";
+    profile?.farmAddress || (isEn ? "Farm address not updated" : "Chưa cập nhật địa chỉ trang trại");
+
   return (
     <div className="ml-farmer-dashboard">
       <div className="ml-farmer-dash-banner">
         <div className="ml-container ml-dash-banner-inner">
           <div>
             <div className="ml-dash-greeting">
-              👨‍🌾 Kênh Quản Lý Nông Dân / Chủ Sạp Chợ
+              {isEn ? "👨‍🌾 Farmer & Market Stall Management" : "👨‍🌾 Kênh Quản Lý Nông Dân / Chủ Sạp Chợ"}
             </div>
             <h1 className="ml-dash-title">{farmStallTitle}</h1>
             <p className="ml-dash-desc">
-              Khu vực trang trại: <strong>{farmAddress}</strong> • Chủ hộ:{" "}
-              <strong>{profile?.fullName || "Nông dân thành viên"}</strong>
+              {isEn ? "Farm Region:" : "Khu vực trang trại:"} <strong>{farmAddress}</strong> • {isEn ? "Owner:" : "Chủ hộ:"}{" "}
+              <strong>{profile?.fullName || (isEn ? "Member Farmer" : "Nông dân thành viên")}</strong>
             </p>
           </div>
 
@@ -108,7 +115,7 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
               className={kycStatus !== "VERIFIED" ? "ml-btn-unverified" : ""}
               title={
                 kycStatus !== "VERIFIED"
-                  ? "Cần duyệt KYC trước khi đăng món"
+                  ? (isEn ? "KYC approval required before listing produce" : "Cần duyệt KYC trước khi đăng món")
                   : ""
               }
               onClick={() => {
@@ -121,8 +128,8 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
               icon={<span>+</span>}
             >
               {kycStatus === "VERIFIED"
-                ? "Đăng nông sản mới"
-                : "🔒 Đăng nông sản (Chờ KYC)"}
+                ? (isEn ? "Post New Produce" : "Đăng nông sản mới")
+                : (isEn ? "🔒 Post Produce (Pending KYC)" : "🔒 Đăng nông sản (Chờ KYC)")}
             </Button>
             <Button
               variant="primary"
@@ -130,7 +137,7 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
               onClick={() => onNavigate("farmer-orders")}
               icon={<span>📦</span>}
             >
-              Duyệt đơn ra chợ (
+              {isEn ? "Review Market Orders (" : "Duyệt đơn ra chợ ("}
               {summary.placedOrders +
                 summary.acceptedOrders +
                 summary.readyOrders}
@@ -143,54 +150,68 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
       <div className="ml-container">
         {loading && (
           <div className="ml-orders-loading">
-            Đang tải dữ liệu vận hành sạp từ hệ thống...
+            {isEn ? "Loading stall operational data from system..." : "Đang tải dữ liệu vận hành sạp từ hệ thống..."}
           </div>
         )}
 
         <div className="ml-farmer-kpis-grid">
           <div className="ml-card ml-kpi-card">
             <div className="ml-kpi-header">
-              <span className="ml-kpi-title">Doanh thu thực tế đã giao</span>
+              <span className="ml-kpi-title">
+                {isEn ? "Completed Delivered Revenue" : "Doanh thu thực tế đã giao"}
+              </span>
               <span className="ml-kpi-icon">💵</span>
             </div>
             <div className="ml-kpi-val highlight">
               {formatCurrency(summary.totalRevenue)}
             </div>
             <div className="ml-kpi-hint">
-              Từ {summary.completedOrders} đơn hoàn thành
+              {isEn ? `From ${summary.completedOrders} completed orders` : `Từ ${summary.completedOrders} đơn hoàn thành`}
             </div>
           </div>
 
           <div className="ml-card ml-kpi-card">
             <div className="ml-kpi-header">
-              <span className="ml-kpi-title">Đơn mới chờ tiếp nhận</span>
+              <span className="ml-kpi-title">
+                {isEn ? "New Orders Awaiting Acceptance" : "Đơn mới chờ tiếp nhận"}
+              </span>
               <span className="ml-kpi-icon">⏳</span>
             </div>
-            <div className="ml-kpi-val warning">{summary.placedOrders} Đơn</div>
-            <div className="ml-kpi-hint">Cần xác nhận chuẩn bị thu hoạch</div>
+            <div className="ml-kpi-val warning">
+              {summary.placedOrders} {isEn ? "Orders" : "Đơn"}
+            </div>
+            <div className="ml-kpi-hint">
+              {isEn ? "Requires harvest confirmation" : "Cần xác nhận chuẩn bị thu hoạch"}
+            </div>
           </div>
 
           <div className="ml-card ml-kpi-card">
             <div className="ml-kpi-header">
-              <span className="ml-kpi-title">Đang thu hoạch & sẵn sàng</span>
+              <span className="ml-kpi-title">
+                {isEn ? "Harvesting & Ready for Pickup" : "Đang thu hoạch & sẵn sàng"}
+              </span>
               <span className="ml-kpi-icon">🧺</span>
             </div>
             <div className="ml-kpi-val success">
-              {summary.acceptedOrders + summary.readyOrders} Đơn
+              {summary.acceptedOrders + summary.readyOrders} {isEn ? "Orders" : "Đơn"}
             </div>
             <div className="ml-kpi-hint">
-              {summary.readyOrders} đơn đã đóng gói chờ giao
+              {isEn ? `${summary.readyOrders} orders packed awaiting customer` : `${summary.readyOrders} đơn đã đóng gói chờ giao`}
             </div>
           </div>
 
           <div className="ml-card ml-kpi-card">
             <div className="ml-kpi-header">
-              <span className="ml-kpi-title">Tổng đơn hàng đã phục vụ</span>
+              <span className="ml-kpi-title">
+                {isEn ? "Total Pre-orders Served" : "Tổng đơn hàng đã phục vụ"}
+              </span>
               <span className="ml-kpi-icon">⭐</span>
             </div>
-            <div className="ml-kpi-val">{summary.totalOrders} Đơn</div>
+            <div className="ml-kpi-val">
+              {summary.totalOrders} {isEn ? "Orders" : "Đơn"}
+            </div>
             <div className="ml-kpi-hint">
-              {summary.cancelledOrders} đơn đã hủy/hoàn kho
+              {isEn ? `${summary.cancelledOrders} orders cancelled/returned` : `${summary.cancelledOrders} đơn đã hủy/hoàn kho`}
             </div>
           </div>
         </div>
@@ -201,11 +222,10 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
               <div className="ml-packing-header">
                 <div>
                   <h3 className="ml-card-heading">
-                    🧺 Danh sách đơn cần thu hoạch & đóng gói tại sạp
+                    {isEn ? "🧺 Orders to Harvest & Pack at Market Stall" : "🧺 Danh sách đơn cần thu hoạch & đóng gói tại sạp"}
                   </h3>
                   <span className="ml-card-subheading">
-                    Kiểm tra số lượng trước giờ họp chợ để bàn giao đúng hẹn cho
-                    khách
+                    {isEn ? "Check quantities before market opening for timely handover" : "Kiểm tra số lượng trước giờ họp chợ để bàn giao đúng hẹn cho khách"}
                   </span>
                 </div>
                 <Button
@@ -213,7 +233,7 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
                   size="sm"
                   onClick={() => onNavigate("farmer-orders")}
                 >
-                  Xem chi tiết đơn
+                  {isEn ? "View order details" : "Xem chi tiết đơn"}
                 </Button>
               </div>
 
@@ -226,7 +246,7 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
                       color: "var(--color-text-muted)",
                     }}
                   >
-                    <span>✓ Tất cả đơn đặt trước đều đã được xử lý xong!</span>
+                    <span>{isEn ? "✓ All pre-orders have been processed!" : "✓ Tất cả đơn đặt trước đều đã được xử lý xong!"}</span>
                   </div>
                 ) : (
                   pendingOrders.slice(0, 5).map((order) => (
@@ -242,13 +262,13 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
                         </span>
                         <div>
                           <div className="ml-pack-name">
-                            Đơn #{order.orderCode} • Khách:{" "}
+                            {isEn ? "Order #" : "Đơn #"}{order.orderCode} • {isEn ? "Customer:" : "Khách:"}{" "}
                             <strong>{order.customerName}</strong> (
                             {order.customerPhone})
                           </div>
                           <div className="ml-pack-detail">
-                            Ngày hẹn: <strong>{order.pickupDate}</strong> (
-                            {order.slotTimeRange || "Ca sáng"}) • Tổng:{" "}
+                            {isEn ? "Pickup Date:" : "Ngày hẹn:"} <strong>{order.pickupDate}</strong> (
+                            {order.slotTimeRange || (isEn ? "Morning slot" : "Ca sáng")}) • {isEn ? "Total:" : "Tổng:"}{" "}
                             {formatCurrency(order.totalAmount)}
                           </div>
                         </div>
@@ -257,8 +277,8 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
                         className={`ml-pack-badge ${order.orderStatus === "READY_FOR_PICKUP" ? "ready" : "in-progress"}`}
                       >
                         {order.orderStatus === "READY_FOR_PICKUP"
-                          ? "Sẵn sàng tại sạp"
-                          : "Chờ đóng gói"}
+                          ? (isEn ? "Ready at stall" : "Sẵn sàng tại sạp")
+                          : (isEn ? "Packing pending" : "Chờ đóng gói")}
                       </span>
                     </div>
                   ))
@@ -273,10 +293,13 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
               >
                 <span className="ml-qnav-icon">🥬</span>
                 <div>
-                  <h4 className="ml-qnav-title">Kho Nông Sản Tại Sạp</h4>
+                  <h4 className="ml-qnav-title">
+                    {isEn ? "Stall Produce Inventory" : "Kho Nông Sản Tại Sạp"}
+                  </h4>
                   <p className="ml-qnav-desc">
-                    Cập nhật số lượng, chỉnh giá bán, bật tắt tình trạng còn
-                    hàng và định mức tuần.
+                    {isEn
+                      ? "Update quantities, adjust prices, toggle stock availability and weekly quotas."
+                      : "Cập nhật số lượng, chỉnh giá bán, bật tắt tình trạng còn hàng và định mức tuần."}
                   </p>
                 </div>
               </div>
@@ -287,10 +310,13 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
               >
                 <span className="ml-qnav-icon">🎪</span>
                 <div>
-                  <h4 className="ml-qnav-title">Quản Lý Sạp & Ca Nhận Hàng</h4>
+                  <h4 className="ml-qnav-title">
+                    {isEn ? "Stall Profile & Pickup Slots" : "Quản Lý Sạp & Ca Nhận Hàng"}
+                  </h4>
                   <p className="ml-qnav-desc">
-                    Cấu hình khung giờ chốt đơn trước phiên, tạo ca nhận hàng và
-                    hồ sơ KYC.
+                    {isEn
+                      ? "Configure cutoff hours, setup pickup time slots, and manage KYC documents."
+                      : "Cấu hình khung giờ chốt đơn trước phiên, tạo ca nhận hàng và hồ sơ KYC."}
                   </p>
                 </div>
               </div>
@@ -301,10 +327,13 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
               >
                 <span className="ml-qnav-icon">💬</span>
                 <div>
-                  <h4 className="ml-qnav-title">Phản Hồi Đánh Giá</h4>
+                  <h4 className="ml-qnav-title">
+                    {isEn ? "Customer Reviews" : "Phản Hồi Đánh Giá"}
+                  </h4>
                   <p className="ml-qnav-desc">
-                    Xem cảm nhận của khách hàng sau khi nhận rau và gửi lời cảm
-                    ơn từ chủ sạp.
+                    {isEn
+                      ? "Read shopper feedback after pickups and send personal replies from your stall."
+                      : "Xem cảm nhận của khách hàng sau khi nhận rau và gửi lời cảm ơn từ chủ sạp."}
                   </p>
                 </div>
               </div>
@@ -313,9 +342,11 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
 
           <div className="ml-farmer-right-section">
             <div className="ml-card ml-bestseller-card">
-              <h3 className="ml-card-heading">🏆 Nông Sản Bán Chạy Nhất</h3>
+              <h3 className="ml-card-heading">
+                {isEn ? "🏆 Best-Selling Produce" : "🏆 Nông Sản Bán Chạy Nhất"}
+              </h3>
               <p className="ml-card-subheading">
-                Dữ liệu thực tế từ các đơn hàng thành công
+                {isEn ? "Real data from successful pre-orders" : "Dữ liệu thực tế từ các đơn hàng thành công"}
               </p>
 
               <div className="ml-bestseller-list">
@@ -328,7 +359,7 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
                       fontSize: "14px",
                     }}
                   >
-                    Chưa có dữ liệu nông sản bán chạy
+                    {isEn ? "No best-seller produce data yet" : "Chưa có dữ liệu nông sản bán chạy"}
                   </div>
                 ) : (
                   bestSellers.map((item, idx) => (
@@ -336,14 +367,14 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
                       <span className="ml-rank-num">#{idx + 1}</span>
                       <div className="ml-bestseller-info">
                         <div className="ml-bs-name">
-                          {item.productName || item.name}
+                          {localizeProduceName(item.productName || item.name)}
                         </div>
                         <div className="ml-bs-meta">
-                          {item.categoryName || item.category || "Nông sản sạch"}{" "}
-                          • Đã bán{" "}
+                          {localizeCategoryName(item.categoryName || item.category || (isEn ? "Clean Produce" : "Nông sản sạch"))}{" "}
+                          • {isEn ? "Sold" : "Đã bán"}{" "}
                           <strong>
                             {item.totalQuantitySold || item.salesCount || 1}{" "}
-                            {item.unit || "kg"}
+                            {localizeUnit(item.unit || "kg")}
                           </strong>
                         </div>
                       </div>
@@ -356,9 +387,10 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
               </div>
 
               <div className="ml-bestseller-footer">
-                💡 <em>Mẹo vận hành sạp:</em> Rau củ hái sớm thường được đặt
-                trước nhiều nhất trong ca 07:00 - 08:30. Hãy chuẩn bị sẵn giỏ
-                nông sản trước giờ chợ mở!
+                💡 <em>{isEn ? "Stall Tip:" : "Mẹo vận hành sạp:"}</em>{" "}
+                {isEn
+                  ? "Early morning harvests are most frequently pre-ordered for the 07:00 - 08:30 slot. Prepare fresh baskets before market gates open!"
+                  : "Rau củ hái sớm thường được đặt trước nhiều nhất trong ca 07:00 - 08:30. Hãy chuẩn bị sẵn giỏ nông sản trước giờ chợ mở!"}
               </div>
             </div>
           </div>

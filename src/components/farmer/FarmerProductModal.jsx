@@ -5,6 +5,7 @@ import Button from "../common/Button";
 import ImageUploadInput from "../ImageUploadInput";
 import farmerService from "../../services/farmerService";
 import productService from "../../services/productService";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function FarmerProductModal({
   isOpen,
@@ -13,6 +14,7 @@ export default function FarmerProductModal({
   assignedMarkets = [],
   onSave,
 }) {
+  const { isEn, localizeCategoryName, localizeMarketName } = useLanguage();
   const [name, setName] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [price, setPrice] = useState("");
@@ -100,13 +102,16 @@ export default function FarmerProductModal({
       }
     }
   }, [product, isOpen, sellableStalls]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg("");
     if (!selectedStallKey) {
       setErrorMsg(
-        "Vui lòng chọn sạp và phiên chợ chỉ định để đăng bán sản phẩm.",
+        isEn
+          ? "Please select a stall and designated market to sell your produce."
+          : "Vui lòng chọn sạp và phiên chợ chỉ định để đăng bán sản phẩm.",
       );
       setLoading(false);
       return;
@@ -114,11 +119,10 @@ export default function FarmerProductModal({
     const [mId, sNum] = selectedStallKey.split("|");
     const payload = {
       marketId: Number(mId),
-      stallNumber: sNum || "Chờ phân sạp",
+      stallNumber: sNum || (isEn ? "Pending allocation" : "Chờ phân sạp"),
       categoryId: Number(categoryId),
       name: name.trim(),
-      description:
-        description.trim(),
+      description: description.trim(),
       unit: unit.trim(),
       price: Number(price),
       currentStock: Number(stockQuantity),
@@ -133,22 +137,29 @@ export default function FarmerProductModal({
       console.warn("Product save error", err);
       setErrorMsg(
         err?.message ||
-          "Không thể lưu sản phẩm. Vui lòng kiểm tra lại thông tin.",
+          (isEn
+            ? "Cannot save produce. Please verify provided fields."
+            : "Không thể lưu sản phẩm. Vui lòng kiểm tra lại thông tin."),
       );
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={
         product
-          ? "Chỉnh Sửa Nông Sản Tại Sạp"
-          : "Thêm Nông Sản Mới Cho Phiên Chợ"
+          ? (isEn ? "Edit Stall Produce" : "Chỉnh Sửa Nông Sản Tại Sạp")
+          : (isEn ? "Add New Produce for Farmers' Market" : "Thêm Nông Sản Mới Cho Phiên Chợ")
       }
-      subtitle="Sản phẩm sẽ được liên kết trực tiếp vào sạp chỉ định tại phiên chợ"
+      subtitle={
+        isEn
+          ? "Produce will be linked directly to your designated market stall"
+          : "Sản phẩm sẽ được liên kết trực tiếp vào sạp chỉ định tại phiên chợ"
+      }
       maxWidth="560px"
     >
       <form onSubmit={handleSubmit} className="ml-prod-form">
@@ -187,7 +198,7 @@ export default function FarmerProductModal({
               marginBottom: "6px",
             }}
           >
-            <span>🏪</span> Sạp & Phiên chợ bày bán chỉ định (*):
+            <span>🏪</span> {isEn ? "Assigned Market & Stall (*):" : "Sạp & Phiên chợ bày bán chỉ định (*):"}
           </label>
           {loadingStalls ? (
             <div
@@ -196,7 +207,7 @@ export default function FarmerProductModal({
                 color: "#166534",
               }}
             >
-              Đang tải danh sách sạp đã đăng ký...
+              {isEn ? "Loading registered stalls..." : "Đang tải danh sách sạp đã đăng ký..."}
             </div>
           ) : sellableStalls.length === 0 ? (
             <div
@@ -207,9 +218,9 @@ export default function FarmerProductModal({
                 lineHeight: "1.4",
               }}
             >
-              ⚠️ Bạn chưa có sạp nào được đăng ký tại các phiên chợ. Vui lòng
-              vào trang "Chợ Nông Sản" để đăng ký tham gia chợ trước khi đăng
-              bán sản phẩm.
+              ⚠️ {isEn
+                ? "You do not have any registered stalls yet. Please go to the 'Farmers' Markets' section to register a stall before listing produce."
+                : "Bạn chưa có sạp nào được đăng ký tại các phiên chợ. Vui lòng vào trang 'Chợ Nông Sản' để đăng ký tham gia chợ trước khi đăng bán sản phẩm."}
             </div>
           ) : (
             <select
@@ -223,10 +234,11 @@ export default function FarmerProductModal({
                 fontWeight: 500,
               }}
             >
-              <option value="">-- Chọn sạp chỉ định bày bán --</option>
+              <option value="">{isEn ? "-- Select designated market stall --" : "-- Chọn sạp chỉ định bày bán --"}</option>
               {sellableStalls.map((st, idx) => {
                 const key = `${st.marketId}|${st.stallNumber || ""}`;
-                const label = `${st.stallNumber || "Sạp chờ phân"} — ${st.marketName || `Chợ #${st.marketId}`} ${st.status ? `[${st.status}]` : ""}`;
+                const mName = localizeMarketName(st.marketName || `Market #${st.marketId}`);
+                const label = `${st.stallNumber || (isEn ? "Pending stall" : "Sạp chờ phân")} — ${mName} ${st.status ? `[${st.status}]` : ""}`;
                 return (
                   <option key={idx} value={key}>
                     {label}
@@ -243,38 +255,39 @@ export default function FarmerProductModal({
               color: "#15803d",
             }}
           >
-            ℹ️ Khi khách hàng ghé thăm sạp này trên sàn hoặc tại điểm chợ, hệ
-            thống sẽ hiển thị đúng sản phẩm này.
+            ℹ️ {isEn
+              ? "When shoppers browse this stall online or at the market, this exact item will be shown."
+              : "Khi khách hàng ghé thăm sạp này trên sàn hoặc tại điểm chợ, hệ thống sẽ hiển thị đúng sản phẩm này."}
           </small>
         </div>
 
         <div className="ml-form-group">
-          <label className="ml-form-label">Tên nông sản:</label>
+          <label className="ml-form-label">{isEn ? "Produce Name:" : "Tên nông sản:"}</label>
           <input
             type="text"
             className="ml-form-input"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="VD: Cải bó xôi hữu cơ Ba Vì..."
+            placeholder={isEn ? "e.g. Ba Vi Organic Baby Spinach..." : "VD: Cải bó xôi hữu cơ Ba Vì..."}
             required
           />
         </div>
 
         <div className="ml-form-grid-2">
           <div className="ml-form-group">
-            <label className="ml-form-label">Phân loại danh mục:</label>
+            <label className="ml-form-label">{isEn ? "Produce Category:" : "Phân loại danh mục:"}</label>
             <select
               className="ml-form-select"
               value={categoryId}
               onChange={(e) => setCategoryId(Number(e.target.value))}
               required
             >
-              <option value="">-- Chọn danh mục --</option>
+              <option value="">{isEn ? "-- Select category --" : "-- Chọn danh mục --"}</option>
               {categories.map((c) => {
                 const cId = c.categoryId || c.id;
                 return (
                   <option key={cId} value={cId}>
-                    {c.name}
+                    {localizeCategoryName(c.name)}
                   </option>
                 );
               })}
@@ -282,13 +295,13 @@ export default function FarmerProductModal({
           </div>
 
           <div className="ml-form-group">
-            <label className="ml-form-label">Đơn vị đóng gói / bán:</label>
+            <label className="ml-form-label">{isEn ? "Packaging / Unit:" : "Đơn vị đóng gói / bán:"}</label>
             <input
               type="text"
               className="ml-form-input"
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
-              placeholder="kg, bó, hộp 500g..."
+              placeholder={isEn ? "kg, bundle, 500g box..." : "kg, bó, hộp 500g..."}
               required
             />
           </div>
@@ -296,7 +309,7 @@ export default function FarmerProductModal({
 
         <div className="ml-form-grid-2">
           <div className="ml-form-group">
-            <label className="ml-form-label">Đơn giá bán tại sạp (VNĐ):</label>
+            <label className="ml-form-label">{isEn ? "Stall Unit Price (VND):" : "Đơn giá bán tại sạp (VNĐ):"}</label>
             <input
               type="number"
               className="ml-form-input"
@@ -310,7 +323,7 @@ export default function FarmerProductModal({
 
           <div className="ml-form-group">
             <label className="ml-form-label">
-              Số lượng sẵn sàng đặt trước:
+              {isEn ? "Available Pre-order Quantity:" : "Số lượng sẵn sàng đặt trước:"}
             </label>
             <input
               type="number"
@@ -325,29 +338,29 @@ export default function FarmerProductModal({
 
         <div className="ml-form-group">
           <label className="ml-form-label">
-            Mô tả độ tươi & phương pháp chăm sóc:
+            {isEn ? "Freshness & Farming Method Description:" : "Mô tả độ tươi & phương pháp chăm sóc:"}
           </label>
           <textarea
             className="ml-form-textarea"
             rows="2"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="VD: Rau cắt lúc 4h30 sáng, tưới nước suối nguồn tự nhiên..."
+            placeholder={isEn ? "e.g. Harvested at 4:30 AM, grown with spring mountain water..." : "VD: Rau cắt lúc 4h30 sáng, tưới nước suối nguồn tự nhiên..."}
           />
         </div>
 
         <div className="ml-form-group">
-          <label className="ml-form-label">Ảnh chụp thực tế nông sản:</label>
+          <label className="ml-form-label">{isEn ? "Actual Produce Photo:" : "Ảnh chụp thực tế nông sản:"}</label>
           <ImageUploadInput
             value={imageUrl}
             onChange={setImageUrl}
-            placeholder="Dán link ảnh hoặc tải ảnh nông sản lên"
+            placeholder={isEn ? "Paste image URL or upload produce photo" : "Dán link ảnh hoặc tải ảnh nông sản lên"}
           />
         </div>
 
         <div className="ml-prod-actions">
           <Button variant="ghost" onClick={onClose} type="button">
-            Hủy bỏ
+            {isEn ? "Cancel" : "Hủy bỏ"}
           </Button>
           <Button
             type="submit"
@@ -355,7 +368,9 @@ export default function FarmerProductModal({
             loading={loading}
             disabled={sellableStalls.length === 0 && !product}
           >
-            {product ? "Cập nhật nông sản" : "Đăng bán vào sạp"}
+            {product
+              ? (isEn ? "Update Produce" : "Cập nhật nông sản")
+              : (isEn ? "Publish to Stall" : "Đăng bán vào sạp")}
           </Button>
         </div>
       </form>

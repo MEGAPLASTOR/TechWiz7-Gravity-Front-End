@@ -6,16 +6,32 @@ import Pagination from "../../components/common/Pagination";
 import ImageUploadInput from "../../components/ImageUploadInput";
 import farmerService from "../../services/farmerService";
 import marketService from "../../services/marketService";
-const DAY_OF_WEEK_NAMES = {
-  1: "Thứ Hai",
-  2: "Thứ Ba",
-  3: "Thứ Tư",
-  4: "Thứ Năm",
-  5: "Thứ Sáu",
-  6: "Thứ Bảy",
-  7: "Chủ Nhật",
+import { useLanguage } from "../../context/LanguageContext";
+
+const getDayOfWeekName = (day, isEn) => {
+  const viMap = {
+    1: "Thứ Hai",
+    2: "Thứ Ba",
+    3: "Thứ Tư",
+    4: "Thứ Năm",
+    5: "Thứ Sáu",
+    6: "Thứ Bảy",
+    7: "Chủ Nhật",
+  };
+  const enMap = {
+    1: "Monday",
+    2: "Tuesday",
+    3: "Wednesday",
+    4: "Thursday",
+    5: "Friday",
+    6: "Saturday",
+    7: "Sunday",
+  };
+  return isEn ? (enMap[day] || `Day ${day}`) : (viMap[day] || `Thứ ${day}`);
 };
+
 export default function FarmerStallProfilePage({ initialTab = "profile" }) {
+  const { isEn, localizeMarketName } = useLanguage();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [loading, setLoading] = useState(false);
   const [alertSuccess, setAlertSuccess] = useState("");
@@ -108,7 +124,11 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
   };
   const requireVerifiedKyc = () => {
     if (kycData?.kycStatus === "VERIFIED") return true;
-    notifyError("Vui lòng hoàn tất và chờ duyệt KYC trước khi thực hiện thao tác bán hàng.");
+    notifyError(
+      isEn
+        ? "Please complete and wait for KYC verification before performing stall operations."
+        : "Vui lòng hoàn tất và chờ duyệt KYC trước khi thực hiện thao tác bán hàng."
+    );
     setActiveTab("kyc");
     return false;
   };
@@ -248,11 +268,15 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
         longitude: editProfileForm.longitude,
       }));
       setIsEditProfileModalOpen(false);
-      notifySuccess("Đã cập nhật thông tin hồ sơ nhà vườn thành công!");
+      notifySuccess(
+        isEn
+          ? "Stall and farm profile updated successfully!"
+          : "Đã cập nhật thông tin hồ sơ nhà vườn thành công!"
+      );
     } catch (err) {
       notifyError(
-        "Cập nhật hồ sơ thất bại: " +
-          (err.response?.data?.message || err.message),
+        (isEn ? "Failed to update profile: " : "Cập nhật hồ sơ thất bại: ") +
+          (err.response?.data?.message || err.message)
       );
     } finally {
       setSavingProfile(false);
@@ -267,27 +291,39 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
         dayOfWeek: Number(cutoffForm.dayOfWeek),
         cutoffHoursBefore: Number(cutoffForm.cutoffHoursBefore),
       });
-      notifySuccess("Đã thiết lập khung giờ chốt đơn trước phiên họp chợ!");
+      notifySuccess(
+        isEn
+          ? "Pre-order cutoff hours configured successfully!"
+          : "Đã thiết lập khung giờ chốt đơn trước phiên họp chợ!"
+      );
       setIsCutoffModalOpen(false);
       const updated = await farmerService.getFarmerCutoffSettings();
       setCutoffSettings(updated || []);
     } catch (err) {
       notifyError(
-        "Lưu hạn chốt đơn thất bại: " +
-          (err.response?.data?.message || err.message),
+        (isEn ? "Failed to save cutoff rule: " : "Lưu hạn chốt đơn thất bại: ") +
+          (err.response?.data?.message || err.message)
       );
     }
   };
   const handleDeleteCutoff = async (id) => {
-    if (window.confirm("Bạn có chắc muốn xóa cấu hình chốt đơn này?")) {
+    if (
+      window.confirm(
+        isEn
+          ? "Are you sure you want to delete this cutoff setting?"
+          : "Bạn có chắc muốn xóa cấu hình chốt đơn này?"
+      )
+    ) {
       try {
         await farmerService.deleteFarmerCutoffSetting(id);
         setCutoffSettings((prev) => prev.filter((c) => c.settingId !== id));
-        notifySuccess("Đã xóa cấu hình chốt đơn.");
+        notifySuccess(
+          isEn ? "Cutoff setting removed." : "Đã xóa cấu hình chốt đơn."
+        );
       } catch (err) {
         notifyError(
-          "Xóa cấu hình thất bại: " +
-            (err.response?.data?.message || err.message),
+          (isEn ? "Failed to delete cutoff: " : "Xóa cấu hình thất bại: ") +
+            (err.response?.data?.message || err.message)
         );
       }
     }
@@ -308,27 +344,39 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
             : slotForm.endTime,
         maxOrdersCapacity: Number(slotForm.maxOrdersCapacity) || 15,
       });
-      notifySuccess("Đã thêm ca đón khách mới tại sạp chợ!");
+      notifySuccess(
+        isEn
+          ? "New pickup slot added successfully!"
+          : "Đã thêm ca đón khách mới tại sạp chợ!"
+      );
       setIsSlotModalOpen(false);
       const updated = await farmerService.getFarmerPickupSlots();
       setPickupSlots(updated || []);
     } catch (err) {
       notifyError(
-        "Tạo ca nhận hàng thất bại: " +
-          (err.response?.data?.message || err.message),
+        (isEn ? "Failed to create pickup slot: " : "Tạo ca nhận hàng thất bại: ") +
+          (err.response?.data?.message || err.message)
       );
     }
   };
   const handleDeleteSlot = async (id) => {
-    if (window.confirm("Bạn có chắc muốn xóa ca đón khách này?")) {
+    if (
+      window.confirm(
+        isEn
+          ? "Are you sure you want to delete this pickup slot?"
+          : "Bạn có chắc muốn xóa ca đón khách này?"
+      )
+    ) {
       try {
         await farmerService.deleteFarmerPickupSlot(id);
         setPickupSlots((prev) => prev.filter((s) => s.slotId !== id));
-        notifySuccess("Đã xóa ca nhận hàng.");
+        notifySuccess(
+          isEn ? "Pickup slot removed." : "Đã xóa ca nhận hàng."
+        );
       } catch (err) {
         notifyError(
-          "Xóa ca nhận thất bại: " +
-            (err.response?.data?.message || err.message),
+          (isEn ? "Failed to delete slot: " : "Xóa ca nhận thất bại: ") +
+            (err.response?.data?.message || err.message)
         );
       }
     }
@@ -336,7 +384,11 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
   const handleRegisterMarket = async (e) => {
     e.preventDefault();
     if (kycData?.kycStatus !== "VERIFIED") {
-      notifyError("Bạn chỉ có thể đăng ký sạp sau khi hồ sơ KYC được duyệt.");
+      notifyError(
+        isEn
+          ? "You can only register for stall spaces after your KYC profile is verified."
+          : "Bạn chỉ có thể đăng ký sạp sau khi hồ sơ KYC được duyệt."
+      );
       setIsRegisterMarketModalOpen(false);
       setActiveTab("kyc");
       return;
@@ -344,15 +396,20 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
     try {
       await farmerService.registerMarket({
         marketId: Number(registerMarketForm.marketId),
-        stallNumber: registerMarketForm.stallNumber || "Sạp Dự Kiến",
+        stallNumber: registerMarketForm.stallNumber || (isEn ? "Prospective Stall" : "Sạp Dự Kiến"),
       });
-      notifySuccess("Đã gửi đơn đăng ký tham gia sạp chợ thành công!");
+      notifySuccess(
+        isEn
+          ? "Stall registration submitted successfully!"
+          : "Đã gửi đơn đăng ký tham gia sạp chợ thành công!"
+      );
       setIsRegisterMarketModalOpen(false);
       const updated = await farmerService.getMyMarketAssignments();
       setAssignedMarkets(updated || []);
     } catch (err) {
       notifyError(
-        "Đăng ký chợ thất bại: " + (err.response?.data?.message || err.message),
+        (isEn ? "Market registration failed: " : "Đăng ký chợ thất bại: ") +
+          (err.response?.data?.message || err.message)
       );
     }
   };
@@ -363,7 +420,11 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
       !kycForm.citizenBackUrl ||
       !kycForm.vietGapUrl
     ) {
-      notifyError("Vui lòng tải đủ 3 ảnh: CCCD mặt trước, CCCD mặt sau và VietGAP.");
+      notifyError(
+        isEn
+          ? "Please upload all 3 images: ID Front, ID Back, and VietGAP certificate."
+          : "Vui lòng tải đủ 3 ảnh: CCCD mặt trước, CCCD mặt sau và VietGAP."
+      );
       return;
     }
     if (
@@ -371,7 +432,11 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
       !kycForm.vietGapIssuedDate ||
       !kycForm.vietGapExpiryDate
     ) {
-      notifyError("Vui lòng nhập đủ số giấy và ngày cấp, ngày hết hạn VietGAP.");
+      notifyError(
+        isEn
+          ? "Please fill in certificate number, issue date, and expiry date."
+          : "Vui lòng nhập đủ số giấy và ngày cấp, ngày hết hạn VietGAP."
+      );
       return;
     }
     try {
@@ -392,15 +457,17 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
         ],
       });
       notifySuccess(
-        "Hồ sơ định danh KYC & Chứng nhận đã được nộp và chờ Quản trị viên duyệt!",
+        isEn
+          ? "KYC profile & certificate submitted. Awaiting Administrator verification!"
+          : "Hồ sơ định danh KYC & Chứng nhận đã được nộp và chờ Quản trị viên duyệt!"
       );
       setIsKycModalOpen(false);
       const updatedKyc = await farmerService.getFarmerKycStatus();
       setKycData(updatedKyc);
     } catch (err) {
       notifyError(
-        "Nộp hồ sơ KYC thất bại: " +
-          (err.response?.data?.message || err.message),
+        (isEn ? "Failed to submit KYC: " : "Nộp hồ sơ KYC thất bại: ") +
+          (err.response?.data?.message || err.message)
       );
     }
   };
@@ -409,19 +476,19 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
       case "VERIFIED":
         return (
           <Badge variant="ready" dot>
-            Đã xác thực định danh (VERIFIED)
+            {isEn ? "Verified Identity (VERIFIED)" : "Đã xác thực định danh (VERIFIED)"}
           </Badge>
         );
       case "PENDING":
         return (
           <Badge variant="pending" dot>
-            Đang chờ Ban Quản Trị duyệt (PENDING)
+            {isEn ? "Pending Admin Approval (PENDING)" : "Đang chờ Ban Quản Trị duyệt (PENDING)"}
           </Badge>
         );
       case "REJECTED":
-        return <Badge variant="cancelled">Bị từ chối hồ sơ (REJECTED)</Badge>;
+        return <Badge variant="cancelled">{isEn ? "Rejected (REJECTED)" : "Bị từ chối hồ sơ (REJECTED)"}</Badge>;
       default:
-        return <Badge variant="neutral">Chưa định danh (UNVERIFIED)</Badge>;
+        return <Badge variant="neutral">{isEn ? "Unverified (UNVERIFIED)" : "Chưa định danh (UNVERIFIED)"}</Badge>;
     }
   };
   return (
@@ -429,14 +496,15 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
       <div className="ml-stall-banner">
         <div className="ml-container">
           <span className="ml-section-subtitle">
-            Phân hệ Chủ Sạp & Nhà Vườn
+            {isEn ? "Stall & Farm Profile Management" : "Phân hệ Chủ Sạp & Nhà Vườn"}
           </span>
           <h1 className="ml-stall-page-title">
-            Quản Lý Hồ Sơ Gian Hàng & Vận Hành Chợ
+            {isEn ? "Manage Stall Profile & Market Operations" : "Quản Lý Hồ Sơ Gian Hàng & Vận Hành Chợ"}
           </h1>
           <p className="ml-stall-page-desc">
-            Cập nhật câu chuyện canh tác hữu cơ, thiết lập giờ chốt đơn, các ca
-            đón khách tại sạp, đăng ký chợ phiên và theo dõi chứng nhận KYC.
+            {isEn
+              ? "Update your organic farming story, set pre-order cutoff hours, configure shopper pickup slots, register for weekend markets, and monitor KYC certificates."
+              : "Cập nhật câu chuyện canh tác hữu cơ, thiết lập giờ chốt đơn, các ca đón khách tại sạp, đăng ký chợ phiên và theo dõi chứng nhận KYC."}
           </p>
         </div>
       </div>
@@ -455,7 +523,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
             className={`ml-inv-main-tab ${activeTab === "profile" ? "active" : ""}`}
             onClick={() => setActiveTab("profile")}
           >
-            🏡 Hồ sơ nhà vườn
+            🏡 {isEn ? "Farm & Stall Profile" : "Hồ sơ nhà vườn"}
           </button>
           <button
             type="button"
@@ -464,7 +532,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
               if (requireVerifiedKyc()) setActiveTab("cutoff");
             }}
           >
-            ⏰ Giờ chốt đơn ({cutoffSettings.length})
+            ⏰ {isEn ? `Cutoff Hours (${cutoffSettings.length})` : `Giờ chốt đơn (${cutoffSettings.length})`}
           </button>
           <button
             type="button"
@@ -473,7 +541,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
               if (requireVerifiedKyc()) setActiveTab("slots");
             }}
           >
-            🕒 Ca đón khách ({pickupSlots.length})
+            🕒 {isEn ? `Pickup Slots (${pickupSlots.length})` : `Ca đón khách (${pickupSlots.length})`}
           </button>
           <button
             type="button"
@@ -482,14 +550,14 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
               if (requireVerifiedKyc()) setActiveTab("markets");
             }}
           >
-            🎪 Sạp chợ đã đăng ký ({assignedMarkets.length})
+            🎪 {isEn ? `Registered Stalls (${assignedMarkets.length})` : `Sạp chợ đã đăng ký (${assignedMarkets.length})`}
           </button>
           <button
             type="button"
             className={`ml-inv-main-tab ${activeTab === "kyc" ? "active" : ""}`}
             onClick={() => setActiveTab("kyc")}
           >
-            🛡️ Định danh KYC & VietGAP
+            🛡️ {isEn ? "KYC & VietGAP Verification" : "Định danh KYC & VietGAP"}
           </button>
         </div>
 
@@ -524,19 +592,19 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                     <div className="ml-profile-hero-text">
                       <div className="ml-profile-title-row">
                         <h2 className="ml-profile-farm-title">
-                          {profile.farmName}
+                          {profile.farmName || (isEn ? "Family Farm Stall" : "Sạp Nông Trại")}
                         </h2>
                         {profile.isApproved && (
                           <span
                             className="ml-profile-verified-badge"
-                            title="Đã được ban quản trị xét duyệt"
+                            title={isEn ? "Verified by platform admin" : "Đã được ban quản trị xét duyệt"}
                           >
-                            ✓ Đã xác minh
+                            ✓ {isEn ? "Verified" : "Đã xác minh"}
                           </span>
                         )}
                       </div>
                       <p className="ml-profile-owner-sub">
-                        👤 Chủ hộ: <strong>{profile.fullName}</strong> • 📞{" "}
+                        👤 {isEn ? "Owner:" : "Chủ hộ:"} <strong>{profile.fullName}</strong> • 📞{" "}
                         <strong>{profile.phone}</strong> • 📍 {profile.address}
                       </p>
                     </div>
@@ -549,17 +617,17 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                       size="md"
                       onClick={handleOpenEditProfileModal}
                     >
-                      ✏️ Chỉnh sửa hồ sơ
+                      ✏️ {isEn ? "Edit Profile" : "Chỉnh sửa hồ sơ"}
                     </Button>
                   </div>
                 </div>
 
                 <div className="ml-profile-tags-row">
-                  <span className="ml-profile-tag">🌱 Canh tác hữu cơ</span>
-                  <span className="ml-profile-tag">🌾 Chứng nhận VietGAP</span>
-                  <span className="ml-profile-tag">🚚 Giao tại phiên chợ</span>
+                  <span className="ml-profile-tag">🌱 {isEn ? "Organic Farming" : "Canh tác hữu cơ"}</span>
+                  <span className="ml-profile-tag">🌾 {isEn ? "VietGAP Certified" : "Chứng nhận VietGAP"}</span>
+                  <span className="ml-profile-tag">🚚 {isEn ? "Market Pickup" : "Giao tại phiên chợ"}</span>
                   <span className="ml-profile-tag">
-                    ⭐ 4.9/5 (120+ lượt mua)
+                    ⭐ 4.9/5 ({isEn ? "120+ orders" : "120+ lượt mua"})
                   </span>
                 </div>
               </div>
@@ -572,15 +640,15 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 style={{
                   cursor: "pointer",
                 }}
-                title="Xem danh sách sạp chợ"
+                title={isEn ? "View registered stalls" : "Xem danh sách sạp chợ"}
               >
                 <div className="ml-profile-metric-icon">🎪</div>
                 <div>
                   <div className="ml-profile-metric-label">
-                    Sạp chợ tham gia
+                    {isEn ? "Participating Markets" : "Sạp chợ tham gia"}
                   </div>
                   <div className="ml-profile-metric-val">
-                    {assignedMarkets.length} phiên chợ
+                    {assignedMarkets.length} {isEn ? "sessions" : "phiên chợ"}
                   </div>
                 </div>
               </div>
@@ -591,15 +659,15 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 style={{
                   cursor: "pointer",
                 }}
-                title="Cài đặt giờ chốt đơn"
+                title={isEn ? "Configure cutoff hours" : "Cài đặt giờ chốt đơn"}
               >
                 <div className="ml-profile-metric-icon">⏰</div>
                 <div>
                   <div className="ml-profile-metric-label">
-                    Khung giờ chốt đơn
+                    {isEn ? "Cutoff Rules" : "Khung giờ chốt đơn"}
                   </div>
                   <div className="ml-profile-metric-val">
-                    {cutoffSettings.length} cấu hình
+                    {cutoffSettings.length} {isEn ? "rules" : "cấu hình"}
                   </div>
                 </div>
               </div>
@@ -610,15 +678,15 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 style={{
                   cursor: "pointer",
                 }}
-                title="Cài đặt ca đón khách"
+                title={isEn ? "Configure pickup slots" : "Cài đặt ca đón khách"}
               >
                 <div className="ml-profile-metric-icon">🕒</div>
                 <div>
                   <div className="ml-profile-metric-label">
-                    Ca đón khách tại sạp
+                    {isEn ? "Pickup Slots" : "Ca đón khách tại sạp"}
                   </div>
                   <div className="ml-profile-metric-val">
-                    {pickupSlots.length} khung giờ
+                    {pickupSlots.length} {isEn ? "slots" : "khung giờ"}
                   </div>
                 </div>
               </div>
@@ -629,17 +697,17 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 style={{
                   cursor: "pointer",
                 }}
-                title="Xem trạng thái định danh"
+                title={isEn ? "View KYC status" : "Xem trạng thái định danh"}
               >
                 <div className="ml-profile-metric-icon">🛡️</div>
                 <div>
                   <div className="ml-profile-metric-label">
-                    Định danh nhà vườn
+                    {isEn ? "Farm KYC" : "Định danh nhà vườn"}
                   </div>
                   <div className="ml-profile-metric-val">
-                    {kycData?.status === "VERIFIED"
-                      ? "Đã duyệt KYC"
-                      : "Đang xử lý"}
+                    {kycData?.kycStatus === "VERIFIED"
+                      ? (isEn ? "Verified" : "Đã duyệt KYC")
+                      : (isEn ? "Processing" : "Đang xử lý")}
                   </div>
                 </div>
               </div>
@@ -650,39 +718,41 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 <div className="ml-card ml-stall-card">
                   <div className="ml-card-header-flex">
                     <h3 className="ml-card-title">
-                      🌱 Câu chuyện canh tác & Triết lý xanh
+                      🌱 {isEn ? "Farming Philosophy & Green Story" : "Câu chuyện canh tác & Triết lý xanh"}
                     </h3>
                     <button
                       type="button"
                       className="ml-btn-link-edit"
                       onClick={handleOpenEditProfileModal}
                     >
-                      ✏️ Chỉnh sửa
+                      ✏️ {isEn ? "Edit" : "Chỉnh sửa"}
                     </button>
                   </div>
 
                   <div className="ml-profile-bio-box">
                     "
                     {profile.bio ||
-                      "Chưa cập nhật câu chuyện canh tác. Hãy bấm Chỉnh sửa hồ sơ để giới thiệu phương pháp trồng trọt hữu cơ và nguồn gốc nông sản của bạn tới khách hàng!"}
+                      (isEn
+                        ? "Farming story not updated yet. Click Edit Profile to introduce your organic methods and produce traceability to shoppers!"
+                        : "Chưa cập nhật câu chuyện canh tác. Hãy bấm Chỉnh sửa hồ sơ để giới thiệu phương pháp trồng trọt hữu cơ và nguồn gốc nông sản của bạn tới khách hàng!")}
                     "
                   </div>
 
                   <h4 className="ml-profile-section-sub">
-                    Cam kết chất lượng nông sản:
+                    {isEn ? "Produce Quality Commitments:" : "Cam kết chất lượng nông sản:"}
                   </h4>
                   <div className="ml-profile-commitments-grid">
                     <div className="ml-commitment-item">
                       <span className="ml-commitment-icon">🌿</span>
-                      <span>100% Không thuốc BVTV hóa học</span>
+                      <span>{isEn ? "100% Free of chemical pesticides" : "100% Không thuốc BVTV hóa học"}</span>
                     </div>
                     <div className="ml-commitment-item">
                       <span className="ml-commitment-icon">💧</span>
-                      <span>Nước ngầm tự nhiên, đất sạch</span>
+                      <span>{isEn ? "Natural spring water & clean soil" : "Nước ngầm tự nhiên, đất sạch"}</span>
                     </div>
                     <div className="ml-commitment-item">
                       <span className="ml-commitment-icon">🚚</span>
-                      <span>Thu hoạch sớm, tươi trong ngày</span>
+                      <span>{isEn ? "Dawn harvested, fresh same-day" : "Thu hoạch sớm, tươi trong ngày"}</span>
                     </div>
                   </div>
                 </div>
@@ -690,7 +760,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 <div className="ml-card ml-stall-card">
                   <div className="ml-card-header-flex">
                     <h3 className="ml-card-title">
-                      🎪 Danh sách sạp chợ đang vận hành
+                      🎪 {isEn ? "Operating Market Stalls" : "Danh sách sạp chợ đang vận hành"}
                     </h3>
                     <Button
                       type="button"
@@ -698,27 +768,27 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                       size="sm"
                       onClick={() => goToProtectedTab("markets")}
                     >
-                      Quản lý sạp →
+                      {isEn ? "Manage Stalls →" : "Quản lý sạp →"}
                     </Button>
                   </div>
 
                   {assignedMarkets.length === 0 ? (
                     <div className="ml-empty-box">
-                      <p>Chưa đăng ký sạp chợ phiên nào.</p>
+                      <p>{isEn ? "No weekend market stalls registered yet." : "Chưa đăng ký sạp chợ phiên nào."}</p>
                       <Button
                         type="button"
                         variant="primary"
                         size="sm"
                         onClick={() => {
                           if (kycData?.kycStatus !== "VERIFIED") {
-                            notifyError("Vui lòng hoàn tất và chờ duyệt KYC trước khi đăng ký sạp.");
+                            notifyError(isEn ? "Please complete KYC verification before registering stalls." : "Vui lòng hoàn tất và chờ duyệt KYC trước khi đăng ký sạp.");
                             setActiveTab("kyc");
                             return;
                           }
                           setIsRegisterMarketModalOpen(true);
                         }}
                       >
-                        + Đăng ký sạp chợ ngay
+                        {isEn ? "+ Register Stall Now" : "+ Đăng ký sạp chợ ngay"}
                       </Button>
                     </div>
                   ) : (
@@ -730,24 +800,24 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         >
                           <div className="ml-profile-stall-info">
                             <span className="ml-profile-stall-market">
-                              🎪 {a.marketName || `Chợ #${a.marketId}`}
+                              🎪 {localizeMarketName(a.marketName || `Market #${a.marketId}`)}
                             </span>
                             <span className="ml-profile-stall-meta">
-                              Vị trí:{" "}
+                              {isEn ? "Location:" : "Vị trí:"}{" "}
                               <strong>
-                                {a.stallNumber || a.stallCode || "Đang bố trí"}
+                                {a.stallNumber || a.stallCode || (isEn ? "Allocating" : "Đang bố trí")}
                               </strong>{" "}
-                              • Phiên: {a.marketSchedule || "Cuối tuần"}
+                              • {isEn ? "Session:" : "Phiên:"} {a.marketSchedule || (isEn ? "Weekend" : "Cuối tuần")}
                             </span>
                           </div>
                           <div>
-                            {a.status === "APPROVED" ? (
+                            {a.status === "APPROVED" || a.status === "ACTIVE" ? (
                               <Badge variant="ready" dot>
-                                Đang mở bán
+                                {isEn ? "Open for Sale" : "Đang mở bán"}
                               </Badge>
                             ) : (
                               <Badge variant="pending" dot>
-                                Đang chờ duyệt
+                                {isEn ? "Pending Approval" : "Đang chờ duyệt"}
                               </Badge>
                             )}
                           </div>
@@ -762,21 +832,21 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 <div className="ml-card ml-stall-card">
                   <div className="ml-card-header-flex">
                     <h3 className="ml-card-title">
-                      📋 Thông tin liên hệ & Vùng trồng
+                      📋 {isEn ? "Contact & Farm Region" : "Thông tin liên hệ & Vùng trồng"}
                     </h3>
                     <button
                       type="button"
                       className="ml-btn-link-edit"
                       onClick={handleOpenEditProfileModal}
                     >
-                      ✏️ Sửa
+                      ✏️ {isEn ? "Edit" : "Sửa"}
                     </button>
                   </div>
 
                   <div className="ml-profile-info-list">
                     <div className="ml-profile-info-row">
                       <span className="ml-profile-info-label">
-                        Chủ hộ / Đại diện pháp lý
+                        {isEn ? "Representative / Household Head" : "Chủ hộ / Đại diện pháp lý"}
                       </span>
                       <strong className="ml-profile-info-value">
                         {profile.fullName}
@@ -785,7 +855,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                     <div className="ml-profile-info-row">
                       <span className="ml-profile-info-label">
-                        Số điện thoại liên hệ
+                        {isEn ? "Contact Phone Number" : "Số điện thoại liên hệ"}
                       </span>
                       <strong className="ml-profile-info-value">
                         📞 {profile.phone}
@@ -794,7 +864,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                     <div className="ml-profile-info-row">
                       <span className="ml-profile-info-label">
-                        Địa chỉ nông trại / Vùng trồng
+                        {isEn ? "Farm Address / Location" : "Địa chỉ nông trại / Vùng trồng"}
                       </span>
                       <span className="ml-profile-info-value">
                         📍 {profile.address}
@@ -803,7 +873,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                     <div className="ml-profile-info-row">
                       <span className="ml-profile-info-label">
-                        Tọa độ GPS bản đồ
+                        {isEn ? "GPS Coordinates" : "Tọa độ GPS bản đồ"}
                       </span>
                       <span className="ml-profile-info-value">
                         🌐{" "}
@@ -815,7 +885,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                     <div className="ml-profile-info-row">
                       <span className="ml-profile-info-label">
-                        Tình trạng xét duyệt nhà vườn
+                        {isEn ? "Farm Approval Status" : "Tình trạng xét duyệt nhà vườn"}
                       </span>
                       <div
                         style={{
@@ -824,11 +894,11 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                       >
                         {profile.isApproved ? (
                           <Badge variant="ready" dot>
-                            Đã phê duyệt hoạt động
+                            {isEn ? "Approved for Operations" : "Đã phê duyệt hoạt động"}
                           </Badge>
                         ) : (
                           <Badge variant="pending" dot>
-                            Chờ xét duyệt
+                            {isEn ? "Pending Review" : "Chờ xét duyệt"}
                           </Badge>
                         )}
                       </div>
@@ -836,28 +906,28 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                     <div className="ml-profile-info-row">
                       <span className="ml-profile-info-label">
-                        Hồ sơ định danh KYC & VietGAP
+                        {isEn ? "KYC & VietGAP Verification" : "Hồ sơ định danh KYC & VietGAP"}
                       </span>
                       <div
                         style={{
                           marginTop: "4px",
                         }}
                       >
-                        {getKycBadge(kycData?.status || "PENDING")}
+                        {getKycBadge(kycData?.kycStatus || "PENDING")}
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="ml-card ml-stall-card ml-profile-shortcuts-card">
-                  <h3 className="ml-card-title">⚡ Thao tác nhanh</h3>
+                  <h3 className="ml-card-title">⚡ {isEn ? "Quick Actions" : "Thao tác nhanh"}</h3>
                   <div className="ml-profile-shortcuts-list">
                     <button
                       type="button"
                       className="ml-profile-shortcut-btn"
                       onClick={handleOpenEditProfileModal}
                     >
-                      <span>✏️ Chỉnh sửa thông tin hồ sơ & hình ảnh</span>
+                      <span>✏️ {isEn ? "Edit profile info & imagery" : "Chỉnh sửa thông tin hồ sơ & hình ảnh"}</span>
                       <span>→</span>
                     </button>
                     <button
@@ -865,7 +935,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                       className="ml-profile-shortcut-btn"
                       onClick={() => goToProtectedTab("cutoff")}
                     >
-                      <span>⏰ Cài đặt giờ chốt đơn trước phiên chợ</span>
+                      <span>⏰ {isEn ? "Configure pre-order cutoff hours" : "Cài đặt giờ chốt đơn trước phiên chợ"}</span>
                       <span>→</span>
                     </button>
                     <button
@@ -873,7 +943,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                       className="ml-profile-shortcut-btn"
                       onClick={() => goToProtectedTab("slots")}
                     >
-                      <span>🕒 Cấu hình ca đón khách nhận hàng</span>
+                      <span>🕒 {isEn ? "Configure shopper pickup time slots" : "Cấu hình ca đón khách nhận hàng"}</span>
                       <span>→</span>
                     </button>
                     <button
@@ -881,7 +951,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                       className="ml-profile-shortcut-btn"
                       onClick={() => setActiveTab("kyc")}
                     >
-                      <span>🛡️ Cập nhật giấy tờ chứng nhận VietGAP</span>
+                      <span>🛡️ {isEn ? "Upload VietGAP / Organic certificates" : "Cập nhật giấy tờ chứng nhận VietGAP"}</span>
                       <span>→</span>
                     </button>
                   </div>
@@ -896,12 +966,12 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
             <div className="ml-templates-header">
               <div>
                 <h3 className="ml-card-title">
-                  ⏰ Cấu hình khung giờ chốt đơn trước phiên họp chợ
+                  ⏰ {isEn ? "Pre-order Cutoff Hours Configuration" : "Cấu hình khung giờ chốt đơn trước phiên họp chợ"}
                 </h3>
                 <p className="ml-templates-desc">
-                  Thiết lập thời gian đóng nhận đơn trước khi phiên chợ bắt đầu
-                  (ví dụ: Chốt trước 12 tiếng). Khách hàng sẽ không thể đặt thêm
-                  sau giờ chốt để bạn có thời gian hái rau và đóng gói.
+                  {isEn
+                    ? "Set the order closing time before market sessions open (e.g. 12 hours prior). Customers cannot place new orders after cutoff so you have time to harvest and pack fresh produce."
+                    : "Thiết lập thời gian đóng nhận đơn trước khi phiên chợ bắt đầu (ví dụ: Chốt trước 12 tiếng). Khách hàng sẽ không thể đặt thêm sau giờ chốt để bạn có thời gian hái rau và đóng gói."}
                 </p>
               </div>
               <Button
@@ -911,17 +981,18 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   if (requireVerifiedKyc()) setIsCutoffModalOpen(true);
                 }}
               >
-                + Thêm giờ chốt đơn
+                + {isEn ? "Add Cutoff Time" : "Thêm giờ chốt đơn"}
               </Button>
             </div>
 
             {cutoffSettings.length === 0 ? (
               <div className="ml-templates-empty">
                 <span className="ml-templates-empty-icon">⏰</span>
-                <h4>Chưa có cấu hình chốt đơn nào</h4>
+                <h4>{isEn ? "No cutoff configuration yet" : "Chưa có cấu hình chốt đơn nào"}</h4>
                 <p>
-                  Thêm giờ chốt đơn để đảm bảo nông trại có đủ thời gian thu
-                  hoạch nông sản tươi.
+                  {isEn
+                    ? "Add cutoff times to ensure your farm has adequate time to harvest fresh produce."
+                    : "Thêm giờ chốt đơn để đảm bảo nông trại có đủ thời gian thu hoạch nông sản tươi."}
                 </p>
                 <Button
                   variant="outline"
@@ -930,7 +1001,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                     if (requireVerifiedKyc()) setIsCutoffModalOpen(true);
                   }}
                 >
-                  Thiết lập hạn chốt đầu tiên
+                  {isEn ? "Configure First Cutoff" : "Thiết lập hạn chốt đầu tiên"}
                 </Button>
               </div>
             ) : (
@@ -939,10 +1010,10 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   <table className="ml-templates-table">
                     <thead>
                       <tr>
-                        <th>Phiên chợ áp dụng</th>
-                        <th>Thứ họp chợ</th>
-                        <th>Hạn chốt đơn trước giờ mở</th>
-                        <th className="text-right">Thao tác</th>
+                        <th>{isEn ? "Applied Market" : "Phiên chợ áp dụng"}</th>
+                        <th>{isEn ? "Market Day" : "Thứ họp chợ"}</th>
+                        <th>{isEn ? "Cutoff Hours Before Open" : "Hạn chốt đơn trước giờ mở"}</th>
+                        <th className="text-right">{isEn ? "Actions" : "Thao tác"}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -950,18 +1021,19 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         <tr key={c.settingId}>
                           <td>
                             <strong>
-                              🎪 {c.marketName || `Chợ #${c.marketId}`}
+                              🎪 {c.marketName || (isEn ? `Market #${c.marketId}` : `Chợ #${c.marketId}`)}
                             </strong>
                           </td>
                           <td>
                             <span className="ml-day-badge">
-                              {DAY_OF_WEEK_NAMES[c.dayOfWeek] ||
-                                `Thứ ${c.dayOfWeek}`}
+                              {getDayOfWeekName(c.dayOfWeek, isEn)}
                             </span>
                           </td>
                           <td>
                             <strong className="text-accent">
-                              Chốt trước {c.cutoffHoursBefore} tiếng
+                              {isEn
+                                ? `Cut off ${c.cutoffHoursBefore}h before`
+                                : `Chốt trước ${c.cutoffHoursBefore} tiếng`}
                             </strong>
                           </td>
                           <td className="text-right">
@@ -971,7 +1043,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                               className="btn-danger-text"
                               onClick={() => handleDeleteCutoff(c.settingId)}
                             >
-                              🗑️ Xóa
+                              🗑️ {isEn ? "Delete" : "Xóa"}
                             </Button>
                           </td>
                         </tr>
@@ -995,12 +1067,12 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
             <div className="ml-templates-header">
               <div>
                 <h3 className="ml-card-title">
-                  🕒 Danh sách ca đón khách tại sạp chợ
+                  🕒 {isEn ? "Stall Pickup Time Slots" : "Danh sách ca đón khách tại sạp chợ"}
                 </h3>
                 <p className="ml-templates-desc">
-                  Các khung giờ khách có thể ghé sạp của bạn để nhận phần rau
-                  quả đã đặt trước. Giới hạn số đơn tối đa mỗi ca giúp sạp phục
-                  vụ chu đáo, tránh ùn ứ.
+                  {isEn
+                    ? "Time intervals when customers can visit your stall to pick up pre-ordered bags. Max order capacity per slot avoids crowding and ensures smooth service."
+                    : "Các khung giờ khách có thể ghé sạp của bạn để nhận phần rau quả đã đặt trước. Giới hạn số đơn tối đa mỗi ca giúp sạp phục vụ chu đáo, tránh ùn ứ."}
                 </p>
               </div>
               <Button
@@ -1010,17 +1082,18 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   if (requireVerifiedKyc()) setIsSlotModalOpen(true);
                 }}
               >
-                + Thêm ca đón khách mới
+                + {isEn ? "Add New Pickup Slot" : "Thêm ca đón khách mới"}
               </Button>
             </div>
 
             {pickupSlots.length === 0 ? (
               <div className="ml-templates-empty">
                 <span className="ml-templates-empty-icon">🕒</span>
-                <h4>Chưa có ca nhận hàng nào</h4>
+                <h4>{isEn ? "No pickup slots yet" : "Chưa có ca nhận hàng nào"}</h4>
                 <p>
-                  Tạo các ca sáng sớm (07:00 - 08:00, 08:00 - 09:00...) để khách
-                  lựa chọn khi đặt đơn.
+                  {isEn
+                    ? "Create morning slots (07:00 - 08:00, 08:00 - 09:00...) for shoppers to choose during checkout."
+                    : "Tạo các ca sáng sớm (07:00 - 08:00, 08:00 - 09:00...) để khách lựa chọn khi đặt đơn."}
                 </p>
                 <Button
                   variant="outline"
@@ -1029,7 +1102,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                     if (requireVerifiedKyc()) setIsSlotModalOpen(true);
                   }}
                 >
-                  Tạo ca nhận đầu tiên
+                  {isEn ? "Create First Slot" : "Tạo ca nhận đầu tiên"}
                 </Button>
               </div>
             ) : (
@@ -1038,10 +1111,10 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   <table className="ml-templates-table">
                     <thead>
                       <tr>
-                        <th>Phiên chợ</th>
-                        <th>Khung giờ nhận</th>
-                        <th>Sức chứa đơn tối đa</th>
-                        <th className="text-right">Thao tác</th>
+                        <th>{isEn ? "Market" : "Phiên chợ"}</th>
+                        <th>{isEn ? "Pickup Slot" : "Khung giờ nhận"}</th>
+                        <th>{isEn ? "Max Capacity" : "Sức chứa đơn tối đa"}</th>
+                        <th className="text-right">{isEn ? "Actions" : "Thao tác"}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1049,7 +1122,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         <tr key={s.slotId}>
                           <td>
                             <strong>
-                              🎪 {s.marketName || `Chợ #${s.marketId}`}
+                              🎪 {s.marketName || (isEn ? `Market #${s.marketId}` : `Chợ #${s.marketId}`)}
                             </strong>
                           </td>
                           <td>
@@ -1059,7 +1132,9 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                             </span>
                           </td>
                           <td>
-                            <strong>{s.maxOrdersCapacity} đơn / ca</strong>
+                            <strong>
+                              {s.maxOrdersCapacity} {isEn ? "orders / slot" : "đơn / ca"}
+                            </strong>
                           </td>
                           <td className="text-right">
                             <Button
@@ -1068,7 +1143,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                               className="btn-danger-text"
                               onClick={() => handleDeleteSlot(s.slotId)}
                             >
-                              🗑️ Xóa
+                              🗑️ {isEn ? "Delete" : "Xóa"}
                             </Button>
                           </td>
                         </tr>
@@ -1092,11 +1167,12 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
             <div className="ml-templates-header">
               <div>
                 <h3 className="ml-card-title">
-                  🎪 Sạp chợ nông sản bạn đang tham gia bán
+                  🎪 {isEn ? "Active Market Stalls" : "Sạp chợ nông sản bạn đang tham gia bán"}
                 </h3>
                 <p className="ml-templates-desc">
-                  Danh sách các phiên chợ mà tài khoản nông dân của bạn đã được
-                  cấp phép sạp hoặc đã đăng ký mở bán.
+                  {isEn
+                    ? "List of market sessions where your farmer account has been granted stall access or submitted registration."
+                    : "Danh sách các phiên chợ mà tài khoản nông dân của bạn đã được cấp phép sạp hoặc đã đăng ký mở bán."}
                 </p>
               </div>
               <Button
@@ -1104,38 +1180,47 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 size="md"
                 onClick={() => {
                   if (kycData?.kycStatus !== "VERIFIED") {
-                    notifyError("Vui lòng hoàn tất và chờ duyệt KYC trước khi đăng ký sạp.");
+                    notifyError(
+                      isEn
+                        ? "Please complete and wait for KYC verification before registering for stalls."
+                        : "Vui lòng hoàn tất và chờ duyệt KYC trước khi đăng ký sạp."
+                    );
                     setActiveTab("kyc");
                     return;
                   }
                   setIsRegisterMarketModalOpen(true);
                 }}
               >
-                + Đăng ký tham gia chợ mới
+                + {isEn ? "Register New Market Stall" : "Đăng ký tham gia chợ mới"}
               </Button>
             </div>
 
             {assignedMarkets.length === 0 ? (
               <div className="ml-templates-empty">
                 <span className="ml-templates-empty-icon">🎪</span>
-                <h4>Bạn chưa đăng ký tham gia chợ nào</h4>
+                <h4>{isEn ? "You have not registered for any market yet" : "Bạn chưa đăng ký tham gia chợ nào"}</h4>
                 <p>
-                  Đăng ký sạp tại các chợ phiên nông sản sạch trong khu vực để
-                  mở rộng kênh bán rau củ.
+                  {isEn
+                    ? "Register for stalls at local fresh produce markets to expand your direct selling channels."
+                    : "Đăng ký sạp tại các chợ phiên nông sản sạch trong khu vực để mở rộng kênh bán rau củ."}
                 </p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {
                     if (kycData?.kycStatus !== "VERIFIED") {
-                      notifyError("Vui lòng hoàn tất và chờ duyệt KYC trước khi đăng ký sạp.");
+                      notifyError(
+                        isEn
+                          ? "Please complete and wait for KYC verification before registering for stalls."
+                          : "Vui lòng hoàn tất và chờ duyệt KYC trước khi đăng ký sạp."
+                      );
                       setActiveTab("kyc");
                       return;
                     }
                     setIsRegisterMarketModalOpen(true);
                   }}
                 >
-                  Đăng ký sạp chợ đầu tiên
+                  {isEn ? "Register First Market Stall" : "Đăng ký sạp chợ đầu tiên"}
                 </Button>
               </div>
             ) : (
@@ -1148,25 +1233,25 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                     >
                       <div className="ml-stall-badge-top">
                         <span className="ml-stall-num-pill">
-                          {m.stallNumber || "Sạp Chính"}
+                          {m.stallNumber || (isEn ? "Main Stall" : "Sạp Chính")}
                         </span>
                         <Badge
                           variant={m.status === "ACTIVE" ? "ready" : "pending"}
                           size="sm"
                         >
                           {m.status === "ACTIVE"
-                            ? "Đã duyệt bán"
-                            : "Đang chờ duyệt"}
+                            ? (isEn ? "Approved" : "Đã duyệt bán")
+                            : (isEn ? "Pending Approval" : "Đang chờ duyệt")}
                         </Badge>
                       </div>
                       <h4 className="ml-assigned-mname">
-                        {m.marketName || `Chợ Nông Sản #${m.marketId}`}
+                        {m.marketName || (isEn ? `Farmers Market #${m.marketId}` : `Chợ Nông Sản #${m.marketId}`)}
                       </h4>
                       <div className="ml-assigned-maddr">
-                        Mã chợ: #{m.marketId}
+                        {isEn ? "Market Code:" : "Mã chợ:"} #{m.marketId}
                       </div>
                       <div className="ml-assigned-sched">
-                        🕒 Trạng thái hoạt động: {m.status}
+                        🕒 {isEn ? "Operating Status:" : "Trạng thái hoạt động:"} {m.status}
                       </div>
                     </div>
                   ))}
@@ -1187,12 +1272,12 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
             <div className="ml-templates-header">
               <div>
                 <h3 className="ml-card-title">
-                  🛡️ Hồ sơ định danh KYC & Chứng nhận VietGAP / Hữu Cơ
+                  🛡️ {isEn ? "KYC Identity & VietGAP / Organic Certification" : "Hồ sơ định danh KYC & Chứng nhận VietGAP / Hữu Cơ"}
                 </h3>
                 <p className="ml-templates-desc">
-                  MarketLink yêu cầu 100% nông dân và chủ sạp hoàn tất định danh
-                  và nộp chứng nhận canh tác sạch nhằm bảo vệ quyền lợi người
-                  tiêu dùng.
+                  {isEn
+                    ? "MarketLink requires 100% of farmers and stall owners to complete identity verification and submit clean farming certificates to protect consumer rights."
+                    : "MarketLink yêu cầu 100% nông dân và chủ sạp hoàn tất định danh và nộp chứng nhận canh tác sạch nhằm bảo vệ quyền lợi người tiêu dùng."}
                 </p>
               </div>
               {(!kycData || kycData.kycStatus !== "VERIFIED") && (
@@ -1201,7 +1286,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   size="md"
                   onClick={() => setIsKycModalOpen(true)}
                 >
-                  📤 Nộp hồ sơ định danh
+                  📤 {isEn ? "Submit Identity Verification" : "Nộp hồ sơ định danh"}
                 </Button>
               )}
             </div>
@@ -1209,32 +1294,35 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
             <div className="ml-kyc-status-banner">
               <div className="ml-kyc-status-left">
                 <span className="ml-kyc-status-label">
-                  Trạng thái định danh hiện tại:
+                  {isEn ? "Current KYC Status:" : "Trạng thái định danh hiện tại:"}
                 </span>
                 <div>{getKycBadge(kycData?.kycStatus || "UNVERIFIED")}</div>
               </div>
               {kycData?.isApproved && (
                 <div className="ml-kyc-approved-badge">
-                  ✓ Quyền mở bán và nhận đơn đặt trước: ĐÃ ĐƯỢC CẤP
+                  ✓ {isEn ? "Pre-order sales and stall privileges: GRANTED" : "Quyền mở bán và nhận đơn đặt trước: ĐÃ ĐƯỢC CẤP"}
                 </div>
               )}
             </div>
 
-            <h4 className="ml-kyc-subheading">Tài liệu và chứng chỉ đã nộp:</h4>
+            <h4 className="ml-kyc-subheading">
+              {isEn ? "Submitted Documents & Certificates:" : "Tài liệu và chứng chỉ đã nộp:"}
+            </h4>
             {!kycData?.documents || kycData.documents.length === 0 ? (
               <div className="ml-templates-empty">
                 <span className="ml-templates-empty-icon">📄</span>
-                <h4>Chưa có tài liệu định danh nào được nộp</h4>
+                <h4>{isEn ? "No identification documents submitted yet" : "Chưa có tài liệu định danh nào được nộp"}</h4>
                 <p>
-                  Nộp ảnh CCCD và Giấy chứng nhận VietGAP/Hữu cơ để mở khóa đầy
-                  đủ tính năng sạp chợ.
+                  {isEn
+                    ? "Submit your ID card photos and VietGAP/Organic certificate to unlock full stall features."
+                    : "Nộp ảnh CCCD và Giấy chứng nhận VietGAP/Hữu cơ để mở khóa đầy đủ tính năng sạp chợ."}
                 </p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setIsKycModalOpen(true)}
                 >
-                  Nộp tài liệu ngay
+                  {isEn ? "Submit Documents Now" : "Nộp tài liệu ngay"}
                 </Button>
               </div>
             ) : (
@@ -1248,14 +1336,14 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                     />
                     <div className="ml-kyc-doc-info">
                       <span className="ml-kyc-doc-num">
-                        Số: {doc.documentNumber || "N/A"}
+                        {isEn ? "Doc No.:" : "Số:"} {doc.documentNumber || "N/A"}
                       </span>
                       <span className="ml-kyc-doc-date">
-                        Ngày cấp: {doc.issuedDate || "N/A"}
+                        {isEn ? "Issued Date:" : "Ngày cấp:"} {doc.issuedDate || "N/A"}
                       </span>
                       {doc.expiryDate && (
                         <span className="ml-kyc-doc-date">
-                          Hết hạn: {doc.expiryDate}
+                          {isEn ? "Expiry Date:" : "Hết hạn:"} {doc.expiryDate}
                         </span>
                       )}
                     </div>
@@ -1271,7 +1359,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
         <div className="ml-modal-overlay">
           <div className="ml-modal-box">
             <div className="ml-modal-header">
-              <h3>Thiết lập khung giờ chốt đơn trước phiên họp</h3>
+              <h3>{isEn ? "Configure Pre-order Cutoff Hours" : "Thiết lập khung giờ chốt đơn trước phiên họp"}</h3>
               <button
                 type="button"
                 className="ml-modal-close"
@@ -1285,7 +1373,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
               <div className="ml-modal-body">
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Chọn phiên chợ áp dụng:
+                    {isEn ? "Select Applied Market:" : "Chọn phiên chợ áp dụng:"}
                   </label>
                   <select
                     className="ml-form-input"
@@ -1303,13 +1391,13 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         key={m.marketId || m.id}
                         value={m.marketId || m.id}
                       >
-                        {m.name || `Chợ #${m.marketId || m.id}`} -{" "}
+                        {m.name || (isEn ? `Market #${m.marketId || m.id}` : `Chợ #${m.marketId || m.id}`)} -{" "}
                         {m.address || "Hà Nội"}
                       </option>
                     ))}
                     {availableMarkets.length === 0 && (
                       <option value="" disabled>
-                        Chưa có chợ khả dụng
+                        {isEn ? "No available markets" : "Chưa có chợ khả dụng"}
                       </option>
                     )}
                   </select>
@@ -1317,7 +1405,9 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                 <div className="ml-form-grid-2">
                   <div className="ml-form-group">
-                    <label className="ml-form-label">Thứ họp chợ:</label>
+                    <label className="ml-form-label">
+                      {isEn ? "Market Day:" : "Thứ họp chợ:"}
+                    </label>
                     <select
                       className="ml-form-input"
                       value={cutoffForm.dayOfWeek}
@@ -1329,19 +1419,19 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                       }
                       required
                     >
-                      <option value={6}>Thứ Bảy</option>
-                      <option value={7}>Chủ Nhật</option>
-                      <option value={1}>Thứ Hai</option>
-                      <option value={2}>Thứ Ba</option>
-                      <option value={3}>Thứ Tư</option>
-                      <option value={4}>Thứ Năm</option>
-                      <option value={5}>Thứ Sáu</option>
+                      <option value={6}>{isEn ? "Saturday" : "Thứ Bảy"}</option>
+                      <option value={7}>{isEn ? "Sunday" : "Chủ Nhật"}</option>
+                      <option value={1}>{isEn ? "Monday" : "Thứ Hai"}</option>
+                      <option value={2}>{isEn ? "Tuesday" : "Thứ Ba"}</option>
+                      <option value={3}>{isEn ? "Wednesday" : "Thứ Tư"}</option>
+                      <option value={4}>{isEn ? "Thursday" : "Thứ Năm"}</option>
+                      <option value={5}>{isEn ? "Friday" : "Thứ Sáu"}</option>
                     </select>
                   </div>
 
                   <div className="ml-form-group">
                     <label className="ml-form-label">
-                      Chốt trước bao nhiêu tiếng:
+                      {isEn ? "Cutoff hours before opening:" : "Chốt trước bao nhiêu tiếng:"}
                     </label>
                     <input
                       type="number"
@@ -1368,10 +1458,10 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   variant="ghost"
                   onClick={() => setIsCutoffModalOpen(false)}
                 >
-                  Hủy
+                  {isEn ? "Cancel" : "Hủy"}
                 </Button>
                 <Button type="submit" variant="primary">
-                  Lưu giờ chốt đơn
+                  {isEn ? "Save Cutoff Hours" : "Lưu giờ chốt đơn"}
                 </Button>
               </div>
             </form>
@@ -1383,7 +1473,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
         <div className="ml-modal-overlay">
           <div className="ml-modal-box">
             <div className="ml-modal-header">
-              <h3>Thêm ca đón khách tại sạp chợ</h3>
+              <h3>{isEn ? "Add Stall Pickup Time Slot" : "Thêm ca đón khách tại sạp chợ"}</h3>
               <button
                 type="button"
                 className="ml-modal-close"
@@ -1396,7 +1486,9 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
             <form onSubmit={handleSaveSlot} className="ml-modal-form">
               <div className="ml-modal-body">
                 <div className="ml-form-group">
-                  <label className="ml-form-label">Chợ họp phiên:</label>
+                  <label className="ml-form-label">
+                    {isEn ? "Market Session:" : "Chợ họp phiên:"}
+                  </label>
                   <select
                     className="ml-form-input"
                     value={slotForm.marketId}
@@ -1413,12 +1505,12 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         key={m.marketId || m.id}
                         value={m.marketId || m.id}
                       >
-                        {m.name || `Chợ #${m.marketId || m.id}`}
+                        {m.name || (isEn ? `Market #${m.marketId || m.id}` : `Chợ #${m.marketId || m.id}`)}
                       </option>
                     ))}
                     {availableMarkets.length === 0 && (
                       <option value="" disabled>
-                        Chưa có chợ khả dụng
+                        {isEn ? "No available markets" : "Chưa có chợ khả dụng"}
                       </option>
                     )}
                   </select>
@@ -1426,7 +1518,9 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                 <div className="ml-form-grid-2">
                   <div className="ml-form-group">
-                    <label className="ml-form-label">Giờ bắt đầu ca:</label>
+                    <label className="ml-form-label">
+                      {isEn ? "Slot Start Time:" : "Giờ bắt đầu ca:"}
+                    </label>
                     <input
                       type="time"
                       className="ml-form-input"
@@ -1442,7 +1536,9 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   </div>
 
                   <div className="ml-form-group">
-                    <label className="ml-form-label">Giờ kết thúc ca:</label>
+                    <label className="ml-form-label">
+                      {isEn ? "Slot End Time:" : "Giờ kết thúc ca:"}
+                    </label>
                     <input
                       type="time"
                       className="ml-form-input"
@@ -1460,7 +1556,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Sức chứa tối đa (số đơn/ca):
+                    {isEn ? "Max Capacity (orders/slot):" : "Sức chứa tối đa (số đơn/ca):"}
                   </label>
                   <input
                     type="number"
@@ -1485,10 +1581,10 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   variant="ghost"
                   onClick={() => setIsSlotModalOpen(false)}
                 >
-                  Hủy
+                  {isEn ? "Cancel" : "Hủy"}
                 </Button>
                 <Button type="submit" variant="primary">
-                  Tạo ca đón khách
+                  {isEn ? "Create Pickup Slot" : "Tạo ca đón khách"}
                 </Button>
               </div>
             </form>
@@ -1500,7 +1596,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
         <div className="ml-modal-overlay">
           <div className="ml-modal-box">
             <div className="ml-modal-header">
-              <h3>Đăng ký tham gia sạp tại phiên chợ mới</h3>
+              <h3>{isEn ? "Register Stall at New Market Session" : "Đăng ký tham gia sạp tại phiên chợ mới"}</h3>
               <button
                 type="button"
                 className="ml-modal-close"
@@ -1514,7 +1610,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
               <div className="ml-modal-body">
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Chọn chợ phiên muốn mở sạp:
+                    {isEn ? "Select Market Session:" : "Chọn chợ phiên muốn mở sạp:"}
                   </label>
                   <select
                     className="ml-form-input"
@@ -1532,7 +1628,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         key={m.marketId || m.id}
                         value={m.marketId || m.id}
                       >
-                        {m.name || `Chợ #${m.marketId || m.id}`} -{" "}
+                        {m.name || (isEn ? `Market #${m.marketId || m.id}` : `Chợ #${m.marketId || m.id}`)} -{" "}
                         {m.address || "Hà Nội"}
                       </option>
                     ))}
@@ -1541,11 +1637,11 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Số hiệu sạp mong muốn (nếu có):
+                    {isEn ? "Preferred Stall Number (optional):" : "Số hiệu sạp mong muốn (nếu có):"}
                   </label>
                   <input
                     type="text"
-                    placeholder="Ví dụ: Sạp A-08, Gian Rau Sạch Ba Vì..."
+                    placeholder={isEn ? "e.g. Stall A-08, Ba Vi Clean Produce..." : "Ví dụ: Sạp A-08, Gian Rau Sạch Ba Vì..."}
                     className="ml-form-input"
                     value={registerMarketForm.stallNumber}
                     onChange={(e) =>
@@ -1564,10 +1660,10 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   variant="ghost"
                   onClick={() => setIsRegisterMarketModalOpen(false)}
                 >
-                  Hủy
+                  {isEn ? "Cancel" : "Hủy"}
                 </Button>
                 <Button type="submit" variant="primary">
-                  Gửi đăng ký sạp
+                  {isEn ? "Submit Stall Application" : "Gửi đăng ký sạp"}
                 </Button>
               </div>
             </form>
@@ -1579,7 +1675,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
         <div className="ml-modal-overlay">
           <div className="ml-modal-box">
             <div className="ml-modal-header">
-              <h3>Nộp hồ sơ định danh KYC & Chứng nhận VietGAP</h3>
+              <h3>{isEn ? "Submit KYC Verification & VietGAP Certificate" : "Nộp hồ sơ định danh KYC & Chứng nhận VietGAP"}</h3>
               <button
                 type="button"
                 className="ml-modal-close"
@@ -1593,7 +1689,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
               <div className="ml-modal-body">
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    CCCD mặt trước (*):
+                    {isEn ? "Citizen ID Front (*):" : "CCCD mặt trước (*):"}
                   </label>
                   <ImageUploadInput
                     folder="kyc"
@@ -1604,13 +1700,13 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         citizenFrontUrl: url,
                       }))
                     }
-                    helpText="Tải ảnh mặt trước CCCD, rõ nét và không bị che khuất"
+                    helpText={isEn ? "Upload clear front photo of Citizen ID without glare" : "Tải ảnh mặt trước CCCD, rõ nét và không bị che khuất"}
                   />
                 </div>
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    CCCD mặt sau (*):
+                    {isEn ? "Citizen ID Back (*):" : "CCCD mặt sau (*):"}
                   </label>
                   <ImageUploadInput
                     folder="kyc"
@@ -1621,13 +1717,13 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         citizenBackUrl: url,
                       }))
                     }
-                    helpText="Tải ảnh mặt sau CCCD, rõ nét và không bị che khuất"
+                    helpText={isEn ? "Upload clear back photo of Citizen ID without glare" : "Tải ảnh mặt sau CCCD, rõ nét và không bị che khuất"}
                   />
                 </div>
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Giấy chứng nhận VietGAP (*):
+                    {isEn ? "VietGAP / Organic Certificate (*):" : "Giấy chứng nhận VietGAP (*):"}
                   </label>
                   <ImageUploadInput
                     folder="kyc"
@@ -1638,13 +1734,13 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         vietGapUrl: url,
                       }))
                     }
-                    helpText="Tải ảnh giấy chứng nhận VietGAP, rõ đủ số giấy và thời hạn"
+                    helpText={isEn ? "Upload clear certificate photo showing certificate number and validity" : "Tải ảnh giấy chứng nhận VietGAP, rõ đủ số giấy và thời hạn"}
                   />
                 </div>
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Số giấy chứng nhận VietGAP (*):
+                    {isEn ? "VietGAP Certificate Number (*):" : "Số giấy chứng nhận VietGAP (*):"}
                   </label>
                   <input
                     type="text"
@@ -1663,7 +1759,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                 <div className="ml-form-grid-2">
                   <div className="ml-form-group">
-                    <label className="ml-form-label">Ngày cấp VietGAP (*):</label>
+                    <label className="ml-form-label">{isEn ? "VietGAP Issued Date (*):" : "Ngày cấp VietGAP (*):"}</label>
                     <input
                       type="date"
                       className="ml-form-input"
@@ -1680,7 +1776,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                   <div className="ml-form-group">
                     <label className="ml-form-label">
-                      Ngày hết hạn VietGAP (*):
+                      {isEn ? "VietGAP Expiry Date (*):" : "Ngày hết hạn VietGAP (*):"}
                     </label>
                     <input
                       type="date"
@@ -1704,10 +1800,10 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   variant="ghost"
                   onClick={() => setIsKycModalOpen(false)}
                 >
-                  Hủy
+                  {isEn ? "Cancel" : "Hủy"}
                 </Button>
                 <Button type="submit" variant="primary">
-                  Nộp hồ sơ xét duyệt
+                  {isEn ? "Submit for Verification" : "Nộp hồ sơ xét duyệt"}
                 </Button>
               </div>
             </form>
@@ -1725,7 +1821,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
           >
             <div className="ml-modal-header">
               <div>
-                <h3>✏️ Chỉnh sửa hồ sơ nhà vườn & Nông hộ</h3>
+                <h3>✏️ {isEn ? "Edit Farm & Stall Profile" : "Chỉnh sửa hồ sơ nhà vườn & Nông hộ"}</h3>
                 <p
                   style={{
                     margin: "4px 0 0",
@@ -1733,8 +1829,9 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                     color: "var(--color-text-muted)",
                   }}
                 >
-                  Cập nhật thông tin định danh, câu chuyện canh tác và hình ảnh
-                  đại diện của gian hàng
+                  {isEn
+                    ? "Update identity details, farming story, and stall imagery"
+                    : "Cập nhật thông tin định danh, câu chuyện canh tác và hình ảnh đại diện của gian hàng"}
                 </p>
               </div>
               <button
@@ -1750,7 +1847,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
               <div className="ml-modal-body">
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Tên nhà vườn / Hợp tác xã:
+                    {isEn ? "Farm / Stall Name:" : "Tên nhà vườn / Hợp tác xã:"}
                   </label>
                   <input
                     type="text"
@@ -1762,7 +1859,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         farmName: e.target.value,
                       })
                     }
-                    placeholder="VD: Vườn Nông Sản Sạch Ba Vì"
+                    placeholder={isEn ? "e.g. Ba Vi Clean Farm" : "VD: Vườn Nông Sản Sạch Ba Vì"}
                     required
                   />
                 </div>
@@ -1770,7 +1867,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 <div className="ml-form-grid-2">
                   <div className="ml-form-group">
                     <label className="ml-form-label">
-                      Tên chủ hộ / Người đại diện:
+                      {isEn ? "Owner / Representative Name:" : "Tên chủ hộ / Người đại diện:"}
                     </label>
                     <input
                       type="text"
@@ -1782,14 +1879,14 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                           fullName: e.target.value,
                         })
                       }
-                      placeholder="VD: Nguyễn Văn Nông Dân"
+                      placeholder={isEn ? "e.g. John Doe Farmer" : "VD: Nguyễn Văn Nông Dân"}
                       required
                     />
                   </div>
 
                   <div className="ml-form-group">
                     <label className="ml-form-label">
-                      Số điện thoại liên hệ sạp:
+                      {isEn ? "Stall Contact Phone:" : "Số điện thoại liên hệ sạp:"}
                     </label>
                     <input
                       type="text"
@@ -1809,7 +1906,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Địa chỉ nông trại / Vùng trồng:
+                    {isEn ? "Farm Address / Growing Area:" : "Địa chỉ nông trại / Vùng trồng:"}
                   </label>
                   <input
                     type="text"
@@ -1821,7 +1918,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         address: e.target.value,
                       })
                     }
-                    placeholder="VD: Xã Vân Hòa, Huyện Ba Vì, TP. Hà Nội"
+                    placeholder={isEn ? "e.g. Van Hoa Commune, Ba Vi, Hanoi" : "VD: Xã Vân Hòa, Huyện Ba Vì, TP. Hà Nội"}
                     required
                   />
                 </div>
@@ -1829,7 +1926,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 <div className="ml-form-grid-2">
                   <div className="ml-form-group">
                     <label className="ml-form-label">
-                      Tọa độ Vĩ độ (Latitude):
+                      {isEn ? "Latitude Coordinate:" : "Tọa độ Vĩ độ (Latitude):"}
                     </label>
                     <input
                       type="text"
@@ -1847,7 +1944,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                   <div className="ml-form-group">
                     <label className="ml-form-label">
-                      Tọa độ Kinh độ (Longitude):
+                      {isEn ? "Longitude Coordinate:" : "Tọa độ Kinh độ (Longitude):"}
                     </label>
                     <input
                       type="text"
@@ -1866,7 +1963,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Ảnh đại diện chủ sạp (Avatar):
+                    {isEn ? "Stall Owner Avatar:" : "Ảnh đại diện chủ sạp (Avatar):"}
                   </label>
                   <ImageUploadInput
                     folder="avatars"
@@ -1883,13 +1980,13 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         avatarUrl: url,
                       }))
                     }
-                    helpText="Tải ảnh chân dung người nông dân / chủ hộ (Rõ mặt)"
+                    helpText={isEn ? "Upload clear portrait of farm owner (Clear face)" : "Tải ảnh chân dung người nông dân / chủ hộ (Rõ mặt)"}
                   />
                 </div>
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Ảnh bìa sạp / Vườn rau (Cover):
+                    {isEn ? "Stall / Farm Cover Photo:" : "Ảnh bìa sạp / Vườn rau (Cover):"}
                   </label>
                   <ImageUploadInput
                     folder="stalls"
@@ -1906,13 +2003,13 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         coverUrl: url,
                       }))
                     }
-                    helpText="Tải ảnh chụp quang cảnh vườn trồng, luống rau hoặc sạp chợ"
+                    helpText={isEn ? "Upload landscape photo of garden, vegetable beds, or market stall" : "Tải ảnh chụp quang cảnh vườn trồng, luống rau hoặc sạp chợ"}
                   />
                 </div>
 
                 <div className="ml-form-group">
                   <label className="ml-form-label">
-                    Câu chuyện canh tác & Cam kết chất lượng:
+                    {isEn ? "Farming Story & Quality Commitments:" : "Câu chuyện canh tác & Cam kết chất lượng:"}
                   </label>
                   <textarea
                     className="ml-form-textarea"
@@ -1924,7 +2021,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         bio: e.target.value,
                       })
                     }
-                    placeholder="Chia sẻ nguồn gốc nông sản, phương pháp canh tác sạch, chứng nhận VietGAP..."
+                    placeholder={isEn ? "Share produce origins, clean farming methods, VietGAP certs..." : "Chia sẻ nguồn gốc nông sản, phương pháp canh tác sạch, chứng nhận VietGAP..."}
                   />
                 </div>
               </div>
@@ -1936,14 +2033,14 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   onClick={() => setIsEditProfileModalOpen(false)}
                   disabled={savingProfile}
                 >
-                  Hủy bỏ
+                  {isEn ? "Cancel" : "Hủy bỏ"}
                 </Button>
                 <Button
                   type="submit"
                   variant="primary"
                   disabled={savingProfile}
                 >
-                  {savingProfile ? "Đang lưu..." : "Lưu thông tin hồ sơ"}
+                  {savingProfile ? (isEn ? "Saving..." : "Đang lưu...") : (isEn ? "Save Profile Info" : "Lưu thông tin hồ sơ")}
                 </Button>
               </div>
             </form>

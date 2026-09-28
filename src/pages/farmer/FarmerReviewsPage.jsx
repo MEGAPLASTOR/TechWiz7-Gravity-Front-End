@@ -3,8 +3,10 @@ import "@/assets/styles/pages/farmer/FarmerReviewsPage.css";
 import Button from "../../components/common/Button";
 import Pagination from "../../components/common/Pagination";
 import farmerService from "../../services/farmerService";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function FarmerReviewsPage() {
+  const { isEn, localizeProduceName } = useLanguage();
   const [replyTextMap, setReplyTextMap] = useState({});
   const [replyingId, setReplyingId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -16,10 +18,12 @@ export default function FarmerReviewsPage() {
     name: "Chủ Sạp",
   });
   const [reviews, setReviews] = useState([]);
+
   const showSuccess = (msg) => {
     setActionSuccessMsg(msg);
     setTimeout(() => setActionSuccessMsg(""), 4000);
   };
+
   const loadReviews = async () => {
     setLoading(true);
     try {
@@ -27,7 +31,7 @@ export default function FarmerReviewsPage() {
       const currentFarmerId = profile?.userId || null;
       setFarmerInfo({
         id: currentFarmerId,
-        name: profile?.fullName || "Chủ Sạp",
+        name: profile?.fullName || (isEn ? "Stall Owner" : "Chủ Sạp"),
       });
       if (currentFarmerId) {
         const list = await farmerService.getFarmerReviews(currentFarmerId);
@@ -37,11 +41,11 @@ export default function FarmerReviewsPage() {
               id: r.reviewId || r.id,
               orderId: r.orderId,
               productName: r.productName,
-              customerName: r.customerName || "Khách hàng thân thiết",
+              customerName: r.customerName || (isEn ? "Shopper" : "Khách hàng thân thiết"),
               customerAvatar: r.customerAvatar || "👤",
               date: r.createdAt
                 ? r.createdAt.replace("T", " ").substring(0, 10)
-                : "Gần đây",
+                : (isEn ? "Recent" : "Gần đây"),
               rating: r.rating || 5,
               comment: r.comment || "",
               replied: !!r.farmerReply,
@@ -64,15 +68,17 @@ export default function FarmerReviewsPage() {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     loadReviews();
   }, []);
+
   const handleSendReply = async (reviewId) => {
     const text = replyTextMap[reviewId];
     if (!text || !text.trim()) return;
     try {
       await farmerService.replyReview(reviewId, text.trim());
-      showSuccess("Đã gửi phản hồi đến khách hàng thành công!");
+      showSuccess(isEn ? "Reply sent to customer successfully!" : "Đã gửi phản hồi đến khách hàng thành công!");
       setReplyingId(null);
       setReplyTextMap({
         ...replyTextMap,
@@ -97,9 +103,10 @@ export default function FarmerReviewsPage() {
         ...replyTextMap,
         [reviewId]: "",
       });
-      showSuccess("Đã lưu phản hồi của chủ sạp!");
+      showSuccess(isEn ? "Stall reply saved!" : "Đã lưu phản hồi của chủ sạp!");
     }
   };
+
   const totalReviews = reviews.length;
   const avgRating =
     totalReviews > 0
@@ -124,20 +131,25 @@ export default function FarmerReviewsPage() {
     <div className="ml-farmer-reviews-page">
       <div className="ml-reviews-banner">
         <div className="ml-container">
-          <span className="ml-section-subtitle">Tiếng Nói Khách Hàng</span>
+          <span className="ml-section-subtitle">
+            {isEn ? "Customer Feedback" : "Tiếng Nói Khách Hàng"}
+          </span>
           <h1 className="ml-rev-page-title">
-            Đánh Giá & Phản Hồi Từ Người Mua
+            {isEn ? "Reviews & Feedback from Shoppers" : "Đánh Giá & Phản Hồi Từ Người Mua"}
           </h1>
           <p className="ml-rev-page-desc">
-            Lắng nghe đóng góp từ cư dân ghé sạp và phản hồi để xây dựng lòng
-            tin lâu dài với khách hàng chợ phiên.
+            {isEn
+              ? "Listen to feedback from market visitors and reply to build lasting trust with weekend market shoppers."
+              : "Lắng nghe đóng góp từ cư dân ghé sạp và phản hồi để xây dựng lòng tin lâu dài với khách hàng chợ phiên."}
           </p>
         </div>
       </div>
 
       <div className="ml-container ml-reviews-layout">
         <div className="ml-score-summary-card ml-card">
-          <h3 className="ml-score-heading">Tổng quan uy tín sạp</h3>
+          <h3 className="ml-score-heading">
+            {isEn ? "Stall Reputation Overview" : "Tổng quan uy tín sạp"}
+          </h3>
           <div className="ml-score-big">
             {avgRating} <span className="ml-score-scale">/ 5.0</span>
           </div>
@@ -145,12 +157,14 @@ export default function FarmerReviewsPage() {
             {"★".repeat(Math.round(Number(avgRating) || 5))}
           </div>
           <div className="ml-score-count">
-            Dựa trên {totalReviews} lượt đánh giá thực tế từ khách nhận hàng
+            {isEn
+              ? `Based on ${totalReviews} real reviews from customers`
+              : `Dựa trên ${totalReviews} lượt đánh giá thực tế từ khách nhận hàng`}
           </div>
 
           <div className="ml-score-breakdown">
             <div className="ml-score-bar-row">
-              <span>5 sao</span>
+              <span>{isEn ? "5 stars" : "5 sao"}</span>
               <div className="ml-bar-track">
                 <div
                   className="ml-bar-fill"
@@ -162,7 +176,7 @@ export default function FarmerReviewsPage() {
               <span>{pct5}%</span>
             </div>
             <div className="ml-score-bar-row">
-              <span>4 sao</span>
+              <span>{isEn ? "4 stars" : "4 sao"}</span>
               <div className="ml-bar-track">
                 <div
                   className="ml-bar-fill"
@@ -174,7 +188,7 @@ export default function FarmerReviewsPage() {
               <span>{pct4}%</span>
             </div>
             <div className="ml-score-bar-row">
-              <span>≤ 3 sao</span>
+              <span>{isEn ? "≤ 3 stars" : "≤ 3 sao"}</span>
               <div className="ml-bar-track">
                 <div
                   className="ml-bar-fill"
@@ -194,12 +208,14 @@ export default function FarmerReviewsPage() {
           )}
 
           <h3 className="ml-feed-title">
-            Danh sách nhận xét từ khách sạp ({reviews.length})
+            {isEn
+              ? `Customer Reviews (${reviews.length})`
+              : `Danh sách nhận xét từ khách sạp (${reviews.length})`}
           </h3>
 
           {loading && (
             <div className="ml-inv-loading mb-4">
-              Đang tải nhận xét mới nhất...
+              {isEn ? "Loading latest reviews..." : "Đang tải nhận xét mới nhất..."}
             </div>
           )}
 
@@ -213,7 +229,7 @@ export default function FarmerReviewsPage() {
                   fontSize: "14px",
                 }}
               >
-                Chưa có đánh giá nào từ khách hàng
+                {isEn ? "No customer reviews yet" : "Chưa có đánh giá nào từ khách hàng"}
               </div>
             )}
             {paginatedReviews.map((rev) => (
@@ -227,7 +243,7 @@ export default function FarmerReviewsPage() {
                         rev.customerAvatar.includes("/")) ? (
                         <img
                           src={rev.customerAvatar}
-                          alt={rev.customerName || "Khách hàng"}
+                          alt={rev.customerName || "Customer"}
                           className="ml-rev-uavatar-img"
                           onError={(e) => {
                             e.target.style.display = "none";
@@ -261,8 +277,8 @@ export default function FarmerReviewsPage() {
                     <div className="ml-rev-user-meta">
                       <h4 className="ml-rev-uname">{rev.customerName}</h4>
                       <span className="ml-rev-udate">
-                        {rev.productName ? `Đã mua: ${rev.productName} • ` : ""}
-                        Ghé nhận lúc: {rev.date}
+                        {rev.productName ? `${isEn ? "Purchased:" : "Đã mua:"} ${localizeProduceName(rev.productName)} • ` : ""}
+                        {isEn ? "Picked up on:" : "Ghé nhận lúc:"} {rev.date}
                       </span>
                     </div>
                   </div>
@@ -276,12 +292,12 @@ export default function FarmerReviewsPage() {
                 {rev.replied ? (
                   <div className="ml-farmer-reply-box">
                     <div className="ml-reply-author">
-                      👨‍🌾 <strong>Phản hồi của {farmerInfo.name}:</strong>
+                      👨‍🌾 <strong>{isEn ? `Reply from ${farmerInfo.name}:` : `Phản hồi của ${farmerInfo.name}:`}</strong>
                     </div>
                     <p className="ml-reply-msg">{rev.replyMessage}</p>
                     {rev.replyAt && (
                       <span className="ml-reply-time">
-                        Đã trả lời lúc: {rev.replyAt}
+                        {isEn ? "Replied at:" : "Đã trả lời lúc:"} {rev.replyAt}
                       </span>
                     )}
                   </div>
@@ -292,7 +308,7 @@ export default function FarmerReviewsPage() {
                         <textarea
                           rows={2}
                           className="ml-reply-input"
-                          placeholder="Nhập lời cảm ơn hoặc giải đáp thắc mắc của khách..."
+                          placeholder={isEn ? "Enter a thank you message or answer shopper questions..." : "Nhập lời cảm ơn hoặc giải đáp thắc mắc của khách..."}
                           value={replyTextMap[rev.id] || ""}
                           onChange={(e) =>
                             setReplyTextMap({
@@ -307,14 +323,14 @@ export default function FarmerReviewsPage() {
                             size="sm"
                             onClick={() => setReplyingId(null)}
                           >
-                            Hủy
+                            {isEn ? "Cancel" : "Hủy"}
                           </Button>
                           <Button
                             variant="primary"
                             size="sm"
                             onClick={() => handleSendReply(rev.id)}
                           >
-                            Gửi phản hồi
+                            {isEn ? "Send Reply" : "Gửi phản hồi"}
                           </Button>
                         </div>
                       </div>
@@ -324,7 +340,7 @@ export default function FarmerReviewsPage() {
                         className="ml-reply-trigger-btn"
                         onClick={() => setReplyingId(rev.id)}
                       >
-                        💬 Phản hồi nhận xét này
+                        💬 {isEn ? "Reply to this review" : "Phản hồi nhận xét này"}
                       </button>
                     )}
                   </div>

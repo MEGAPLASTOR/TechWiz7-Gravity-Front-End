@@ -131,6 +131,11 @@ export default function Footer({ onNavigate }) {
                   {t("footerLinkStallList", "Danh sách sạp nông dân uy tín")}
                 </button>
               </li>
+              <li>
+                <button type="button" onClick={() => onNavigate("announcements")}>
+                  📋 {t("footerLinkAnnouncements", "Bảng tin & Thông báo")}
+                </button>
+              </li>
             </ul>
           </div>
 

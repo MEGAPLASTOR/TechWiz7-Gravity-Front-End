@@ -5,8 +5,10 @@ import Badge from "../../components/common/Badge";
 import Modal from "../../components/common/Modal";
 import Pagination from "../../components/common/Pagination";
 import adminService from "../../services/adminService";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function ContentModerationPage({ onNavigate }) {
+  const { isEn } = useLanguage();
   const [activeTab, setActiveTab] = useState("reviews");
   const [reviewsPage, setReviewsPage] = useState(1);
   const [categoriesPage, setCategoriesPage] = useState(1);
@@ -127,14 +129,14 @@ export default function ContentModerationPage({ onNavigate }) {
       showToast(
         "success",
         nextHidden
-          ? "Đã ẩn đánh giá khỏi giao diện người xem."
-          : "Đã hiển thị lại đánh giá công khai.",
+          ? (isEn ? "Review hidden from public view." : "Đã ẩn đánh giá khỏi giao diện người xem.")
+          : (isEn ? "Review restored to public view." : "Đã hiển thị lại đánh giá công khai."),
       );
       loadReviews();
     } catch (err) {
       showToast(
         "error",
-        "Lỗi thay đổi trạng thái đánh giá: " +
+        (isEn ? "Failed to change review status: " : "Lỗi thay đổi trạng thái đánh giá: ") +
           (err.response?.data?.message || err.message),
       );
     }
@@ -175,7 +177,7 @@ export default function ContentModerationPage({ onNavigate }) {
   const handleSaveCategory = async (e) => {
     e.preventDefault();
     if (!categoryForm.name.trim()) {
-      alert("Vui lòng nhập tên danh mục!");
+      alert(isEn ? "Please enter category name!" : "Vui lòng nhập tên danh mục!");
       return;
     }
     try {
@@ -184,36 +186,55 @@ export default function ContentModerationPage({ onNavigate }) {
           editingCategory.categoryId,
           categoryForm,
         );
-        showToast("success", "Cập nhật danh mục thành công!");
+        showToast(
+          "success",
+          isEn
+            ? "Category updated successfully!"
+            : "Cập nhật danh mục thành công!",
+        );
       } else {
         await adminService.createCategory(categoryForm);
-        showToast("success", "Tạo danh mục sản phẩm mới thành công!");
+        showToast(
+          "success",
+          isEn
+            ? "Created new produce category successfully!"
+            : "Tạo danh mục sản phẩm mới thành công!",
+        );
       }
       setIsCategoryModalOpen(false);
       loadCategories();
     } catch (err) {
       showToast(
         "error",
-        "Lỗi lưu danh mục: " + (err.response?.data?.message || err.message),
+        (isEn ? "Error saving category: " : "Lỗi lưu danh mục: ") +
+          (err.response?.data?.message || err.message),
       );
     }
   };
   const handleDeleteCategory = async (id, name) => {
     if (
       !window.confirm(
-        `Xác nhận xóa danh mục "${name}"? Hành động này sẽ yêu cầu các sản phẩm thuộc danh mục được chuyển sang phân loại khác.`,
+        isEn
+          ? `Confirm deleting category "${name}"? Products in this category will need reassignment.`
+          : `Xác nhận xóa danh mục "${name}"? Hành động này sẽ yêu cầu các sản phẩm thuộc danh mục được chuyển sang phân loại khác.`,
       )
     ) {
       return;
     }
     try {
       await adminService.deleteCategory(id);
-      showToast("success", `Đã xóa danh mục "${name}" thành công.`);
+      showToast(
+        "success",
+        isEn
+          ? `Deleted category "${name}" successfully.`
+          : `Đã xóa danh mục "${name}" thành công.`,
+      );
       loadCategories();
     } catch (err) {
       showToast(
         "error",
-        "Lỗi xóa danh mục: " + (err.response?.data?.message || err.message),
+        (isEn ? "Error deleting category: " : "Lỗi xóa danh mục: ") +
+          (err.response?.data?.message || err.message),
       );
     }
   };
@@ -241,7 +262,11 @@ export default function ContentModerationPage({ onNavigate }) {
   const handleSaveAnnouncement = async (e) => {
     e.preventDefault();
     if (!announcementForm.title.trim()) {
-      alert("Vui lòng nhập tiêu đề thông báo!");
+      alert(
+        isEn
+          ? "Please enter announcement title!"
+          : "Vui lòng nhập tiêu đề thông báo!",
+      );
       return;
     }
     try {
@@ -250,31 +275,54 @@ export default function ContentModerationPage({ onNavigate }) {
           editingAnnouncement.announcementId || editingAnnouncement.id,
           announcementForm,
         );
-        showToast("success", "Cập nhật thông báo hệ thống thành công!");
+        showToast(
+          "success",
+          isEn
+            ? "Updated system announcement successfully!"
+            : "Cập nhật thông báo hệ thống thành công!",
+        );
       } else {
         await adminService.createAnnouncement(announcementForm);
-        showToast("success", "Đăng thông báo hệ thống mới thành công!");
+        showToast(
+          "success",
+          isEn
+            ? "Published new system announcement successfully!"
+            : "Đăng thông báo hệ thống mới thành công!",
+        );
       }
       setIsAnnouncementModalOpen(false);
       loadAnnouncements();
     } catch (err) {
       showToast(
         "error",
-        "Lỗi lưu thông báo: " + (err.response?.data?.message || err.message),
+        (isEn ? "Error saving announcement: " : "Lỗi lưu thông báo: ") +
+          (err.response?.data?.message || err.message),
       );
     }
   };
   const handleDeleteAnnouncement = async (id, title) => {
-    if (!window.confirm(`Xác nhận xóa bản tin "${title}" khỏi hệ thống?`))
+    if (
+      !window.confirm(
+        isEn
+          ? `Confirm deleting announcement "${title}" from the system?`
+          : `Xác nhận xóa bản tin "${title}" khỏi hệ thống?`,
+      )
+    )
       return;
     try {
       await adminService.deleteAnnouncement(id);
-      showToast("success", "Đã xóa bản tin thành công.");
+      showToast(
+        "success",
+        isEn
+          ? "Deleted announcement successfully."
+          : "Đã xóa bản tin thành công.",
+      );
       loadAnnouncements();
     } catch (err) {
       showToast(
         "error",
-        "Lỗi xóa bản tin: " + (err.response?.data?.message || err.message),
+        (isEn ? "Error deleting announcement: " : "Lỗi xóa bản tin: ") +
+          (err.response?.data?.message || err.message),
       );
     }
   };
@@ -332,27 +380,40 @@ export default function ContentModerationPage({ onNavigate }) {
                 color: "#86efac",
               }}
             >
-              Ban Quản Trị Hệ Thống MarketLink
+              {isEn
+                ? "MarketLink System Administration"
+                : "Ban Quản Trị Hệ Thống MarketLink"}
             </span>
-            <h1 className="ml-mod-title">Kiểm Duyệt Nội Dung & Vận Hành Sàn</h1>
+            <h1 className="ml-mod-title">
+              {isEn
+                ? "Content Moderation & Platform Operations"
+                : "Kiểm Duyệt Nội Dung & Vận Hành Sàn"}
+            </h1>
             <p className="ml-mod-desc">
-              Kiểm duyệt đánh giá, quản lý danh mục phân loại nông sản và phát
-              hành các bản tin, thông báo lịch chợ toàn sàn.
+              {isEn
+                ? "Moderate reviews, manage produce categories, and publish announcements & market schedules across the platform."
+                : "Kiểm duyệt đánh giá, quản lý danh mục phân loại nông sản và phát hành các bản tin, thông báo lịch chợ toàn sàn."}
             </p>
           </div>
 
           <div className="ml-mod-stats-strip">
             <div className="ml-mod-stat-pill">
               <span className="ml-mod-stat-num">{reviews.length}</span>
-              <span className="ml-mod-stat-lbl">Đánh giá</span>
+              <span className="ml-mod-stat-lbl">
+                {isEn ? "Reviews" : "Đánh giá"}
+              </span>
             </div>
             <div className="ml-mod-stat-pill">
               <span className="ml-mod-stat-num">{categories.length}</span>
-              <span className="ml-mod-stat-lbl">Danh mục</span>
+              <span className="ml-mod-stat-lbl">
+                {isEn ? "Categories" : "Danh mục"}
+              </span>
             </div>
             <div className="ml-mod-stat-pill">
               <span className="ml-mod-stat-num">{announcements.length}</span>
-              <span className="ml-mod-stat-lbl">Bản tin</span>
+              <span className="ml-mod-stat-lbl">
+                {isEn ? "Announcements" : "Bản tin"}
+              </span>
             </div>
           </div>
         </div>
@@ -370,28 +431,36 @@ export default function ContentModerationPage({ onNavigate }) {
             className={`ml-inv-main-tab ${activeTab === "reviews" ? "active" : ""}`}
             onClick={() => setActiveTab("reviews")}
           >
-            ⭐ Kiểm duyệt đánh giá ({reviews.length})
+            {isEn
+              ? `⭐ Product Reviews (${reviews.length})`
+              : `⭐ Kiểm duyệt đánh giá (${reviews.length})`}
           </button>
           <button
             type="button"
             className={`ml-inv-main-tab ${activeTab === "categories" ? "active" : ""}`}
             onClick={() => setActiveTab("categories")}
           >
-            🏷️ Danh mục nông sản ({categories.length})
+            {isEn
+              ? `🏷️ Produce Categories (${categories.length})`
+              : `🏷️ Danh mục nông sản (${categories.length})`}
           </button>
           <button
             type="button"
             className={`ml-inv-main-tab ${activeTab === "announcements" ? "active" : ""}`}
             onClick={() => setActiveTab("announcements")}
           >
-            📢 Thông báo & Bản tin ({announcements.length})
+            {isEn
+              ? `📢 News & Announcements (${announcements.length})`
+              : `📢 Thông báo & Bản tin (${announcements.length})`}
           </button>
           <button
             type="button"
             className={`ml-inv-main-tab ${activeTab === "disputes" ? "active" : ""}`}
             onClick={() => setActiveTab("disputes")}
           >
-            ⚖️ Tranh chấp & Khiếu nại ({disputes.length})
+            {isEn
+              ? `⚖️ Disputes & Complaints (${disputes.length})`
+              : `⚖️ Tranh chấp & Khiếu nại (${disputes.length})`}
           </button>
         </div>
 
@@ -427,36 +496,41 @@ export default function ContentModerationPage({ onNavigate }) {
                       color: "#475569",
                     }}
                   >
-                    Bộ lọc hiển thị:
+                    {isEn ? "Filter by status:" : "Bộ lọc hiển thị:"}
                   </span>
                   <button
                     type="button"
                     className={`ml-filter-chip ${reviewFilter === "ALL" ? "active" : ""}`}
                     onClick={() => setReviewFilter("ALL")}
                   >
-                    Tất cả ({reviews.length})
+                    {isEn ? `All (${reviews.length})` : `Tất cả (${reviews.length})`}
                   </button>
                   <button
                     type="button"
                     className={`ml-filter-chip ${reviewFilter === "LOW_RATING" ? "active" : ""}`}
                     onClick={() => setReviewFilter("LOW_RATING")}
                   >
-                    Đánh giá thấp (1-2★) (
-                    {reviews.filter((r) => (r.rating || 5) <= 2).length})
+                    {isEn
+                      ? `Low rating (1-2★) (${reviews.filter((r) => (r.rating || 5) <= 2).length})`
+                      : `Đánh giá thấp (1-2★) (${reviews.filter((r) => (r.rating || 5) <= 2).length})`}
                   </button>
                   <button
                     type="button"
                     className={`ml-filter-chip ${reviewFilter === "HIDDEN" ? "active" : ""}`}
                     onClick={() => setReviewFilter("HIDDEN")}
                   >
-                    Đang bị ẩn ({reviews.filter((r) => r.isHidden).length})
+                    {isEn
+                      ? `Hidden (${reviews.filter((r) => r.isHidden).length})`
+                      : `Đang bị ẩn (${reviews.filter((r) => r.isHidden).length})`}
                   </button>
                   <button
                     type="button"
                     className={`ml-filter-chip ${reviewFilter === "VISIBLE" ? "active" : ""}`}
                     onClick={() => setReviewFilter("VISIBLE")}
                   >
-                    Đang hiển thị ({reviews.filter((r) => !r.isHidden).length})
+                    {isEn
+                      ? `Visible (${reviews.filter((r) => !r.isHidden).length})`
+                      : `Đang hiển thị (${reviews.filter((r) => !r.isHidden).length})`}
                   </button>
                 </div>
                 <div
@@ -472,7 +546,11 @@ export default function ContentModerationPage({ onNavigate }) {
                     style={{
                       minWidth: 260,
                     }}
-                    placeholder="Tìm theo khách, nông dân, nội dung..."
+                    placeholder={
+                      isEn
+                        ? "Search by customer, farmer, content..."
+                        : "Tìm theo khách, nông dân, nội dung..."
+                    }
                     value={reviewSearch}
                     onChange={(e) => setReviewSearch(e.target.value)}
                   />
@@ -486,7 +564,7 @@ export default function ContentModerationPage({ onNavigate }) {
                     </Button>
                   )}
                   <Button variant="outline" size="sm" onClick={loadReviews}>
-                    🔄 Tải lại
+                    🔄 {isEn ? "Refresh" : "Tải lại"}
                   </Button>
                 </div>
               </div>
@@ -494,7 +572,7 @@ export default function ContentModerationPage({ onNavigate }) {
 
             {loadingReviews ? (
               <div className="ml-inv-loading">
-                Đang tải danh sách đánh giá...
+                {isEn ? "Loading reviews list..." : "Đang tải danh sách đánh giá..."}
               </div>
             ) : filteredReviews.length === 0 ? (
               <div
@@ -505,7 +583,9 @@ export default function ContentModerationPage({ onNavigate }) {
                   color: "#64748b",
                 }}
               >
-                Không có đánh giá nào phù hợp với bộ lọc.
+                {isEn
+                  ? "No reviews matching the search filters."
+                  : "Không có đánh giá nào phù hợp với bộ lọc."}
               </div>
             ) : (
               <>
@@ -551,7 +631,7 @@ export default function ContentModerationPage({ onNavigate }) {
                               color: "#1e293b",
                             }}
                           >
-                            {r.customerName || "Khách hàng"}
+                            {r.customerName || (isEn ? "Customer" : "Khách hàng")}
                           </span>
                           <span
                             style={{
@@ -582,20 +662,20 @@ export default function ContentModerationPage({ onNavigate }) {
                             marginTop: 2,
                           }}
                         >
-                          Đánh giá cho sạp:{" "}
+                          {isEn ? "Review for stall: " : "Đánh giá cho sạp: "}
                           <strong>{r.stallName || r.farmerName}</strong>{" "}
-                          {r.productName ? `• Sản phẩm: ${r.productName}` : ""}
+                          {r.productName ? `• ${isEn ? "Produce" : "Sản phẩm"}: ${r.productName}` : ""}
                         </div>
                       </div>
 
                       <div>
                         {r.isHidden ? (
                           <Badge variant="cancelled" dot>
-                            Đang bị ẩn
+                            {isEn ? "Hidden" : "Đang bị ẩn"}
                           </Badge>
                         ) : (
                           <Badge variant="ready" dot>
-                            Công khai
+                            {isEn ? "Public" : "Công khai"}
                           </Badge>
                         )}
                       </div>
@@ -609,7 +689,7 @@ export default function ContentModerationPage({ onNavigate }) {
                         fontStyle: "italic",
                       }}
                     >
-                      "{r.comment || "Không có bình luận chữ."}"
+                      "{r.comment || (isEn ? "No text comment." : "Không có bình luận chữ.")}"
                     </div>
 
                     {r.farmerReply && (
@@ -623,7 +703,7 @@ export default function ContentModerationPage({ onNavigate }) {
                           borderLeft: "3px solid #22c55e",
                         }}
                       >
-                        <strong>Phản hồi từ chủ sạp:</strong> "{r.farmerReply}"
+                        <strong>{isEn ? "Reply from stall owner:" : "Phản hồi từ chủ sạp:"}</strong> "{r.farmerReply}"
                       </div>
                     )}
 
@@ -646,8 +726,8 @@ export default function ContentModerationPage({ onNavigate }) {
                         }
                       >
                         {r.isHidden
-                          ? "✓ Mở lại đánh giá"
-                          : "👁️ Ẩn đánh giá này"}
+                          ? (isEn ? "✓ Unhide Review" : "✓ Mở lại đánh giá")
+                          : (isEn ? "👁️ Hide this Review" : "👁️ Ẩn đánh giá này")}
                       </Button>
                     </div>
                   </div>
@@ -691,7 +771,11 @@ export default function ContentModerationPage({ onNavigate }) {
                   style={{
                     maxWidth: 320,
                   }}
-                  placeholder="Tìm theo tên danh mục, đường dẫn, mô tả..."
+                  placeholder={
+                    isEn
+                      ? "Search by category name, slug, description..."
+                      : "Tìm theo tên danh mục, đường dẫn, mô tả..."
+                  }
                   value={categorySearch}
                   onChange={(e) => setCategorySearch(e.target.value)}
                 />
@@ -710,12 +794,14 @@ export default function ContentModerationPage({ onNavigate }) {
                 size="md"
                 onClick={() => handleOpenCategoryModal()}
               >
-                + Thêm danh mục mới
+                {isEn ? "+ Add New Category" : "+ Thêm danh mục mới"}
               </Button>
             </div>
 
             {loadingCategories ? (
-              <div className="ml-inv-loading">Đang tải danh mục...</div>
+              <div className="ml-inv-loading">
+                {isEn ? "Loading categories..." : "Đang tải danh mục..."}
+              </div>
             ) : categories.length === 0 ? (
               <div
                 className="ml-card"
@@ -725,7 +811,9 @@ export default function ContentModerationPage({ onNavigate }) {
                   color: "#64748b",
                 }}
               >
-                Chưa có danh mục nào. Hãy bấm "Thêm danh mục mới" ở trên.
+                {isEn
+                  ? "No categories found. Click '+ Add New Category' above."
+                  : "Chưa có danh mục nào. Hãy bấm 'Thêm danh mục mới' ở trên."}
               </div>
             ) : (
               <>
@@ -757,28 +845,28 @@ export default function ContentModerationPage({ onNavigate }) {
                           padding: "12px 16px",
                         }}
                       >
-                        Mã
+                        {isEn ? "ID" : "Mã"}
                       </th>
                       <th
                         style={{
                           padding: "12px 16px",
                         }}
                       >
-                        Tên danh mục
+                        {isEn ? "Category Name" : "Tên danh mục"}
                       </th>
                       <th
                         style={{
                           padding: "12px 16px",
                         }}
                       >
-                        Đường dẫn (Slug)
+                        {isEn ? "URL Slug" : "Đường dẫn (Slug)"}
                       </th>
                       <th
                         style={{
                           padding: "12px 16px",
                         }}
                       >
-                        Mô tả chi tiết
+                        {isEn ? "Detailed Description" : "Mô tả chi tiết"}
                       </th>
                       <th
                         style={{
@@ -786,7 +874,7 @@ export default function ContentModerationPage({ onNavigate }) {
                           textAlign: "right",
                         }}
                       >
-                        Thao tác
+                        {isEn ? "Actions" : "Thao tác"}
                       </th>
                     </tr>
                   </thead>
@@ -831,7 +919,7 @@ export default function ContentModerationPage({ onNavigate }) {
                             color: "#64748b",
                           }}
                         >
-                          {c.description || "Chưa có mô tả"}
+                          {c.description || (isEn ? "No description" : "Chưa có mô tả")}
                         </td>
                         <td
                           style={{
@@ -850,7 +938,7 @@ export default function ContentModerationPage({ onNavigate }) {
                               size="sm"
                               onClick={() => handleOpenCategoryModal(c)}
                             >
-                              ✏️ Sửa
+                              ✏️ {isEn ? "Edit" : "Sửa"}
                             </Button>
                             <Button
                               variant="ghost"
@@ -862,7 +950,7 @@ export default function ContentModerationPage({ onNavigate }) {
                                 handleDeleteCategory(c.categoryId, c.name)
                               }
                             >
-                              ✕ Xóa
+                              ✕ {isEn ? "Delete" : "Xóa"}
                             </Button>
                           </div>
                         </td>
@@ -909,7 +997,11 @@ export default function ContentModerationPage({ onNavigate }) {
                   style={{
                     maxWidth: 320,
                   }}
-                  placeholder="Tìm theo tiêu đề, nội dung bản tin..."
+                  placeholder={
+                    isEn
+                      ? "Search by title, announcement content..."
+                      : "Tìm theo tiêu đề, nội dung bản tin..."
+                  }
                   value={announcementSearch}
                   onChange={(e) => setAnnouncementSearch(e.target.value)}
                 />
@@ -928,12 +1020,14 @@ export default function ContentModerationPage({ onNavigate }) {
                 size="md"
                 onClick={() => handleOpenAnnouncementModal()}
               >
-                📢 Đăng bản tin mới
+                📢 {isEn ? "Publish New Announcement" : "Đăng bản tin mới"}
               </Button>
             </div>
 
             {loadingAnnouncements ? (
-              <div className="ml-inv-loading">Đang tải bản tin hệ thống...</div>
+              <div className="ml-inv-loading">
+                {isEn ? "Loading system announcements..." : "Đang tải bản tin hệ thống..."}
+              </div>
             ) : announcements.length === 0 ? (
               <div
                 className="ml-card"
@@ -943,8 +1037,9 @@ export default function ContentModerationPage({ onNavigate }) {
                   color: "#64748b",
                 }}
               >
-                Chưa có bản tin nào. Hãy bấm "Đăng bản tin mới" để phát thông
-                báo tới toàn sàn.
+                {isEn
+                  ? "No announcements yet. Click 'Publish New Announcement' to broadcast notices to the platform."
+                  : "Chưa có bản tin nào. Hãy bấm 'Đăng bản tin mới' để phát thông báo tới toàn sàn."}
               </div>
             ) : (
               <>
@@ -988,7 +1083,9 @@ export default function ContentModerationPage({ onNavigate }) {
                           variant={a.isActive !== false ? "ready" : "neutral"}
                           dot
                         >
-                          {a.isActive !== false ? "Đang bật" : "Đã ẩn"}
+                          {a.isActive !== false
+                            ? (isEn ? "Active" : "Đang bật")
+                            : (isEn ? "Hidden" : "Đã ẩn")}
                         </Badge>
                       </div>
 
@@ -1001,11 +1098,13 @@ export default function ContentModerationPage({ onNavigate }) {
                         }}
                       >
                         <span>
-                          Loại: <strong>{a.type || "GENERAL"}</strong>
+                          {isEn ? "Type: " : "Loại: "}
+                          <strong>{a.type || "GENERAL"}</strong>
                         </span>
                         <span>•</span>
                         <span>
-                          Đối tượng: <strong>{a.targetRole || "ALL"}</strong>
+                          {isEn ? "Target: " : "Đối tượng: "}
+                          <strong>{a.targetRole || "ALL"}</strong>
                         </span>
                         <span>•</span>
                         <span>
@@ -1039,7 +1138,7 @@ export default function ContentModerationPage({ onNavigate }) {
                           size="sm"
                           onClick={() => handleOpenAnnouncementModal(a)}
                         >
-                          ✏️ Chỉnh sửa
+                          ✏️ {isEn ? "Edit" : "Chỉnh sửa"}
                         </Button>
                         <Button
                           variant="ghost"
@@ -1051,7 +1150,7 @@ export default function ContentModerationPage({ onNavigate }) {
                             handleDeleteAnnouncement(annId, a.title)
                           }
                         >
-                          ✕ Xóa
+                          ✕ {isEn ? "Delete" : "Xóa"}
                         </Button>
                       </div>
                     </div>
@@ -1093,10 +1192,12 @@ export default function ContentModerationPage({ onNavigate }) {
                 >
                   <div style={{ fontSize: 36, marginBottom: 12 }}>🤝</div>
                   <h4 style={{ margin: "0 0 8px 0", color: "#1e293b", fontSize: 16 }}>
-                    Không có khiếu nại hoặc tranh chấp nào
+                    {isEn ? "No disputes or complaints reported" : "Không có khiếu nại hoặc tranh chấp nào"}
                   </h4>
                   <p style={{ margin: 0, fontSize: 14 }}>
-                    Hiện tại hệ thống không ghi nhận phản ánh cần ban quản lý chợ can thiệp xử lý.
+                    {isEn
+                      ? "Currently the system records no complaints requiring market management intervention."
+                      : "Hiện tại hệ thống không ghi nhận phản ánh cần ban quản lý chợ can thiệp xử lý."}
                   </p>
                 </div>
               ) : (
@@ -1124,14 +1225,14 @@ export default function ContentModerationPage({ onNavigate }) {
                           color: "#1e293b",
                         }}
                       >
-                        Đơn hàng #{d.orderCode} • {d.marketName}
+                        {isEn ? "Order #" : "Đơn hàng #"}{d.orderCode} • {d.marketName}
                       </div>
                       <Badge
                         variant={d.status === "RESOLVED" ? "ready" : "pending"}
                       >
                         {d.status === "RESOLVED"
-                          ? "Đã giải quyết thỏa đáng"
-                          : "Đang tiếp nhận"}
+                          ? (isEn ? "Resolved Satisfactorily" : "Đã giải quyết thỏa đáng")
+                          : (isEn ? "Processing" : "Đang tiếp nhận")}
                       </Badge>
                     </div>
 
@@ -1141,8 +1242,8 @@ export default function ContentModerationPage({ onNavigate }) {
                         color: "#475569",
                       }}
                     >
-                      Người mua: <strong>{d.customerName}</strong> ↔ Chủ sạp:{" "}
-                      <strong>{d.farmerName}</strong>
+                      {isEn ? "Buyer: " : "Người mua: "}<strong>{d.customerName}</strong>
+                      {isEn ? " ↔ Stall owner: " : " ↔ Chủ sạp: "}<strong>{d.farmerName}</strong>
                     </div>
 
                     <div
@@ -1155,7 +1256,7 @@ export default function ContentModerationPage({ onNavigate }) {
                         color: "#92400e",
                       }}
                     >
-                      ⚠️ <strong>Nội dung phản ánh:</strong> {d.issue}
+                      ⚠️ <strong>{isEn ? "Reported issue: " : "Nội dung phản ánh: "}</strong>{d.issue}
                     </div>
 
                     {d.solution && (
@@ -1169,7 +1270,7 @@ export default function ContentModerationPage({ onNavigate }) {
                           color: "#166534",
                         }}
                       >
-                        ✅ <strong>Kết quả xử lý:</strong> {d.solution}
+                        ✅ <strong>{isEn ? "Resolution: " : "Kết quả xử lý: "}</strong>{d.solution}
                       </div>
                     )}
                   </div>
@@ -1186,10 +1287,14 @@ export default function ContentModerationPage({ onNavigate }) {
           onClose={() => setIsCategoryModalOpen(false)}
           title={
             editingCategory
-              ? "Chỉnh Sửa Danh Mục Sản Phẩm"
-              : "Thêm Danh Mục Nông Sản Mới"
+              ? (isEn ? "Edit Produce Category" : "Chỉnh Sửa Danh Mục Sản Phẩm")
+              : (isEn ? "Add New Produce Category" : "Thêm Danh Mục Nông Sản Mới")
           }
-          subtitle="Danh mục giúp khách hàng phân loại và tìm kiếm nông sản tươi dễ dàng hơn"
+          subtitle={
+            isEn
+              ? "Categories help customers classify and search fresh agricultural products easily"
+              : "Danh mục giúp khách hàng phân loại và tìm kiếm nông sản tươi dễ dàng hơn"
+          }
           maxWidth="520px"
         >
           <form
@@ -1201,11 +1306,17 @@ export default function ContentModerationPage({ onNavigate }) {
             }}
           >
             <div className="ml-form-group">
-              <label className="ml-form-label">Tên danh mục:</label>
+              <label className="ml-form-label">
+                {isEn ? "Category name:" : "Tên danh mục:"}
+              </label>
               <input
                 type="text"
                 className="ml-form-input"
-                placeholder="VD: Nấm & Thảo Dược, Trái Cây Bản Địa..."
+                placeholder={
+                  isEn
+                    ? "e.g.: Mushrooms & Herbs, Native Fruits..."
+                    : "VD: Nấm & Thảo Dược, Trái Cây Bản Địa..."
+                }
                 value={categoryForm.name}
                 onChange={(e) =>
                   setCategoryForm({
@@ -1219,7 +1330,9 @@ export default function ContentModerationPage({ onNavigate }) {
 
             <div className="ml-form-group">
               <label className="ml-form-label">
-                Đường dẫn URL (Slug - để trống để tạo tự động):
+                {isEn
+                  ? "URL Slug (leave empty to generate automatically):"
+                  : "Đường dẫn URL (Slug - để trống để tạo tự động):"}
               </label>
               <input
                 type="text"
@@ -1236,11 +1349,17 @@ export default function ContentModerationPage({ onNavigate }) {
             </div>
 
             <div className="ml-form-group">
-              <label className="ml-form-label">Mô tả danh mục:</label>
+              <label className="ml-form-label">
+                {isEn ? "Category description:" : "Mô tả danh mục:"}
+              </label>
               <textarea
                 className="ml-form-textarea"
                 rows={3}
-                placeholder="Mô tả các sản phẩm thuộc phân loại này..."
+                placeholder={
+                  isEn
+                    ? "Describe produce under this category..."
+                    : "Mô tả các sản phẩm thuộc phân loại này..."
+                }
                 value={categoryForm.description}
                 onChange={(e) =>
                   setCategoryForm({
@@ -1264,10 +1383,12 @@ export default function ContentModerationPage({ onNavigate }) {
                 variant="ghost"
                 onClick={() => setIsCategoryModalOpen(false)}
               >
-                Hủy
+                {isEn ? "Cancel" : "Hủy"}
               </Button>
               <Button type="submit" variant="primary" loading={savingCategory}>
-                {editingCategory ? "Lưu thay đổi" : "Tạo danh mục"}
+                {editingCategory
+                  ? (isEn ? "Save Changes" : "Lưu thay đổi")
+                  : (isEn ? "Create Category" : "Tạo danh mục")}
               </Button>
             </div>
           </form>
@@ -1280,10 +1401,14 @@ export default function ContentModerationPage({ onNavigate }) {
           onClose={() => setIsAnnouncementModalOpen(false)}
           title={
             editingAnnouncement
-              ? "Chỉnh Sửa Thông Báo Hệ Thống"
-              : "Phát Hành Thông Báo Mới"
+              ? (isEn ? "Edit System Announcement" : "Chỉnh Sửa Thông Báo Hệ Thống")
+              : (isEn ? "Publish New Announcement" : "Phát Hành Thông Báo Mới")
           }
-          subtitle="Bản tin sẽ hiển thị trên bảng tin chợ phiên và gửi thông báo tới người dùng"
+          subtitle={
+            isEn
+              ? "Announcements appear on the market newsboard and notify users"
+              : "Bản tin sẽ hiển thị trên bảng tin chợ phiên và gửi thông báo tới người dùng"
+          }
           maxWidth="560px"
         >
           <form
@@ -1295,11 +1420,17 @@ export default function ContentModerationPage({ onNavigate }) {
             }}
           >
             <div className="ml-form-group">
-              <label className="ml-form-label">Tiêu đề thông báo:</label>
+              <label className="ml-form-label">
+                {isEn ? "Announcement title:" : "Tiêu đề thông báo:"}
+              </label>
               <input
                 type="text"
                 className="ml-form-input"
-                placeholder="VD: Thông báo lịch họp chợ phiên cuối tuần tại Ba Đình..."
+                placeholder={
+                  isEn
+                    ? "e.g.: Weekend Farmers Market schedule announcement..."
+                    : "VD: Thông báo lịch họp chợ phiên cuối tuần tại Ba Đình..."
+                }
                 value={announcementForm.title}
                 onChange={(e) =>
                   setAnnouncementForm({
@@ -1319,7 +1450,9 @@ export default function ContentModerationPage({ onNavigate }) {
               }}
             >
               <div className="ml-form-group">
-                <label className="ml-form-label">Phân loại:</label>
+                <label className="ml-form-label">
+                  {isEn ? "Classification:" : "Phân loại:"}
+                </label>
                 <select
                   className="ml-form-select"
                   value={announcementForm.type}
@@ -1330,19 +1463,25 @@ export default function ContentModerationPage({ onNavigate }) {
                     })
                   }
                 >
-                  <option value="GENERAL">Tin chung (GENERAL)</option>
-                  <option value="MARKET_EVENT">
-                    Sự kiện chợ phiên (MARKET_EVENT)
+                  <option value="GENERAL">
+                    {isEn ? "General News (GENERAL)" : "Tin chung (GENERAL)"}
                   </option>
-                  <option value="POLICY">Chính sách & An toàn (POLICY)</option>
+                  <option value="MARKET_EVENT">
+                    {isEn ? "Market Event (MARKET_EVENT)" : "Sự kiện chợ phiên (MARKET_EVENT)"}
+                  </option>
+                  <option value="POLICY">
+                    {isEn ? "Policy & Safety (POLICY)" : "Chính sách & An toàn (POLICY)"}
+                  </option>
                   <option value="MAINTENANCE">
-                    Bảo trì hệ thống (MAINTENANCE)
+                    {isEn ? "System Maintenance (MAINTENANCE)" : "Bảo trì hệ thống (MAINTENANCE)"}
                   </option>
                 </select>
               </div>
 
               <div className="ml-form-group">
-                <label className="ml-form-label">Đối tượng nhận:</label>
+                <label className="ml-form-label">
+                  {isEn ? "Target Audience:" : "Đối tượng nhận:"}
+                </label>
                 <select
                   className="ml-form-select"
                   value={announcementForm.targetRole}
@@ -1353,21 +1492,31 @@ export default function ContentModerationPage({ onNavigate }) {
                     })
                   }
                 >
-                  <option value="ALL">Toàn bộ sàn (Tất cả mọi người)</option>
-                  <option value="FARMER">Chỉ Nông Dân / Chủ sạp</option>
-                  <option value="CUSTOMER">Chỉ Khách Mua Hàng</option>
+                  <option value="ALL">
+                    {isEn ? "Entire Platform (Everyone)" : "Toàn bộ sàn (Tất cả mọi người)"}
+                  </option>
+                  <option value="FARMER">
+                    {isEn ? "Farmers / Stall Owners Only" : "Chỉ Nông Dân / Chủ sạp"}
+                  </option>
+                  <option value="CUSTOMER">
+                    {isEn ? "Shoppers Only" : "Chỉ Khách Mua Hàng"}
+                  </option>
                 </select>
               </div>
             </div>
 
             <div className="ml-form-group">
               <label className="ml-form-label">
-                Nội dung chi tiết bản tin:
+                {isEn ? "Detailed announcement content:" : "Nội dung chi tiết bản tin:"}
               </label>
               <textarea
                 className="ml-form-textarea"
                 rows={5}
-                placeholder="Nhập nội dung đầy đủ của thông báo..."
+                placeholder={
+                  isEn
+                    ? "Enter full announcement text..."
+                    : "Nhập nội dung đầy đủ của thông báo..."
+                }
                 value={announcementForm.content}
                 onChange={(e) =>
                   setAnnouncementForm({
@@ -1405,7 +1554,9 @@ export default function ContentModerationPage({ onNavigate }) {
                   userSelect: "none",
                 }}
               >
-                Kích hoạt hiển thị công khai ngay sau khi đăng
+                {isEn
+                  ? "Publish immediately for public display"
+                  : "Kích hoạt hiển thị công khai ngay sau khi đăng"}
               </label>
             </div>
 
@@ -1422,14 +1573,16 @@ export default function ContentModerationPage({ onNavigate }) {
                 variant="ghost"
                 onClick={() => setIsAnnouncementModalOpen(false)}
               >
-                Hủy
+                {isEn ? "Cancel" : "Hủy"}
               </Button>
               <Button
                 type="submit"
                 variant="primary"
                 loading={savingAnnouncement}
               >
-                {editingAnnouncement ? "Lưu thay đổi" : "Phát thông báo"}
+                {editingAnnouncement
+                  ? (isEn ? "Save Changes" : "Lưu thay đổi")
+                  : (isEn ? "Publish Announcement" : "Phát thông báo")}
               </Button>
             </div>
           </form>

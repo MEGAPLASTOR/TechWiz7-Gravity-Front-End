@@ -6,8 +6,10 @@ import Modal from "../../components/common/Modal";
 import Pagination from "../../components/common/Pagination";
 import adminService from "../../services/adminService";
 import marketService from "../../services/marketService";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
+  const { isEn, localizeMarketName, localizeProduceName, localizeUnit } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -98,37 +100,37 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
       case "PLACED":
         return (
           <Badge variant="neutral" dot>
-            Chờ sạp tiếp nhận
+            {isEn ? "Pending Stall" : "Chờ sạp tiếp nhận"}
           </Badge>
         );
       case "ACCEPTED":
         return (
           <Badge variant="pending" dot>
-            Sạp đã tiếp nhận
+            {isEn ? "Accepted by Stall" : "Sạp đã tiếp nhận"}
           </Badge>
         );
       case "READY_FOR_PICKUP":
         return (
           <Badge variant="accent" dot>
-            Đã sẵn sàng tại sạp
+            {isEn ? "Ready at Stall" : "Đã sẵn sàng tại sạp"}
           </Badge>
         );
       case "COMPLETED":
         return (
           <Badge variant="ready" dot>
-            Hoàn tất nhận hàng
+            {isEn ? "Pickup Completed" : "Hoàn tất nhận hàng"}
           </Badge>
         );
       case "DECLINED":
         return (
           <Badge variant="cancelled" dot>
-            Sạp từ chối
+            {isEn ? "Declined by Stall" : "Sạp từ chối"}
           </Badge>
         );
       case "CANCELLED":
         return (
           <Badge variant="cancelled" dot>
-            Đã hủy đơn
+            {isEn ? "Cancelled" : "Đã hủy đơn"}
           </Badge>
         );
       default:
@@ -150,22 +152,22 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                 color: "#86efac",
               }}
             >
-              Ban Quản Trị Hệ Thống MarketLink
+              {isEn ? "MarketLink System Administration" : "Ban Quản Trị Hệ Thống MarketLink"}
             </span>
             <h1 className="ml-admin-orders-title">
-              Giám Sát Đơn Đặt Trước Toàn Sàn
+              {isEn ? "Supervise Platform-wide Pre-orders" : "Giám Sát Đơn Đặt Trước Toàn Sàn"}
             </h1>
             <p className="ml-admin-orders-desc">
-              Theo dõi toàn bộ luồng đơn hàng đặt trước nông sản tại các phiên
-              chợ, tình trạng chuẩn bị tại sạp và giải quyết khiếu nại giữa các
-              bên.
+              {isEn
+                ? "Track end-to-end pre-order workflows across weekend markets, verify stall readiness, and coordinate customer support."
+                : "Theo dõi toàn bộ luồng đơn hàng đặt trước nông sản tại các phiên chợ, tình trạng chuẩn bị tại sạp và giải quyết khiếu nại giữa các bên."}
             </p>
           </div>
 
           <div className="ml-admin-orders-stats-strip">
             <div className="ml-admin-stat-pill">
               <span className="ml-admin-stat-num">{totalOrders}</span>
-              <span className="ml-admin-stat-lbl">Tổng đơn hàng</span>
+              <span className="ml-admin-stat-lbl">{isEn ? "Total Orders" : "Tổng đơn hàng"}</span>
             </div>
             <div className="ml-admin-stat-pill">
               <span
@@ -176,7 +178,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
               >
                 {pendingOrders.length}
               </span>
-              <span className="ml-admin-stat-lbl">Chờ chuẩn bị</span>
+              <span className="ml-admin-stat-lbl">{isEn ? "Pending Prep" : "Chờ chuẩn bị"}</span>
             </div>
             <div className="ml-admin-stat-pill">
               <span
@@ -187,7 +189,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
               >
                 {formatCurrency(totalGMV)}
               </span>
-              <span className="ml-admin-stat-lbl">Doanh thu giao dịch</span>
+              <span className="ml-admin-stat-lbl">{isEn ? "Gross Merchandise Value" : "Doanh thu giao dịch"}</span>
             </div>
           </div>
         </div>
@@ -202,7 +204,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
               onClick={() => setActiveTab("ALL")}
             >
               <span className="ml-order-tab-icon">📋</span>
-              <span className="ml-order-tab-label">Tất cả đơn</span>
+              <span className="ml-order-tab-label">{isEn ? "All Orders" : "Tất cả đơn"}</span>
               <span className="ml-tab-badge ml-tab-badge-all">
                 {orders.length}
               </span>
@@ -213,7 +215,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
               onClick={() => setActiveTab("PENDING")}
             >
               <span className="ml-order-tab-icon">⏳</span>
-              <span className="ml-order-tab-label">Chờ chuẩn bị</span>
+              <span className="ml-order-tab-label">{isEn ? "Pending Prep" : "Chờ chuẩn bị"}</span>
               <span
                 className={`ml-tab-badge ${pendingOrders.length > 0 ? "ml-tab-badge-warning" : "ml-tab-badge-neutral"}`}
               >
@@ -226,7 +228,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
               onClick={() => setActiveTab("READY_FOR_PICKUP")}
             >
               <span className="ml-order-tab-icon">📦</span>
-              <span className="ml-order-tab-label">Sẵn sàng tại sạp</span>
+              <span className="ml-order-tab-label">{isEn ? "Ready at Stall" : "Sẵn sàng tại sạp"}</span>
               <span
                 className={`ml-tab-badge ${readyOrders.length > 0 ? "ml-tab-badge-info" : "ml-tab-badge-neutral"}`}
               >
@@ -239,7 +241,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
               onClick={() => setActiveTab("COMPLETED")}
             >
               <span className="ml-order-tab-icon">✅</span>
-              <span className="ml-order-tab-label">Đã hoàn tất</span>
+              <span className="ml-order-tab-label">{isEn ? "Completed" : "Đã hoàn tất"}</span>
               <span className="ml-tab-badge ml-tab-badge-success">
                 {completedOrders.length}
               </span>
@@ -250,7 +252,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
               onClick={() => setActiveTab("CANCELLED")}
             >
               <span className="ml-order-tab-icon">🚫</span>
-              <span className="ml-order-tab-label">Hủy / Từ chối</span>
+              <span className="ml-order-tab-label">{isEn ? "Cancelled / Declined" : "Hủy / Từ chối"}</span>
               <span className="ml-tab-badge ml-tab-badge-danger">
                 {
                   orders.filter(
@@ -270,12 +272,14 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
               <div className="ml-filter-card-icon-badge">📦</div>
               <div>
                 <h3 className="ml-filter-card-title">
-                  Bộ Lọc & Tra Cứu Đơn Hàng
+                  {isEn ? "Filters & Order Lookup" : "Bộ Lọc & Tra Cứu Đơn Hàng"}
                 </h3>
                 <p className="ml-filter-card-subtitle">
                   {loading
-                    ? "Đang tìm kiếm đơn hàng..."
-                    : `Tìm thấy ${orders.length} đơn hàng phù hợp với điều kiện`}
+                    ? (isEn ? "Searching orders..." : "Đang tìm kiếm đơn hàng...")
+                    : (isEn
+                        ? `Found ${orders.length} orders matching criteria`
+                        : `Tìm thấy ${orders.length} đơn hàng phù hợp với điều kiện`)}
                 </p>
               </div>
             </div>
@@ -286,21 +290,21 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                   type="button"
                   className="ml-filter-reset-btn"
                   onClick={handleResetFilters}
-                  title="Xóa tất cả bộ lọc về mặc định"
+                  title={isEn ? "Reset all filters to default" : "Xóa tất cả bộ lọc về mặc định"}
                 >
                   <span className="ml-reset-icon">✕</span>
-                  <span>Xóa bộ lọc</span>
+                  <span>{isEn ? "Reset Filters" : "Xóa bộ lọc"}</span>
                 </button>
               )}
               <button
                 type="button"
                 className="ml-filter-reload-btn"
                 onClick={loadOrders}
-                title="Tải lại danh sách đơn hàng"
+                title={isEn ? "Reload orders list" : "Tải lại danh sách đơn hàng"}
                 disabled={loading}
               >
                 <span className={loading ? "ml-spin" : ""}>🔄</span>
-                <span>Làm mới</span>
+                <span>{isEn ? "Refresh" : "Làm mới"}</span>
               </button>
             </div>
           </div>
@@ -308,7 +312,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
           <div className="ml-order-filter-grid">
             <div className="ml-filter-field ml-filter-field-search">
               <label className="ml-filter-label">
-                <span className="ml-label-icon">🔎</span> Tìm kiếm đơn hàng
+                <span className="ml-label-icon">🔎</span> {isEn ? "Search Orders" : "Tìm kiếm đơn hàng"}
               </label>
               <div className="ml-search-input-wrapper">
                 <span className="ml-search-leading-icon">
@@ -329,7 +333,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                 <input
                   type="text"
                   className="ml-filter-input"
-                  placeholder="Mã đơn, Tên khách, SĐT, Nhà vườn..."
+                  placeholder={isEn ? "Order code, customer name, phone, farm..." : "Mã đơn, Tên khách, SĐT, Nhà vườn..."}
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
                 />
@@ -338,7 +342,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                     type="button"
                     className="ml-input-clear-btn"
                     onClick={() => setSearchKeyword("")}
-                    title="Xóa tìm kiếm"
+                    title={isEn ? "Clear search" : "Xóa tìm kiếm"}
                   >
                     ✕
                   </button>
@@ -348,7 +352,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
 
             <div className="ml-filter-field">
               <label className="ml-filter-label">
-                <span className="ml-label-icon">📍</span> Điểm chợ phiên
+                <span className="ml-label-icon">📍</span> {isEn ? "Market Session" : "Điểm chợ phiên"}
               </label>
               <div className="ml-select-wrapper">
                 <select
@@ -357,11 +361,11 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                   onChange={(e) => setSelectedMarketFilter(e.target.value)}
                 >
                   <option value="ALL">
-                    Tất cả điểm chợ ({allMarkets.length})
+                    {isEn ? `All Market Locations (${allMarkets.length})` : `Tất cả điểm chợ (${allMarkets.length})`}
                   </option>
                   {allMarkets.map((m) => (
                     <option key={m.marketId || m.id} value={m.marketId || m.id}>
-                      {m.name}
+                      {localizeMarketName(m.name)}
                     </option>
                   ))}
                 </select>
@@ -371,7 +375,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
 
             <div className="ml-filter-field">
               <label className="ml-filter-label">
-                <span className="ml-label-icon">📅</span> Ngày hẹn nhận hàng
+                <span className="ml-label-icon">📅</span> {isEn ? "Pickup Date" : "Ngày hẹn nhận hàng"}
               </label>
               <div className="ml-date-input-wrapper">
                 <input
@@ -388,7 +392,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                       right: 30,
                     }}
                     onClick={() => setSelectedDateFilter("")}
-                    title="Xóa ngày lọc"
+                    title={isEn ? "Clear date" : "Xóa ngày lọc"}
                   >
                     ✕
                   </button>
@@ -398,14 +402,14 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
           </div>
 
           <div className="ml-quick-filters-row">
-            <span className="ml-quick-filters-title">Lọc nhanh:</span>
+            <span className="ml-quick-filters-title">{isEn ? "Quick filter:" : "Lọc nhanh:"}</span>
             <div className="ml-quick-chips-list">
               <button
                 type="button"
                 className={`ml-filter-chip ${!hasActiveFilters ? "active" : ""}`}
                 onClick={handleResetFilters}
               >
-                Tất cả
+                {isEn ? "All" : "Tất cả"}
               </button>
               <button
                 type="button"
@@ -414,7 +418,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                   setActiveTab(activeTab === "PENDING" ? "ALL" : "PENDING")
                 }
               >
-                ⏳ Chờ chuẩn bị ({pendingOrders.length})
+                ⏳ {isEn ? "Pending Prep" : "Chờ chuẩn bị"} ({pendingOrders.length})
               </button>
               <button
                 type="button"
@@ -427,7 +431,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                   )
                 }
               >
-                📦 Sẵn sàng tại sạp ({readyOrders.length})
+                📦 {isEn ? "Ready at Stall" : "Sẵn sàng tại sạp"} ({readyOrders.length})
               </button>
               <button
                 type="button"
@@ -436,7 +440,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                   setActiveTab(activeTab === "COMPLETED" ? "ALL" : "COMPLETED")
                 }
               >
-                ✅ Đã hoàn tất ({completedOrders.length})
+                ✅ {isEn ? "Completed" : "Đã hoàn tất"} ({completedOrders.length})
               </button>
               <button
                 type="button"
@@ -445,7 +449,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                   setActiveTab(activeTab === "CANCELLED" ? "ALL" : "CANCELLED")
                 }
               >
-                🚫 Hủy / Từ chối (
+                🚫 {isEn ? "Cancelled / Declined" : "Hủy / Từ chối"} (
                 {
                   orders.filter(
                     (o) =>
@@ -465,7 +469,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                   );
                 }}
               >
-                📅 Nhận hôm nay
+                📅 {isEn ? "Pickup Today" : "Nhận hôm nay"}
               </button>
             </div>
           </div>
@@ -473,7 +477,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
 
         {loading ? (
           <div className="ml-inv-loading">
-            Đang nạp toàn bộ đơn hàng hệ thống...
+            {isEn ? "Loading all platform pre-orders..." : "Đang nạp toàn bộ đơn hàng hệ thống..."}
           </div>
         ) : filteredOrders.length === 0 ? (
           <div
@@ -484,7 +488,9 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
               color: "#64748b",
             }}
           >
-            Không tìm thấy đơn đặt trước nào phù hợp với bộ lọc.
+            {isEn
+              ? "No pre-orders found matching your filters."
+              : "Không tìm thấy đơn đặt trước nào phù hợp với bộ lọc."}
           </div>
         ) : (
           <>
@@ -494,231 +500,128 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                 overflowX: "auto",
                 padding: 0,
               }}
-          >
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                textAlign: "left",
-                fontSize: 13.5,
-              }}
             >
-              <thead>
-                <tr
-                  style={{
-                    backgroundColor: "#f8fafc",
-                    borderBottom: "1px solid #e2e8f0",
-                    color: "#475569",
-                  }}
-                >
-                  <th
-                    style={{
-                      padding: "12px 16px",
-                    }}
-                  >
-                    Mã đơn & Thời gian
-                  </th>
-                  <th
-                    style={{
-                      padding: "12px 16px",
-                    }}
-                  >
-                    Khách hàng
-                  </th>
-                  <th
-                    style={{
-                      padding: "12px 16px",
-                    }}
-                  >
-                    Sạp hàng & Nhà vườn
-                  </th>
-                  <th
-                    style={{
-                      padding: "12px 16px",
-                    }}
-                  >
-                    Chợ & Ca nhận hàng
-                  </th>
-                  <th
-                    style={{
-                      padding: "12px 16px",
-                    }}
-                  >
-                    Tổng tiền
-                  </th>
-                  <th
-                    style={{
-                      padding: "12px 16px",
-                    }}
-                  >
-                    Trạng thái
-                  </th>
-                  <th
-                    style={{
-                      padding: "12px 16px",
-                      textAlign: "right",
-                    }}
-                  >
-                    Thao tác
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedOrders.map((o) => (
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  textAlign: "left",
+                  fontSize: 13.5,
+                }}
+              >
+                <thead>
                   <tr
-                    key={o.orderId}
                     style={{
-                      borderBottom: "1px solid #f1f5f9",
+                      backgroundColor: "#f8fafc",
+                      borderBottom: "1px solid #e2e8f0",
+                      color: "#475569",
                     }}
                   >
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontWeight: 700,
-                          color: "#1b5e20",
-                        }}
-                      >
-                        {o.orderCode}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 11.5,
-                          color: "#64748b",
-                        }}
-                      >
-                        {o.createdAt
-                          ? o.createdAt.replace("T", " ").substring(0, 16)
-                          : ""}
-                      </div>
-                    </td>
-
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontWeight: 600,
-                          color: "#1e293b",
-                        }}
-                      >
-                        {o.customerName}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: "#64748b",
-                        }}
-                      >
-                        📞 {o.customerPhone || "N/A"}
-                      </div>
-                    </td>
-
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontWeight: 600,
-                          color: "#1e293b",
-                        }}
-                      >
-                        🏡 {o.stallName || o.farmerName}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: "#64748b",
-                        }}
-                      >
-                        Chủ sạp: {o.farmerName}
-                      </div>
-                    </td>
-
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          color: "#1e293b",
-                          fontWeight: 500,
-                        }}
-                      >
-                        🎪 {o.marketName}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: "#166534",
-                          fontWeight: 600,
-                        }}
-                      >
-                        📅 {o.pickupDate} • 🕒{" "}
-                        {o.slotTimeRange || "08:00 - 09:00"}
-                      </div>
-                    </td>
-
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontWeight: 700,
-                          color: "#1e293b",
-                        }}
-                      >
-                        {formatCurrency(o.totalAmount)}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 11,
-                          color: "#64748b",
-                        }}
-                      >
-                        {o.paymentMethod === "PAY_AT_PICKUP"
-                          ? "💵 Trả tại sạp"
-                          : o.paymentMethod}
-                      </div>
-                    </td>
-
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                      }}
-                    >
-                      {renderOrderStatusBadge(o.orderStatus)}
-                    </td>
-
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "right",
-                      }}
-                    >
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleOpenDetail(o)}
-                      >
-                        👁️ Chi tiết
-                      </Button>
-                    </td>
+                    <th style={{ padding: "12px 16px" }}>
+                      {isEn ? "Order Code & Time" : "Mã đơn & Thời gian"}
+                    </th>
+                    <th style={{ padding: "12px 16px" }}>
+                      {isEn ? "Customer" : "Khách hàng"}
+                    </th>
+                    <th style={{ padding: "12px 16px" }}>
+                      {isEn ? "Stall & Farm" : "Sạp hàng & Nhà vườn"}
+                    </th>
+                    <th style={{ padding: "12px 16px" }}>
+                      {isEn ? "Market & Pickup Slot" : "Chợ & Ca nhận hàng"}
+                    </th>
+                    <th style={{ padding: "12px 16px" }}>
+                      {isEn ? "Total Amount" : "Tổng tiền"}
+                    </th>
+                    <th style={{ padding: "12px 16px" }}>
+                      {isEn ? "Status" : "Trạng thái"}
+                    </th>
+                    <th style={{ padding: "12px 16px", textAlign: "right" }}>
+                      {isEn ? "Action" : "Thao tác"}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {paginatedOrders.map((o) => (
+                    <tr
+                      key={o.orderId}
+                      style={{
+                        borderBottom: "1px solid #f1f5f9",
+                      }}
+                    >
+                      <td style={{ padding: "12px 16px" }}>
+                        <div style={{ fontWeight: 700, color: "#1b5e20" }}>
+                          {o.orderCode}
+                        </div>
+                        <div style={{ fontSize: 11.5, color: "#64748b" }}>
+                          {o.createdAt
+                            ? o.createdAt.replace("T", " ").substring(0, 16)
+                            : ""}
+                        </div>
+                      </td>
+
+                      <td style={{ padding: "12px 16px" }}>
+                        <div style={{ fontWeight: 600, color: "#1e293b" }}>
+                          {o.customerName}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#64748b" }}>
+                          📞 {o.customerPhone || "N/A"}
+                        </div>
+                      </td>
+
+                      <td style={{ padding: "12px 16px" }}>
+                        <div style={{ fontWeight: 600, color: "#1e293b" }}>
+                          🏡 {o.stallName || o.farmerName}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#64748b" }}>
+                          {isEn ? "Owner:" : "Chủ sạp:"} {o.farmerName}
+                        </div>
+                      </td>
+
+                      <td style={{ padding: "12px 16px" }}>
+                        <div style={{ color: "#1e293b", fontWeight: 500 }}>
+                          🎪 {localizeMarketName(o.marketName)}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "#166534",
+                            fontWeight: 600,
+                          }}
+                        >
+                          📅 {o.pickupDate} • 🕒{" "}
+                          {o.slotTimeRange || "08:00 - 09:00"}
+                        </div>
+                      </td>
+
+                      <td style={{ padding: "12px 16px" }}>
+                        <div style={{ fontWeight: 700, color: "#1e293b" }}>
+                          {formatCurrency(o.totalAmount)}
+                        </div>
+                        <div style={{ fontSize: 11, color: "#64748b" }}>
+                          {o.paymentMethod === "PAY_AT_PICKUP"
+                            ? (isEn ? "💵 Pay at stall" : "💵 Trả tại sạp")
+                            : o.paymentMethod}
+                        </div>
+                      </td>
+
+                      <td style={{ padding: "12px 16px" }}>
+                        {renderOrderStatusBadge(o.orderStatus)}
+                      </td>
+
+                      <td style={{ padding: "12px 16px", textAlign: "right" }}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenDetail(o)}
+                        >
+                          👁️ {isEn ? "Details" : "Chi tiết"}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             <Pagination
               currentPage={currentPage}
@@ -734,8 +637,8 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
         <Modal
           isOpen={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
-          title={`Chi Tiết Đơn Đặt Trước: ${selectedOrder.orderCode}`}
-          subtitle={`Đặt lúc: ${selectedOrder.createdAt ? selectedOrder.createdAt.replace("T", " ").substring(0, 16) : ""}`}
+          title={isEn ? `Pre-order Details: ${selectedOrder.orderCode}` : `Chi Tiết Đơn Đặt Trước: ${selectedOrder.orderCode}`}
+          subtitle={`${isEn ? "Placed at:" : "Đặt lúc:"} ${selectedOrder.createdAt ? selectedOrder.createdAt.replace("T", " ").substring(0, 16) : ""}`}
           maxWidth="680px"
         >
           <div
@@ -757,28 +660,28 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
               }}
             >
               <div>
-                <strong>Khách hàng:</strong> {selectedOrder.customerName} (📞{" "}
+                <strong>{isEn ? "Customer:" : "Khách hàng:"}</strong> {selectedOrder.customerName} (📞{" "}
                 {selectedOrder.customerPhone || "N/A"})
               </div>
               <div>
-                <strong>Gian hàng:</strong>{" "}
+                <strong>{isEn ? "Stall:" : "Gian hàng:"}</strong>{" "}
                 {selectedOrder.stallName || selectedOrder.farmerName}
               </div>
               <div>
-                <strong>Điểm chợ:</strong> {selectedOrder.marketName}
+                <strong>{isEn ? "Market:" : "Điểm chợ:"}</strong> {localizeMarketName(selectedOrder.marketName)}
               </div>
               <div>
-                <strong>Hẹn nhận:</strong> {selectedOrder.pickupDate} (
+                <strong>{isEn ? "Pickup Date & Slot:" : "Hẹn nhận:"}</strong> {selectedOrder.pickupDate} (
                 {selectedOrder.slotTimeRange})
               </div>
               <div>
-                <strong>Hạn chốt đơn:</strong>{" "}
+                <strong>{isEn ? "Cutoff Time:" : "Hạn chốt đơn:"}</strong>{" "}
                 {selectedOrder.cutoffTime
                   ? selectedOrder.cutoffTime.replace("T", " ").substring(0, 16)
-                  : "Không"}
+                  : (isEn ? "None" : "Không")}
               </div>
               <div>
-                <strong>Trạng thái:</strong>{" "}
+                <strong>{isEn ? "Status:" : "Trạng thái:"}</strong>{" "}
                 {renderOrderStatusBadge(selectedOrder.orderStatus)}
               </div>
             </div>
@@ -794,8 +697,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                   color: "#854d0e",
                 }}
               >
-                💬 <strong>Ghi chú từ khách hàng:</strong> "{selectedOrder.note}
-                "
+                💬 <strong>{isEn ? "Customer Note:" : "Ghi chú từ khách hàng:"}</strong> "{selectedOrder.note}"
               </div>
             )}
 
@@ -812,8 +714,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                   color: "#166534",
                 }}
               >
-                🥬 Danh sách mặt hàng đặt trước (
-                {selectedOrder.items?.length || 0} sản phẩm):
+                🥬 {isEn ? `Pre-ordered Items (${selectedOrder.items?.length || 0} items):` : `Danh sách mặt hàng đặt trước (${selectedOrder.items?.length || 0} sản phẩm):`}
               </h4>
 
               <div
@@ -861,7 +762,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                             color: "#1e293b",
                           }}
                         >
-                          {it.productName}
+                          {localizeProduceName(it.productName)}
                         </div>
                         <div
                           style={{
@@ -870,23 +771,19 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                           }}
                         >
                           {formatCurrency(it.unitPrice)} /{" "}
-                          {it.productUnit || "kg"}
+                          {localizeUnit(it.productUnit || "kg")}
                         </div>
                       </div>
                     </div>
 
-                    <div
-                      style={{
-                        textAlign: "right",
-                      }}
-                    >
+                    <div style={{ textAlign: "right" }}>
                       <div
                         style={{
                           fontWeight: 600,
                           color: "#1e293b",
                         }}
                       >
-                        x {it.quantity} {it.productUnit || "kg"}
+                        x {it.quantity} {localizeUnit(it.productUnit || "kg")}
                       </div>
                       <div
                         style={{
@@ -914,7 +811,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                   fontSize: 16,
                 }}
               >
-                <strong>Tổng thanh toán tại sạp:</strong>
+                <strong>{isEn ? "Total payment at stall:" : "Tổng thanh toán tại sạp:"}</strong>
                 <span
                   style={{
                     fontSize: 18,
@@ -938,7 +835,7 @@ export default function AdminOrdersPage({ onNavigate, initialOrderId } = {}) {
                 variant="ghost"
                 onClick={() => setIsDetailModalOpen(false)}
               >
-                Đóng lại
+                {isEn ? "Close" : "Đóng lại"}
               </Button>
             </div>
           </div>
