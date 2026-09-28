@@ -108,7 +108,7 @@ export const aiService = {
    * Gọi API Trợ lý AI thông minh (AI Assistant) chính thức từ Swagger:
    * POST /api/ai/assistant/chat hoặc /api/ai/chat
    * Hỗ trợ song ngữ Anh - Việt (Bilingual English - Vietnamese)
-   * Swagger doc: http://36.50.176.64/swagger-ui.html (Tag 7: Trợ lý AI thông minh)
+   * Swagger doc: http://172.16.2.89:8081/swagger-ui/index.html (Tag 7: Trợ lý AI thông minh)
    */
   async askAssistant(message, preferredLang = null) {
     const isEn = isEnglishQuery(message, preferredLang);
@@ -141,7 +141,7 @@ export const aiService = {
       } catch (errChat) {
         console.warn("apiClient /ai/chat failed, falling back to direct server call:", errChat.message);
         try {
-          const directFetch = await fetch("http://36.50.176.64/api/ai/assistant/chat", {
+          const directFetch = await fetch("http://172.16.2.89:8081/api/ai/assistant/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),

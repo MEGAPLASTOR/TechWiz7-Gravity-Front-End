@@ -1,3 +1,6 @@
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_TARGET || "http://172.16.2.89:8081";
+export const SWAGGER_DOCS_URL = "http://172.16.2.89:8081/swagger-ui/index.html";
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || "";
 export function formatImageUrl(

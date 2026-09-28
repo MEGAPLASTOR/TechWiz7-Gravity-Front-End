@@ -15,12 +15,12 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: process.env.VITE_BACKEND_TARGET || 'http://36.50.176.64',
+        target: process.env.VITE_BACKEND_TARGET || 'http://172.16.2.89:8081',
         changeOrigin: true,
         secure: false
       },
       '/uploads': {
-        target: process.env.VITE_BACKEND_TARGET || 'http://36.50.176.64',
+        target: process.env.VITE_BACKEND_TARGET || 'http://172.16.2.89:8081',
         changeOrigin: true,
         secure: false
       }

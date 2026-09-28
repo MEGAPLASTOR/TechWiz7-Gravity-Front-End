@@ -196,6 +196,14 @@ export default function Footer({ onNavigate }) {
           <div className="ml-footer-bottom-links">
             <a href="#privacy">{t("footerPrivacy", "Chính sách bảo mật")}</a>
             <a href="#terms">{t("footerTerms", "Điều khoản sử dụng")}</a>
+            <a
+              href="http://172.16.2.89:8081/swagger-ui/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Swagger UI API Documentation"
+            >
+              API Doc (Swagger)
+            </a>
             <a href="#contact">{t("footerContact", "Liên hệ hỗ trợ")}</a>
           </div>
         </div>

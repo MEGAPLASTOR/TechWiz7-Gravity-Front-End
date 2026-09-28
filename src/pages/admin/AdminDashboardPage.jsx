@@ -163,6 +163,24 @@ export default function AdminDashboardPage({ onNavigate }) {
             >
               👨‍🌾 Duyệt {pendingApprovals.length} hồ sơ KYC →
             </Button>
+            <a
+              href="http://172.16.2.89:8081/swagger-ui/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-btn ml-btn--outline ml-btn--md"
+              style={{
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                color: "#ffffff",
+                borderColor: "rgba(255, 255, 255, 0.4)",
+                background: "rgba(255, 255, 255, 0.1)",
+              }}
+              title="Xem tài liệu API Swagger Backend"
+            >
+              📄 Swagger API ↗
+            </a>
           </div>
         </div>
       </div>

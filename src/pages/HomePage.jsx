@@ -728,7 +728,8 @@ export default function HomePage({
             {paginatedProducts.map((product, idx) => (
               <div
                 key={product.id}
-                className={`ml-reveal ml-stagger-${(idx % 4) + 1}`}
+                className="ml-product-grid-cell"
+                style={{ opacity: 1, visibility: "visible" }}
               >
                 <ProductCard
                   product={product}

@@ -12,6 +12,13 @@
   transform: translateY(0);
 }
 
+.ml-products-grid > div,
+.ml-product-grid-cell {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
 .ml-stagger-1 {
   transition-delay: 80ms;
 }
