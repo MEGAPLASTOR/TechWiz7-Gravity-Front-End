@@ -11,7 +11,24 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5173,
+    port: 5178,
+    strictPort: true,
+    proxy: {
+      '/api': {
+        target: process.env.VITE_BACKEND_TARGET || 'http://172.16.2.89:8081',
+        changeOrigin: true,
+        secure: false
+      },
+      '/uploads': {
+        target: process.env.VITE_BACKEND_TARGET || 'http://172.16.2.89:8081',
+        changeOrigin: true,
+        secure: false
+      }
+    }
+  },
+  preview: {
+    port: 5178,
+    host: '0.0.0.0',
     strictPort: true,
     proxy: {
       '/api': {

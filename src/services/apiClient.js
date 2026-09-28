@@ -1,10 +1,9 @@
 export const BACKEND_URL = import.meta.env.VITE_BACKEND_TARGET || "http://172.16.2.89:8081";
 export const SWAGGER_DOCS_URL = import.meta.env.VITE_SWAGGER_URL || `${BACKEND_URL}/swagger-ui/index.html`;
 
-import { getFallbackData } from "./fallbackData";
-
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || "";
+
 export function formatImageUrl(
   url,
   fallback = "https://images.unsplash.com/photo-1540420773420-3366772f4999",
@@ -20,6 +19,7 @@ export function formatImageUrl(
   const cleanPath = url.startsWith("/") ? url : `/${url}`;
   return `${IMAGE_BASE_URL}${cleanPath}`;
 }
+
 export async function apiRequest(
   endpoint,
   { method = "GET", body = null, headers = {}, token = null } = {},
@@ -31,8 +31,8 @@ export async function apiRequest(
   const url = endpoint.startsWith("http")
     ? endpoint
     : `${BASE_URL}${cleanEndpoint.startsWith("/") ? "" : "/"}${cleanEndpoint}`;
+
   const requestHeaders = {
-    "ngrok-skip-browser-warning": "true",
     ...headers,
   };
   const activeToken =
@@ -45,6 +45,7 @@ export async function apiRequest(
   if (body && !(body instanceof FormData) && !requestHeaders["Content-Type"]) {
     requestHeaders["Content-Type"] = "application/json; charset=utf-8";
   }
+
   const config = {
     method,
     headers: requestHeaders,
@@ -53,16 +54,8 @@ export async function apiRequest(
     config.body = body instanceof FormData ? body : JSON.stringify(body);
   }
 
-  // Quản lý timeout để không bị treo nếu IP nội bộ không thể truy cập từ bên ngoài
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 2500);
-  if (!config.signal) {
-    config.signal = controller.signal;
-  }
-
   try {
     const res = await fetch(url, config);
-    clearTimeout(timeoutId);
     let responseData = null;
     const contentType = res.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
@@ -78,14 +71,6 @@ export async function apiRequest(
       }
     }
     if (!res.ok) {
-      // Nếu máy chủ trả về lỗi, tự động kiểm tra dữ liệu dự phòng cho các truy vấn GET
-      if (method === "GET") {
-        const fallback = getFallbackData(cleanEndpoint, method, body);
-        if (fallback !== undefined) {
-          console.info(`[MarketLink Fallback] Phục vụ dữ liệu snapshot cho: ${cleanEndpoint}`);
-          return fallback;
-        }
-      }
       const errMsg =
         responseData?.message ||
         responseData?.error ||
@@ -97,23 +82,10 @@ export async function apiRequest(
     }
     return responseData;
   } catch (err) {
-    clearTimeout(timeoutId);
     console.warn(`[API ${method}] ${url} failed:`, err.message);
-
-    // TỰ ĐỘNG PHỤC VỤ DỮ LIỆU THẬT TỪ SNAPSHOT BACKEND (Hoạt động 100% tự động trên Vercel)
-    const fallback = getFallbackData(cleanEndpoint, method, body);
-    if (fallback !== undefined) {
-      console.info(`[MarketLink Auto Engine] Phục vụ dữ liệu tự động cho: ${cleanEndpoint}`);
-      return fallback;
-    }
-
-    if (err.message === "Failed to fetch" || err.name === "AbortError") {
-      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-      const isHttpTarget = url.startsWith("http://");
+    if (err.message === "Failed to fetch") {
       const friendlyErr = new Error(
-        isHttps && isHttpTarget
-          ? "Trình duyệt đang chặn gọi HTTP từ HTTPS (Mixed Content). Hãy bấm vào icon Cài đặt bên trái thanh URL -> Cho phép 'Nội dung không an toàn' (Insecure content) để kết nối backend 172.16.2.89."
-          : "Không thể kết nối đến máy chủ Backend (Port 8081). Vui lòng đảm bảo Spring Boot backend đang chạy.",
+        "Không thể kết nối đến máy chủ Backend. Vui lòng kiểm tra lại dịch vụ Backend đang chạy trên VPS.",
       );
       friendlyErr.status = 0;
       throw friendlyErr;
@@ -121,6 +93,7 @@ export async function apiRequest(
     throw err;
   }
 }
+
 export default {
   get: (endpoint, options = {}) =>
     apiRequest(endpoint, {
@@ -149,6 +122,6 @@ export default {
     apiRequest(endpoint, {
       ...options,
       method: "DELETE",
+      ...options,
     }),
-  formatImageUrl,
 };
