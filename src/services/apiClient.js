@@ -19,9 +19,13 @@ export async function apiRequest(
   endpoint,
   { method = "GET", body = null, headers = {}, token = null } = {},
 ) {
+  let cleanEndpoint = endpoint;
+  if (cleanEndpoint.startsWith("/api/")) {
+    cleanEndpoint = cleanEndpoint.substring(4);
+  }
   const url = endpoint.startsWith("http")
     ? endpoint
-    : `${BASE_URL}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
+    : `${BASE_URL}${cleanEndpoint.startsWith("/") ? "" : "/"}${cleanEndpoint}`;
   const requestHeaders = {
     ...headers,
   };
