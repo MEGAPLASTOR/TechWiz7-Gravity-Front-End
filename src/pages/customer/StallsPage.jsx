@@ -8,6 +8,7 @@ import marketService from "../../services/marketService";
 import productService from "../../services/productService";
 import farmerService from "../../services/farmerService";
 import customerService from "../../services/customerService";
+import { formatImageUrl } from "../../services/apiClient";
 import { matchSearch, POPULAR_STALL_KEYWORDS } from "../../utils/searchUtils";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -83,12 +84,14 @@ export default function StallsPage({
             marketAddress: f.farmAddress || "",
             operatingDays: f.operatingDays || "",
             operatingHours: f.operatingHours || "",
-            avatarUrl:
-              f.avatarUrl ||
+            avatarUrl: formatImageUrl(
+              f.avatarUrl,
               "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80",
-            coverUrl:
-              f.coverUrl ||
+            ),
+            coverUrl: formatImageUrl(
+              f.coverUrl,
               "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80",
+            ),
             farmAddress: f.farmAddress || "",
             experienceYears: f.experienceYears || "",
             rating: f.rating || 5.0,

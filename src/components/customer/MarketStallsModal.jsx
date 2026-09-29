@@ -5,6 +5,7 @@ import Badge from "../common/Badge";
 import Button from "../common/Button";
 import marketService from "../../services/marketService";
 import productService from "../../services/productService";
+import { formatImageUrl } from "../../services/apiClient";
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function MarketStallsModal({
@@ -43,9 +44,10 @@ export default function MarketStallsModal({
               phone: f.phoneNumber || "",
               farmAddress: f.farmAddress || "Vùng trồng liên kết",
               bio: f.bio || "Chuyên cung cấp nông sản sạch cho phiên chợ.",
-              avatarUrl:
-                f.avatarUrl ||
+              avatarUrl: formatImageUrl(
+                f.avatarUrl,
                 "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
+              ),
               featuredItems: ["Rau hữu cơ", "Củ quả tươi", "Trái cây sạch"],
             }));
             setStalls(mapped);

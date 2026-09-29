@@ -9,6 +9,7 @@ import Pagination from "../../components/common/Pagination";
 import marketService from "../../services/marketService";
 import { matchSearch, POPULAR_MARKET_KEYWORDS } from "../../utils/searchUtils";
 import { useLanguage } from "../../context/LanguageContext";
+import { getMarketOperatingStatus } from "../../utils/marketUtils";
 
 export default function MarketsPage({
   onNavigate,
@@ -20,6 +21,7 @@ export default function MarketsPage({
   const { t, isEn, localizeMarketName } = useLanguage();
   const [activeCity, setActiveCity] = useState("all");
   const [activeDay, setActiveDay] = useState("all");
+  const [activeStatus, setActiveStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("grid");
   const [scheduleMapMarket, setScheduleMapMarket] = useState(null);
@@ -58,6 +60,8 @@ export default function MarketsPage({
                   id: m.marketId || m.id,
                   name: m.name,
                   address: m.address,
+                  status: m.status || "ACTIVE",
+                  schedules: m.schedules || [],
                   city: m.city || (isHcm
                     ? "TP. Hồ Chí Minh"
                     : isEcopark
@@ -93,9 +97,20 @@ export default function MarketsPage({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, activeCity, activeDay]);
+  }, [searchTerm, activeCity, activeDay, activeStatus]);
 
-  const filteredMarkets = marketsData;
+  const filteredMarkets = useMemo(() => {
+    return marketsData.filter((m) => {
+      if (activeStatus === "open_now") {
+        const op = getMarketOperatingStatus(m, isEn);
+        return op.isOpen;
+      }
+      if (activeStatus === "active") {
+        return (m.status || "ACTIVE").toUpperCase() === "ACTIVE";
+      }
+      return true;
+    });
+  }, [marketsData, activeStatus, isEn]);
 
   const paginatedMarkets = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
@@ -210,6 +225,33 @@ export default function MarketsPage({
                 onClick={() => setActiveCity("Hưng Yên")}
               >
                 Hưng Yên
+              </button>
+            </div>
+          </div>
+
+          <div className="ml-filter-group">
+            <span className="ml-filter-label">{isEn ? "Operating Status:" : "Trạng thái:"}</span>
+            <div className="ml-filter-chips">
+              <button
+                type="button"
+                className={`ml-chip-btn ${activeStatus === "all" ? "active" : ""}`}
+                onClick={() => setActiveStatus("all")}
+              >
+                {isEn ? "All" : "Tất cả"}
+              </button>
+              <button
+                type="button"
+                className={`ml-chip-btn ${activeStatus === "open_now" ? "active" : ""}`}
+                onClick={() => setActiveStatus("open_now")}
+              >
+                🟢 {isEn ? "Open Now" : "Đang mở cửa"}
+              </button>
+              <button
+                type="button"
+                className={`ml-chip-btn ${activeStatus === "active" ? "active" : ""}`}
+                onClick={() => setActiveStatus("active")}
+              >
+                ✓ {isEn ? "Operating" : "Đang hoạt động"}
               </button>
             </div>
           </div>

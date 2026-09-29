@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import ImageUploadInput from "./ImageUploadInput";
 import Pagination from "./common/Pagination";
+import { formatImageUrl } from "../services/apiClient";
 import { useLanguage } from "../context/LanguageContext";
 
-export default function AdminMarketStudio({ callApi, role, token }) {
+export default function AdminMarketStudio({ callApi }) {
   const { isEn } = useLanguage();
   const [markets, setMarkets] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,6 +31,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
   const [assignFarmerId, setAssignFarmerId] = useState("");
   const [assignStallNumber, setAssignStallNumber] = useState("");
   const [assignStatus, setAssignStatus] = useState("ACTIVE");
+  const [farmerOptions, setFarmerOptions] = useState([]);
   const loadMarkets = async () => {
     setLoading(true);
     setStatusMessage("");
@@ -264,6 +266,15 @@ export default function AdminMarketStudio({ callApi, role, token }) {
     } finally {
       setStallLoading(false);
     }
+    try {
+      const uRes = await callApi("/api/admin/users?role=FARMER", "GET");
+      if (uRes.status === 200 && uRes.data) {
+        const uList = uRes.data.data || uRes.data;
+        if (Array.isArray(uList)) {
+          setFarmerOptions(uList);
+        }
+      }
+    } catch {}
   };
   const handleAssignFarmer = async (e) => {
     e.preventDefault();
@@ -565,7 +576,7 @@ export default function AdminMarketStudio({ callApi, role, token }) {
               >
                 <img
                   src={
-                    m.imageUrl ||
+                    formatImageUrl(m.imageUrl) ||
                     "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=600&auto=format&fit=crop&q=80"
                   }
                   alt={m.name}
@@ -1023,6 +1034,18 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                       padding: "2px 8px",
                     }}
                     onClick={() => {
+                      const isSecure =
+                        window.isSecureContext ||
+                        window.location.hostname === "localhost" ||
+                        window.location.hostname === "127.0.0.1";
+                      if (!isSecure) {
+                        alert(
+                          isEn
+                            ? "Device GPS is restricted by browser security on HTTP LAN/IP origins. Please click on the map or use HTTPS."
+                            : "Trình duyệt chặn GPS phần cứng khi truy cập qua mạng LAN/IP (HTTP). Vui lòng nhấp trực tiếp vào bản đồ để chọn vị trí.",
+                        );
+                        return;
+                      }
                       if (navigator.geolocation) {
                         navigator.geolocation.getCurrentPosition(
                           (pos) => {
@@ -1299,6 +1322,43 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                   ? "➕ Assign Farmer to New Stall:"
                   : "➕ Chỉ Định Nông Dân Vào Gian Hàng / Sạp Mới:"}
               </div>
+
+              {farmerOptions.length > 0 && (
+                <div style={{ marginBottom: 10 }}>
+                  <label
+                    style={{
+                      fontSize: "0.78rem",
+                      color: "#94a3b8",
+                      display: "block",
+                      marginBottom: 4,
+                    }}
+                  >
+                    {isEn
+                      ? "Select from registered farmers:"
+                      : "Chọn nhanh từ danh sách nông dân trên sàn:"}
+                  </label>
+                  <select
+                    className="input-control"
+                    value={assignFarmerId}
+                    onChange={(e) => setAssignFarmerId(e.target.value)}
+                    style={{ width: "100%", background: "#0f172a" }}
+                  >
+                    <option value="">
+                      {isEn
+                        ? "-- Select Farmer to auto-fill ID --"
+                        : "-- Chọn Nông Dân để tự điền ID --"}
+                    </option>
+                    {farmerOptions.map((f) => (
+                      <option key={f.userId || f.id} value={f.userId || f.id}>
+                        #{f.userId || f.id} - {f.fullName || f.name}{" "}
+                        {f.phoneNumber || f.phone ? `(${f.phoneNumber || f.phone})` : ""}{" "}
+                        {f.stallName ? `[${f.stallName}]` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div
                 style={{
                   display: "grid",
@@ -1341,6 +1401,28 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                 <button type="submit" className="btn btn-primary">
                   {isEn ? "Assign Stall" : "Gán Sạp"}
                 </button>
+              </div>
+
+              <div
+                style={{
+                  marginTop: 10,
+                  fontSize: "0.78rem",
+                  color: "#94a3b8",
+                  background: "rgba(30, 41, 59, 0.4)",
+                  padding: "8px 12px",
+                  borderRadius: 6,
+                  border: "1px solid rgba(148, 163, 184, 0.2)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span>ℹ️</span>
+                <span>
+                  {isEn
+                    ? "Stalls are allocated by stall code (e.g. Stall A-08) to each Farmer account. Stall images sync from the Farmer's verified profile & KYC certificates. Market covers are uploaded in the Market form."
+                    : "Sạp hàng được phân bổ theo Mã số sạp (vd: Sạp A-08) cho tài khoản Nông dân. Ảnh & thông tin sạp đồng bộ từ Hồ sơ nông dân/KYC. Ảnh bìa Chợ nông sản được cập nhật tại form Tạo/Sửa Chợ."}
+                </span>
               </div>
             </form>
 
@@ -1402,48 +1484,84 @@ export default function AdminMarketStudio({ callApi, role, token }) {
                       gap: 8,
                     }}
                   >
-                    <div>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                      >
-                        <span
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      {a.avatarUrl ? (
+                        <img
+                          src={formatImageUrl(a.avatarUrl)}
+                          alt={a.farmerName || a.stallName}
                           style={{
-                            fontWeight: 700,
-                            color: "#f1f5f9",
-                            fontSize: "0.95rem",
+                            width: 42,
+                            height: 42,
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                            border: "2px solid rgba(56, 189, 248, 0.4)",
+                            flexShrink: 0,
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 42,
+                            height: 42,
+                            borderRadius: "50%",
+                            background: "rgba(56, 189, 248, 0.15)",
+                            border: "1px solid rgba(56, 189, 248, 0.3)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "1.2rem",
+                            flexShrink: 0,
                           }}
                         >
-                          🎪 {a.stallNumber || (isEn ? "Stall unassigned" : "Chưa đặt số sạp")}
-                        </span>
-                        <span
-                          className="badge-tag"
+                          🎪
+                        </div>
+                      )}
+                      <div>
+                        <div
                           style={{
-                            background:
-                              a.status === "ACTIVE"
-                                ? "rgba(16, 185, 129, 0.2)"
-                                : "rgba(239, 68, 68, 0.2)",
-                            color:
-                              a.status === "ACTIVE" ? "#34d399" : "#f87171",
-                            fontSize: "0.72rem",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
                           }}
                         >
-                          {a.status}
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "0.82rem",
-                          color: "#94a3b8",
-                          marginTop: 2,
-                        }}
-                      >
-                        👨‍🌾 {a.farmerName || (isEn ? "Farmer" : "Nông dân")} (ID: #{a.farmerId}) •
-                        {" "}{isEn ? "Phone: " : "SĐT: "}{a.phoneNumber || "N/A"}{isEn ? " • Stall: " : " • Gian hàng: "}
-                        {a.stallName || (isEn ? "Unnamed stall" : "Chưa đặt tên")}
+                          <span
+                            style={{
+                              fontWeight: 700,
+                              color: "#f1f5f9",
+                              fontSize: "0.95rem",
+                            }}
+                          >
+                            🎪 {a.stallNumber || (isEn ? "Stall unassigned" : "Chưa đặt số sạp")}
+                          </span>
+                          <span
+                            className="badge-tag"
+                            style={{
+                              background:
+                                a.status === "ACTIVE"
+                                  ? "rgba(16, 185, 129, 0.2)"
+                                  : "rgba(239, 68, 68, 0.2)",
+                              color:
+                                a.status === "ACTIVE" ? "#34d399" : "#f87171",
+                              fontSize: "0.72rem",
+                            }}
+                          >
+                            {a.status}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "0.82rem",
+                            color: "#94a3b8",
+                            marginTop: 2,
+                          }}
+                        >
+                          👨‍🌾 {a.farmerName || (isEn ? "Farmer" : "Nông dân")} (ID: #{a.farmerId}) •
+                          {" "}{isEn ? "Phone: " : "SĐT: "}{a.phoneNumber || "N/A"}{isEn ? " • Stall: " : " • Gian hàng: "}
+                          {a.stallName || (isEn ? "Unnamed stall" : "Chưa đặt tên")}
+                        </div>
                       </div>
                     </div>
 

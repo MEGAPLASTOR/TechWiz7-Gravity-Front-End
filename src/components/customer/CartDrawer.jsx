@@ -10,7 +10,6 @@ export default function CartDrawer({
   cartItems = [],
   onUpdateQty,
   onRemoveItem,
-  onClearCart,
   onSubmitOrder,
   isLoggedIn = false,
   onOpenLogin,

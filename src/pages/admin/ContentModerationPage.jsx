@@ -7,7 +7,7 @@ import Pagination from "../../components/common/Pagination";
 import adminService from "../../services/adminService";
 import { useLanguage } from "../../context/LanguageContext";
 
-export default function ContentModerationPage({ onNavigate }) {
+export default function ContentModerationPage() {
   const { isEn } = useLanguage();
   const [activeTab, setActiveTab] = useState("reviews");
   const [reviewsPage, setReviewsPage] = useState(1);
@@ -42,7 +42,6 @@ export default function ContentModerationPage({ onNavigate }) {
     targetRole: "ALL",
     isActive: true,
   });
-  const [disputes, setDisputes] = useState([]);
   const [notification, setNotification] = useState({
     type: "",
     text: "",
@@ -452,15 +451,6 @@ export default function ContentModerationPage({ onNavigate }) {
             {isEn
               ? `📢 News & Announcements (${announcements.length})`
               : `📢 Thông báo & Bản tin (${announcements.length})`}
-          </button>
-          <button
-            type="button"
-            className={`ml-inv-main-tab ${activeTab === "disputes" ? "active" : ""}`}
-            onClick={() => setActiveTab("disputes")}
-          >
-            {isEn
-              ? `⚖️ Disputes & Complaints (${disputes.length})`
-              : `⚖️ Tranh chấp & Khiếu nại (${disputes.length})`}
           </button>
         </div>
 
@@ -1032,251 +1022,224 @@ export default function ContentModerationPage({ onNavigate }) {
               <div
                 className="ml-card"
                 style={{
-                  padding: 40,
+                  padding: "48px 20px",
                   textAlign: "center",
                   color: "#64748b",
+                  backgroundColor: "#f8fafc",
+                  border: "1px dashed #cbd5e1",
+                  borderRadius: 12,
                 }}
               >
-                {isEn
-                  ? "No announcements yet. Click 'Publish New Announcement' to broadcast notices to the platform."
-                  : "Chưa có bản tin nào. Hãy bấm 'Đăng bản tin mới' để phát thông báo tới toàn sàn."}
+                <div style={{ fontSize: 36, marginBottom: 12 }}>📭</div>
+                <h4 style={{ margin: "0 0 8px 0", color: "#1e293b", fontSize: 16 }}>
+                  {isEn ? "No announcements yet" : "Chưa có bản tin nào"}
+                </h4>
+                <p style={{ margin: 0, fontSize: 14 }}>
+                  {isEn
+                    ? "Click 'Publish New Announcement' to broadcast notices to the platform."
+                    : "Hãy bấm 'Đăng bản tin mới' để phát thông báo tới toàn sàn."}
+                </p>
               </div>
             ) : (
               <>
                 <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-                    gap: 16,
-                  }}
-                >
-                {paginatedAnnouncements.map((a) => {
-                  const annId = a.announcementId || a.id;
-                  return (
-                    <div
-                      key={annId}
-                      className="ml-card"
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 10,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "flex-start",
-                        }}
-                      >
-                        <h3
-                          style={{
-                            fontSize: 16,
-                            fontWeight: 700,
-                            margin: 0,
-                            color: "#1e293b",
-                          }}
-                        >
-                          {a.title}
-                        </h3>
-                        <Badge
-                          variant={a.isActive !== false ? "ready" : "neutral"}
-                          dot
-                        >
-                          {a.isActive !== false
-                            ? (isEn ? "Active" : "Đang bật")
-                            : (isEn ? "Hidden" : "Đã ẩn")}
-                        </Badge>
-                      </div>
-
-                      <div
-                        style={{
-                          fontSize: 12,
-                          display: "flex",
-                          gap: 8,
-                          color: "#64748b",
-                        }}
-                      >
-                        <span>
-                          {isEn ? "Type: " : "Loại: "}
-                          <strong>{a.type || "GENERAL"}</strong>
-                        </span>
-                        <span>•</span>
-                        <span>
-                          {isEn ? "Target: " : "Đối tượng: "}
-                          <strong>{a.targetRole || "ALL"}</strong>
-                        </span>
-                        <span>•</span>
-                        <span>
-                          {a.createdAt ? a.createdAt.substring(0, 10) : ""}
-                        </span>
-                      </div>
-
-                      <p
-                        style={{
-                          fontSize: 13.5,
-                          color: "#475569",
-                          margin: "4px 0",
-                          lineHeight: 1.5,
-                          flex: 1,
-                        }}
-                      >
-                        {a.content}
-                      </p>
-
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          gap: 8,
-                          borderTop: "1px solid #f1f5f9",
-                          paddingTop: 8,
-                        }}
-                      >
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenAnnouncementModal(a)}
-                        >
-                          ✏️ {isEn ? "Edit" : "Chỉnh sửa"}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          style={{
-                            color: "#b91c1c",
-                          }}
-                          onClick={() =>
-                            handleDeleteAnnouncement(annId, a.title)
-                          }
-                        >
-                          ✕ {isEn ? "Delete" : "Xóa"}
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <Pagination
-                currentPage={announcementsPage}
-                totalItems={announcements.length}
-                pageSize={PAGE_SIZE}
-                onPageChange={setAnnouncementsPage}
-              />
-            </>
-          )}
-          </div>
-        )}
-
-        {activeTab === "disputes" && (
-          <div className="ml-disputes-mod-box">
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 14,
-              }}
-            >
-              {disputes.length === 0 ? (
-                <div
                   className="ml-card"
-                  style={{
-                    padding: "48px 20px",
-                    textAlign: "center",
-                    color: "#64748b",
-                    backgroundColor: "#f8fafc",
-                    border: "1px dashed #cbd5e1",
-                    borderRadius: 12,
-                  }}
+                  style={{ overflowX: "auto", padding: 0 }}
                 >
-                  <div style={{ fontSize: 36, marginBottom: 12 }}>🤝</div>
-                  <h4 style={{ margin: "0 0 8px 0", color: "#1e293b", fontSize: 16 }}>
-                    {isEn ? "No disputes or complaints reported" : "Không có khiếu nại hoặc tranh chấp nào"}
-                  </h4>
-                  <p style={{ margin: 0, fontSize: 14 }}>
-                    {isEn
-                      ? "Currently the system records no complaints requiring market management intervention."
-                      : "Hiện tại hệ thống không ghi nhận phản ánh cần ban quản lý chợ can thiệp xử lý."}
-                  </p>
+                  {paginatedAnnouncements.map((a, idx) => {
+                    const annId = a.announcementId || a.id;
+                    const typeConfig = {
+                      GENERAL:      { icon: "📢", color: "#2563eb", bg: "#eff6ff", label: isEn ? "General"      : "Tin chung" },
+                      MARKET_EVENT: { icon: "🎪", color: "#7c3aed", bg: "#f5f3ff", label: isEn ? "Market Event" : "Sự kiện chợ" },
+                      POLICY:       { icon: "📋", color: "#0891b2", bg: "#ecfeff", label: isEn ? "Policy"       : "Chính sách" },
+                      MAINTENANCE:  { icon: "🔧", color: "#d97706", bg: "#fffbeb", label: isEn ? "Maintenance"  : "Bảo trì" },
+                    };
+                    const tc = typeConfig[a.type] || typeConfig.GENERAL;
+                    return (
+                      <div
+                        key={annId}
+                        style={{
+                          display: "flex",
+                          alignItems: "stretch",
+                          borderBottom: idx < paginatedAnnouncements.length - 1 ? "1px solid #f1f5f9" : "none",
+                          transition: "background 0.15s",
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
+                        onMouseLeave={e => e.currentTarget.style.background = ""}
+                      >
+                        {/* Type color strip */}
+                        <div
+                          style={{
+                            width: 6,
+                            backgroundColor: tc.color,
+                            flexShrink: 0,
+                            borderRadius:
+                              idx === 0
+                                ? "8px 0 0 0"
+                                : idx === paginatedAnnouncements.length - 1
+                                ? "0 0 0 8px"
+                                : 0,
+                          }}
+                        />
+
+                        {/* Type icon panel */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 56,
+                            flexShrink: 0,
+                            backgroundColor: tc.bg,
+                          }}
+                        >
+                          <span style={{ fontSize: 22 }}>{tc.icon}</span>
+                        </div>
+
+                        {/* Main body */}
+                        <div
+                          style={{
+                            flex: 1,
+                            padding: "14px 16px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 5,
+                            minWidth: 0,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontWeight: 700,
+                                fontSize: 15,
+                                color: "#1e293b",
+                                flex: 1,
+                                minWidth: 0,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {a.title}
+                            </span>
+                            <Badge
+                              variant={a.isActive !== false ? "ready" : "neutral"}
+                              dot
+                            >
+                              {a.isActive !== false
+                                ? (isEn ? "Active" : "Đang bật")
+                                : (isEn ? "Hidden" : "Đã ẩn")}
+                            </Badge>
+                          </div>
+
+                          <div
+                            style={{
+                              fontSize: 13,
+                              color: "#475569",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {a.content}
+                          </div>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 10,
+                              alignItems: "center",
+                              flexWrap: "wrap",
+                              marginTop: 2,
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                fontSize: 11.5,
+                                fontWeight: 600,
+                                color: tc.color,
+                                backgroundColor: tc.bg,
+                                padding: "2px 8px",
+                                borderRadius: 20,
+                                border: `1px solid ${tc.color}33`,
+                              }}
+                            >
+                              {tc.label}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: 11.5,
+                                color: "#94a3b8",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 3,
+                              }}
+                            >
+                              👥 {isEn ? "Target:" : "Đối tượng:"}{" "}
+                              <strong style={{ color: "#64748b" }}>
+                                {a.targetRole || "ALL"}
+                              </strong>
+                            </span>
+                            {a.createdAt && (
+                              <span style={{ fontSize: 11.5, color: "#94a3b8" }}>
+                                🕐 {a.createdAt.substring(0, 10)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                            gap: 6,
+                            padding: "12px 16px",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenAnnouncementModal(a)}
+                          >
+                            ✏️ {isEn ? "Edit" : "Chỉnh sửa"}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            style={{ color: "#b91c1c" }}
+                            onClick={() => handleDeleteAnnouncement(annId, a.title)}
+                          >
+                            ✕ {isEn ? "Delete" : "Xóa"}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ) : (
-                disputes.map((d) => (
-                  <div
-                    key={d.id}
-                    className="ml-card"
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 8,
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontWeight: 700,
-                          fontSize: 15,
-                          color: "#1e293b",
-                        }}
-                      >
-                        {isEn ? "Order #" : "Đơn hàng #"}{d.orderCode} • {d.marketName}
-                      </div>
-                      <Badge
-                        variant={d.status === "RESOLVED" ? "ready" : "pending"}
-                      >
-                        {d.status === "RESOLVED"
-                          ? (isEn ? "Resolved Satisfactorily" : "Đã giải quyết thỏa đáng")
-                          : (isEn ? "Processing" : "Đang tiếp nhận")}
-                      </Badge>
-                    </div>
 
-                    <div
-                      style={{
-                        fontSize: 13,
-                        color: "#475569",
-                      }}
-                    >
-                      {isEn ? "Buyer: " : "Người mua: "}<strong>{d.customerName}</strong>
-                      {isEn ? " ↔ Stall owner: " : " ↔ Chủ sạp: "}<strong>{d.farmerName}</strong>
-                    </div>
-
-                    <div
-                      style={{
-                        backgroundColor: "#fffbeb",
-                        border: "1px solid #fef3c7",
-                        padding: 10,
-                        borderRadius: 6,
-                        fontSize: 13,
-                        color: "#92400e",
-                      }}
-                    >
-                      ⚠️ <strong>{isEn ? "Reported issue: " : "Nội dung phản ánh: "}</strong>{d.issue}
-                    </div>
-
-                    {d.solution && (
-                      <div
-                        style={{
-                          backgroundColor: "#f0fdf4",
-                          border: "1px solid #bbf7d0",
-                          padding: 10,
-                          borderRadius: 6,
-                          fontSize: 13,
-                          color: "#166534",
-                        }}
-                      >
-                        ✅ <strong>{isEn ? "Resolution: " : "Kết quả xử lý: "}</strong>{d.solution}
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
+                <Pagination
+                  currentPage={announcementsPage}
+                  totalItems={announcements.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={setAnnouncementsPage}
+                />
+              </>
+            )}
           </div>
         )}
       </div>

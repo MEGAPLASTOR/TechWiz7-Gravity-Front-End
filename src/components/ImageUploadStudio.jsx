@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo } from "react";
 import ImageUploadInput from "./ImageUploadInput";
 import Pagination from "./common/Pagination";
+import { formatImageUrl } from "../services/apiClient";
 export default function ImageUploadStudio({ token, callApi }) {
   const [selectedFolder, setSelectedFolder] = useState("markets");
   const [singleImageUrl, setSingleImageUrl] = useState("");
@@ -55,19 +56,47 @@ export default function ImageUploadStudio({ token, callApi }) {
     try {
       const formData = new FormData();
       files.forEach((f) => formData.append("files", f));
-      const res = await fetch(`/api/upload/images?folder=${selectedFolder}`, {
+
+      const activeToken =
+        token ||
+        localStorage.getItem("ml_token") ||
+        localStorage.getItem("accessToken");
+      const headers = {};
+      if (activeToken) {
+        headers["Authorization"] = `Bearer ${activeToken}`;
+      }
+
+      const apiPrefix = import.meta.env.VITE_API_BASE_URL || "/api";
+      const cleanPrefix = apiPrefix.endsWith("/") ? apiPrefix.slice(0, -1) : apiPrefix;
+      const uploadUrl = `${cleanPrefix}/upload/images?folder=${selectedFolder}`;
+
+      const res = await fetch(uploadUrl, {
         method: "POST",
+        headers,
         body: formData,
       });
-      const data = await res.json();
-      if (res.ok && data.data && Array.isArray(data.data)) {
+
+      let data = null;
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { message: text };
+        }
+      }
+
+      if (res.ok && data?.data && Array.isArray(data.data)) {
         setMultiMessage(
           `✅ Tải lên thành công ${data.data.length} ảnh vào thư mục [${selectedFolder}]!`,
         );
         const newItems = data.data.map((item) => ({
-          url: item.url,
+          url: formatImageUrl(item.url || item.fullUrl),
           folder: selectedFolder,
-          filename: item.originalFilename,
+          filename: item.originalFilename || item.storedFilename,
           size: (item.size / 1024).toFixed(1) + " KB",
           time: new Date().toLocaleTimeString("vi-VN"),
         }));
@@ -75,7 +104,7 @@ export default function ImageUploadStudio({ token, callApi }) {
         if (multiInputRef.current) multiInputRef.current.value = "";
       } else {
         setMultiMessage(
-          "❌ Lỗi tải lên: " + (data.message || JSON.stringify(data)),
+          "❌ Lỗi tải lên: " + (data?.message || data?.error || `Mã lỗi ${res.status}`),
         );
       }
     } catch (err) {
@@ -425,7 +454,7 @@ export default function ImageUploadStudio({ token, callApi }) {
                   }}
                 >
                   <img
-                    src={item.url}
+                    src={formatImageUrl(item.url)}
                     alt={item.filename}
                     style={{
                       width: "100%",

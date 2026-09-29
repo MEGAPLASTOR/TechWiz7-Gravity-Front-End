@@ -5,9 +5,14 @@ import Badge from "../../components/common/Badge";
 import Modal from "../../components/common/Modal";
 import Pagination from "../../components/common/Pagination";
 import adminService from "../../services/adminService";
+import { formatImageUrl } from "../../services/apiClient";
 import { useLanguage } from "../../context/LanguageContext";
+import {
+  isValidVietnamesePhone,
+  normalizeVietnamesePhone,
+} from "../../utils/validationUtils";
 
-export default function UserModerationPage({ onNavigate }) {
+export default function UserModerationPage() {
   const { isEn } = useLanguage();
   const [mainTab, setMainTab] = useState("users");
   const [users, setUsers] = useState([]);
@@ -39,9 +44,50 @@ export default function UserModerationPage({ onNavigate }) {
   const [isUserStatusModalOpen, setIsUserStatusModalOpen] = useState(false);
   const [userStatusTarget, setUserStatusTarget] = useState(null);
   const [userStatusReason, setUserStatusReason] = useState("");
+
+  // Create User State
+  const initialCreateForm = {
+    fullName: "",
+    email: "",
+    password: "",
+    phoneNumber: "",
+    role: "CUSTOMER",
+    status: "ACTIVE",
+    address: "",
+    farmName: "",
+    farmAddress: "",
+    kycStatus: "UNVERIFIED",
+  };
+  const [createUserForm, setCreateUserForm] = useState(initialCreateForm);
+  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+  const [savingCreateUser, setSavingCreateUser] = useState(false);
+  const [showCreatePassword, setShowCreatePassword] = useState(false);
+
+  // Edit User State
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editUserForm, setEditUserForm] = useState({
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    role: "CUSTOMER",
+    status: "ACTIVE",
+    kycStatus: "UNVERIFIED",
+    address: "",
+    farmName: "",
+    farmAddress: "",
+    note: "",
+  });
+  const [savingEditUser, setSavingEditUser] = useState(false);
+
+  // Delete User State
+  const [isDeleteUserModalOpen, setIsDeleteUserModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deletingUser, setDeletingUser] = useState(false);
+
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [kycList, setKycList] = useState([]);
-  const [kycTab, setKycTab] = useState("PENDING");
   const [kycSearch, setKycSearch] = useState("");
   const [selectedFarmerKyc, setSelectedFarmerKyc] = useState(null);
   const [farmerKycDetail, setFarmerKycDetail] = useState(null);
@@ -162,11 +208,257 @@ export default function UserModerationPage({ onNavigate }) {
       );
     }
   };
+
+  const handleOpenCreateUserModal = () => {
+    setCreateUserForm(initialCreateForm);
+    setShowCreatePassword(false);
+    setIsCreateUserModalOpen(true);
+  };
+
+  const handleSaveCreateUser = async (e) => {
+    e.preventDefault();
+    if (
+      !createUserForm.fullName.trim() ||
+      !createUserForm.email.trim() ||
+      !createUserForm.password.trim()
+    ) {
+      showToast(
+        "error",
+        isEn
+          ? "Please fill in all required fields (Name, Email, Password)!"
+          : "Vui lòng điền đầy đủ các trường bắt buộc (Họ tên, Email, Mật khẩu)!",
+      );
+      return;
+    }
+    if (createUserForm.password.length < 6) {
+      showToast(
+        "error",
+        isEn
+          ? "Password must be at least 6 characters!"
+          : "Mật khẩu phải có ít nhất 6 ký tự!",
+      );
+      return;
+    }
+    if (createUserForm.phoneNumber && createUserForm.phoneNumber.trim()) {
+      if (!isValidVietnamesePhone(createUserForm.phoneNumber)) {
+        showToast(
+          "error",
+          isEn
+            ? "Invalid phone number format! Must be 10 digits starting with 03, 05, 07, 08, 09."
+            : "Số điện thoại không đúng định dạng! Vui lòng nhập số điện thoại Việt Nam gồm 10 số (đầu số 03, 05, 07, 08, 09).",
+        );
+        return;
+      }
+    }
+    setSavingCreateUser(true);
+    try {
+      const payload = {
+        ...createUserForm,
+        phoneNumber: createUserForm.phoneNumber
+          ? normalizeVietnamesePhone(createUserForm.phoneNumber)
+          : "",
+      };
+      await adminService.createUser(payload);
+      showToast(
+        "success",
+        isEn
+          ? `Created account for ${createUserForm.fullName} successfully.`
+          : `Đã tạo tài khoản cho ${createUserForm.fullName} thành công.`,
+      );
+      setIsCreateUserModalOpen(false);
+      loadUsers();
+    } catch (err) {
+      showToast(
+        "error",
+        (isEn ? "Failed to create user: " : "Lỗi tạo người dùng: ") +
+          (err.response?.data?.message || err.message),
+      );
+    } finally {
+      setSavingCreateUser(false);
+    }
+  };
+
+  const handleOpenEditModal = (user) => {
+    setEditingUser(user);
+    const role =
+      user.roles && user.roles.length > 0
+        ? String(user.roles[0]).replace(/^ROLE_/, "")
+        : "CUSTOMER";
+    setEditUserForm({
+      fullName: user.fullName || "",
+      email: user.email || "",
+      phoneNumber: user.phoneNumber || "",
+      role: role,
+      status: user.status || "ACTIVE",
+      kycStatus: user.kycStatus || "UNVERIFIED",
+      address: user.defaultAddress || user.address || "",
+      farmName: user.stallName || user.farmName || "",
+      farmAddress: user.farmAddress || "",
+      note: "",
+    });
+    setIsEditUserModalOpen(true);
+  };
+
+  const handleSaveEditUser = async (e) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    if (!editUserForm.fullName.trim()) {
+      showToast(
+        "error",
+        isEn ? "Full name cannot be blank!" : "Họ và tên không được để trống!",
+      );
+      return;
+    }
+    if (editUserForm.phoneNumber && editUserForm.phoneNumber.trim()) {
+      if (!isValidVietnamesePhone(editUserForm.phoneNumber)) {
+        showToast(
+          "error",
+          isEn
+            ? "Invalid phone number format! Must be 10 digits starting with 03, 05, 07, 08, 09."
+            : "Số điện thoại không đúng định dạng! Vui lòng nhập số điện thoại Việt Nam gồm 10 số (đầu số 03, 05, 07, 08, 09).",
+        );
+        return;
+      }
+    }
+    setSavingEditUser(true);
+    try {
+      const updateData = {
+        ...editUserForm,
+        phoneNumber: editUserForm.phoneNumber
+          ? normalizeVietnamesePhone(editUserForm.phoneNumber)
+          : "",
+      };
+      // 1. Update user info / status
+      await adminService.updateUser(editingUser.userId, updateData);
+
+      // 2. If farmer KYC status changed from previous value, sync KYC review
+      if (
+        editUserForm.role === "FARMER" &&
+        editUserForm.kycStatus !== editingUser.kycStatus
+      ) {
+        const farmerId = editingUser.farmerId ?? editingUser.userId ?? editingUser.id;
+        if (editUserForm.kycStatus === "VERIFIED") {
+          try {
+            await adminService.reviewFarmerKyc(
+              farmerId,
+              "APPROVE",
+              editUserForm.note ||
+                (isEn
+                  ? "Admin manually verified KYC"
+                  : "Quản trị viên đã xác thực KYC"),
+            );
+            const currentStoredUserId = localStorage.getItem("ml_user_id");
+            if (currentStoredUserId && String(currentStoredUserId) === String(farmerId)) {
+              localStorage.setItem("ml_kyc_status", "VERIFIED");
+              window.dispatchEvent(new CustomEvent("ml_kyc_changed", { detail: "VERIFIED" }));
+            }
+          } catch (kycErr) {
+            console.warn("KYC review sync skipped:", kycErr.message);
+          }
+        } else if (editUserForm.kycStatus === "REJECTED") {
+          try {
+            await adminService.reviewFarmerKyc(
+              farmerId,
+              "REJECT",
+              editUserForm.note ||
+                (isEn
+                  ? "Admin rejected KYC"
+                  : "Quản trị viên từ chối KYC"),
+            );
+            const currentStoredUserId = localStorage.getItem("ml_user_id");
+            if (currentStoredUserId && String(currentStoredUserId) === String(farmerId)) {
+              localStorage.setItem("ml_kyc_status", "REJECTED");
+              window.dispatchEvent(new CustomEvent("ml_kyc_changed", { detail: "REJECTED" }));
+            }
+          } catch (kycErr) {
+            console.warn("KYC reject sync skipped:", kycErr.message);
+          }
+        }
+      }
+
+      // Update local state immediately for instant responsive feedback
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.userId === editingUser.userId
+            ? {
+                ...u,
+                fullName: editUserForm.fullName,
+                phoneNumber: editUserForm.phoneNumber,
+                roles: [editUserForm.role],
+                status: editUserForm.status,
+                kycStatus: editUserForm.kycStatus,
+                stallName: editUserForm.farmName,
+                farmAddress: editUserForm.farmAddress,
+              }
+            : u,
+        ),
+      );
+
+      showToast(
+        "success",
+        isEn
+          ? `Updated user #${editingUser.userId} successfully.`
+          : `Cập nhật thông tin người dùng #${editingUser.userId} thành công.`,
+      );
+      setIsEditUserModalOpen(false);
+      loadUsers();
+      loadKyc();
+    } catch (err) {
+      showToast(
+        "error",
+        (isEn ? "Failed to update user: " : "Lỗi cập nhật người dùng: ") +
+          (err.response?.data?.message || err.message),
+      );
+    } finally {
+      setSavingEditUser(false);
+    }
+  };
+
+  const handleOpenDeleteModal = (user) => {
+    setUserToDelete(user);
+    setDeleteReason(
+      isEn
+        ? "Account deleted/deactivated by Administrator"
+        : "Tài khoản bị xóa/vô hiệu hóa bởi Quản trị viên",
+    );
+    setIsDeleteUserModalOpen(true);
+  };
+
+  const handleConfirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    setDeletingUser(true);
+    try {
+      await adminService.deleteUser(userToDelete.userId, deleteReason);
+
+      // Remove / update local state immediately
+      setUsers((prev) => prev.filter((u) => u.userId !== userToDelete.userId));
+
+      showToast(
+        "success",
+        isEn
+          ? `Successfully deleted / deactivated user #${userToDelete.userId}.`
+          : `Đã xóa / vô hiệu hóa tài khoản #${userToDelete.userId} thành công.`,
+      );
+      setIsDeleteUserModalOpen(false);
+      setUserToDelete(null);
+      loadUsers();
+    } catch (err) {
+      showToast(
+        "error",
+        (isEn ? "Failed to delete user: " : "Lỗi xóa người dùng: ") +
+          (err.response?.data?.message || err.message),
+      );
+    } finally {
+      setDeletingUser(false);
+    }
+  };
+
   const handleViewKycDetail = async (farmer) => {
     setSelectedFarmerKyc(farmer);
     setIsKycDetailModalOpen(true);
+    const farmerId = farmer.farmerId ?? farmer.userId ?? farmer.id;
     try {
-      const detail = await adminService.getFarmerKycDetail(farmer.farmerId);
+      const detail = await adminService.getFarmerKycDetail(farmerId);
       setFarmerKycDetail(detail);
     } catch (err) {
       console.warn("Failed to fetch detailed kyc", err);
@@ -191,7 +483,7 @@ export default function UserModerationPage({ onNavigate }) {
   };
   const handleApproveKyc = async () => {
     if (!approveTarget) return;
-    const farmerId = approveTarget.farmerId;
+    const farmerId = approveTarget.farmerId ?? approveTarget.userId ?? approveTarget.id;
     try {
       await adminService.reviewFarmerKyc(
         farmerId,
@@ -206,10 +498,28 @@ export default function UserModerationPage({ onNavigate }) {
           ? `Successfully approved KYC for farmer #${farmerId}. Market stall is now activated!`
           : `Đã phê duyệt KYC thành công cho nông dân #${farmerId}. Sạp hàng đã được kích hoạt!`,
       );
+
+      // Sync if the current session or localStorage holds this user id
+      const currentStoredUserId = localStorage.getItem("ml_user_id");
+      if (currentStoredUserId && String(currentStoredUserId) === String(farmerId)) {
+        localStorage.setItem("ml_kyc_status", "VERIFIED");
+        window.dispatchEvent(new CustomEvent("ml_kyc_changed", { detail: "VERIFIED" }));
+      }
+
+      // Update local users table state immediately
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.userId === farmerId || u.farmerId === farmerId
+            ? { ...u, kycStatus: "VERIFIED", isApproved: true }
+            : u,
+        ),
+      );
+
       setIsApproveModalOpen(false);
       setApproveTarget(null);
       setIsKycDetailModalOpen(false);
       loadKyc();
+      loadUsers();
     } catch (err) {
       showToast(
         "error",
@@ -234,21 +544,38 @@ export default function UserModerationPage({ onNavigate }) {
       );
       return;
     }
+    const farmerId = selectedFarmerKyc.farmerId ?? selectedFarmerKyc.userId ?? selectedFarmerKyc.id;
     try {
       await adminService.reviewFarmerKyc(
-        selectedFarmerKyc.farmerId,
+        farmerId,
         actionType,
         rejectReason.trim(),
       );
       showToast(
         "success",
         isEn
-          ? `Sent [${actionType}] result to farmer #${selectedFarmerKyc.farmerId}.`
-          : `Đã gửi kết quả [${actionType}] hồ sơ tới nông dân #${selectedFarmerKyc.farmerId}.`,
+          ? `Sent [${actionType}] result to farmer #${farmerId}.`
+          : `Đã gửi kết quả [${actionType}] hồ sơ tới nông dân #${farmerId}.`,
       );
+
+      const currentStoredUserId = localStorage.getItem("ml_user_id");
+      if (currentStoredUserId && String(currentStoredUserId) === String(farmerId)) {
+        localStorage.setItem("ml_kyc_status", "REJECTED");
+        window.dispatchEvent(new CustomEvent("ml_kyc_changed", { detail: "REJECTED" }));
+      }
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.userId === farmerId || u.farmerId === farmerId
+            ? { ...u, kycStatus: "REJECTED" }
+            : u,
+        ),
+      );
+
       setIsRejectModalOpen(false);
       setIsKycDetailModalOpen(false);
       loadKyc();
+      loadUsers();
     } catch (err) {
       showToast(
         "error",
@@ -485,6 +812,21 @@ export default function UserModerationPage({ onNavigate }) {
                     <span className={loadingUsers ? "ml-spin" : ""}>🔄</span>
                     <span>{isEn ? "Refresh" : "Làm mới"}</span>
                   </button>
+                  <Button
+                    variant="primary"
+                    onClick={handleOpenCreateUserModal}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      fontWeight: 600,
+                      backgroundColor: "#16a34a",
+                      borderColor: "#16a34a",
+                    }}
+                  >
+                    <span>➕</span>
+                    <span>{isEn ? "Add User" : "Thêm người dùng"}</span>
+                  </Button>
                 </div>
               </div>
 
@@ -781,10 +1123,11 @@ export default function UserModerationPage({ onNavigate }) {
                 <div
                   className="ml-card"
                   style={{
-                    overflowX: "auto",
                     padding: 0,
+                    overflow: "hidden",
                   }}
               >
+                <div style={{ overflowX: "auto" }}>
                 <table
                   style={{
                     width: "100%",
@@ -880,7 +1223,7 @@ export default function UserModerationPage({ onNavigate }) {
                                 borderRadius: "50%",
                                 backgroundColor: "#e2e8f0",
                                 backgroundImage: u.avatarUrl
-                                  ? `url(${u.avatarUrl})`
+                                  ? `url(${formatImageUrl(u.avatarUrl)})`
                                   : "none",
                                 backgroundSize: "cover",
                                 display: "flex",
@@ -991,39 +1334,129 @@ export default function UserModerationPage({ onNavigate }) {
                           <div
                             style={{
                               display: "inline-flex",
-                              gap: 6,
+                              gap: 4,
+                              alignItems: "center",
                             }}
                           >
-                            <Button
-                              variant="outline"
-                              size="sm"
+                            <button
                               onClick={() => handleViewUserDetail(u.userId)}
-                            >
-                              👁️ {isEn ? "Details" : "Chi tiết"}
-                            </Button>
-                            <Button
-                              variant={
-                                u.status === "ACTIVE" ? "ghost" : "primary"
-                              }
-                              size="sm"
+                              title={isEn ? "View details" : "Xem chi tiết"}
                               style={{
-                                color:
-                                  u.status === "ACTIVE" ? "#b91c1c" : "#15803d",
-                                borderColor:
-                                  u.status === "ACTIVE" ? "#fca5a5" : "#86efac",
+                                width: 32,
+                                height: 32,
+                                borderRadius: 8,
+                                border: "1px solid #e2e8f0",
+                                background: "#f8fafc",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 15,
+                                transition: "all 0.15s ease",
                               }}
-                              onClick={() => handleOpenStatusModal(u)}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.background = "#e0f2fe";
+                                e.currentTarget.style.borderColor = "#7dd3fc";
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.background = "#f8fafc";
+                                e.currentTarget.style.borderColor = "#e2e8f0";
+                              }}
                             >
-                              {u.status === "ACTIVE"
-                                ? (isEn ? "🔒 Suspend" : "🔒 Khóa")
-                                : (isEn ? "🔓 Unsuspend" : "🔓 Mở khóa")}
-                            </Button>
+                              👁️
+                            </button>
+                            <button
+                              onClick={() => handleOpenEditModal(u)}
+                              title={isEn ? "Edit user" : "Sửa người dùng"}
+                              style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: 8,
+                                border: "1px solid #bae6fd",
+                                background: "#f0f9ff",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 15,
+                                transition: "all 0.15s ease",
+                              }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.background = "#bae6fd";
+                                e.currentTarget.style.borderColor = "#38bdf8";
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.background = "#f0f9ff";
+                                e.currentTarget.style.borderColor = "#bae6fd";
+                              }}
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => handleOpenStatusModal(u)}
+                              title={
+                                u.status === "ACTIVE"
+                                  ? isEn ? "Suspend account" : "Khóa tài khoản"
+                                  : isEn ? "Unsuspend account" : "Mở khóa tài khoản"
+                              }
+                              style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: 8,
+                                border: `1px solid ${u.status === "ACTIVE" ? "#fca5a5" : "#86efac"}`,
+                                background: u.status === "ACTIVE" ? "#fff1f2" : "#f0fdf4",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 15,
+                                transition: "all 0.15s ease",
+                              }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.background = u.status === "ACTIVE" ? "#fecaca" : "#bbf7d0";
+                                e.currentTarget.style.borderColor = u.status === "ACTIVE" ? "#f87171" : "#4ade80";
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.background = u.status === "ACTIVE" ? "#fff1f2" : "#f0fdf4";
+                                e.currentTarget.style.borderColor = u.status === "ACTIVE" ? "#fca5a5" : "#86efac";
+                              }}
+                            >
+                              {u.status === "ACTIVE" ? "🔒" : "🔓"}
+                            </button>
+                            <button
+                              onClick={() => handleOpenDeleteModal(u)}
+                              title={isEn ? "Delete user" : "Xóa người dùng"}
+                              style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: 8,
+                                border: "1px solid #fecaca",
+                                background: "#fff1f2",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 15,
+                                transition: "all 0.15s ease",
+                              }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.background = "#fecaca";
+                                e.currentTarget.style.borderColor = "#f87171";
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.background = "#fff1f2";
+                                e.currentTarget.style.borderColor = "#fecaca";
+                              }}
+                            >
+                              🗑️
+                            </button>
                           </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
 
               <Pagination
@@ -1333,7 +1766,7 @@ export default function UserModerationPage({ onNavigate }) {
                   borderRadius: "50%",
                   backgroundColor: "#cbd5e1",
                   backgroundImage: selectedUserDetail.avatarUrl
-                    ? `url(${selectedUserDetail.avatarUrl})`
+                    ? `url(${formatImageUrl(selectedUserDetail.avatarUrl)})`
                     : "none",
                   backgroundSize: "cover",
                   display: "flex",
@@ -1820,7 +2253,7 @@ export default function UserModerationPage({ onNavigate }) {
                         }}
                       >
                         <img
-                          src={doc.documentUrl}
+                          src={formatImageUrl(doc.documentUrl)}
                           alt="Giấy chứng nhận"
                           style={{
                             maxWidth: "100%",
@@ -1842,7 +2275,7 @@ export default function UserModerationPage({ onNavigate }) {
                       >
                         {isEn ? "🔗 Image URL: " : "🔗 Đường dẫn ảnh: "}
                         <a
-                          href={doc.documentUrl}
+                          href={formatImageUrl(doc.documentUrl)}
                           target="_blank"
                           rel="noreferrer"
                           style={{
@@ -2066,6 +2499,649 @@ export default function UserModerationPage({ onNavigate }) {
                 onClick={() => handleConfirmRejectKyc("REJECT")}
               >
                 {isEn ? "Confirm Rejection" : "Xác nhận từ chối hồ sơ"}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ================= MODAL THÊM NGƯỜI DÙNG MỚI ================= */}
+      {isCreateUserModalOpen && (
+        <Modal
+          isOpen={isCreateUserModalOpen}
+          onClose={() => setIsCreateUserModalOpen(false)}
+          title={
+            isEn ? "Add New User Account" : "Thêm Tài Khoản Người Dùng Mới"
+          }
+          subtitle={
+            isEn
+              ? "Create system account with roles (Customer, Farmer, Admin)"
+              : "Khởi tạo tài khoản hệ thống với các vai trò Khách hàng, Nông dân hoặc Quản trị viên"
+          }
+          maxWidth="640px"
+        >
+          <form onSubmit={handleSaveCreateUser} className="ml-user-modal-form">
+            <div className="ml-user-form-grid">
+              <div className="ml-user-form-group">
+                <label className="ml-user-form-label">
+                  <span>👤</span> {isEn ? "Full Name" : "Họ và tên"}{" "}
+                  <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="ml-user-form-input"
+                  placeholder={
+                    isEn ? "e.g.: Nguyen Van An" : "VD: Nguyễn Văn An"
+                  }
+                  value={createUserForm.fullName}
+                  onChange={(e) =>
+                    setCreateUserForm({
+                      ...createUserForm,
+                      fullName: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="ml-user-form-group">
+                <label className="ml-user-form-label">
+                  <span>✉️</span> {isEn ? "Email Address" : "Email đăng nhập"}{" "}
+                  <span className="required">*</span>
+                </label>
+                <input
+                  type="email"
+                  className="ml-user-form-input"
+                  placeholder="an.nguyen@marketlink.vn"
+                  value={createUserForm.email}
+                  onChange={(e) =>
+                    setCreateUserForm({
+                      ...createUserForm,
+                      email: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="ml-user-form-group">
+                <label className="ml-user-form-label">
+                  <span>🔑</span> {isEn ? "Password" : "Mật khẩu khởi tạo"}{" "}
+                  <span className="required">*</span>
+                </label>
+                <div className="ml-user-password-input-wrapper">
+                  <input
+                    type={showCreatePassword ? "text" : "password"}
+                    className="ml-user-form-input"
+                    placeholder={
+                      isEn ? "Minimum 6 characters" : "Tối thiểu 6 ký tự"
+                    }
+                    value={createUserForm.password}
+                    onChange={(e) =>
+                      setCreateUserForm({
+                        ...createUserForm,
+                        password: e.target.value,
+                      })
+                    }
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    className="ml-user-pwd-toggle-btn"
+                    onClick={() => setShowCreatePassword(!showCreatePassword)}
+                    title={
+                      showCreatePassword
+                        ? isEn
+                          ? "Hide password"
+                          : "Ẩn mật khẩu"
+                        : isEn
+                          ? "Show password"
+                          : "Hiện mật khẩu"
+                    }
+                  >
+                    {showCreatePassword ? "👁️" : "🙈"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="ml-user-form-group">
+                <label className="ml-user-form-label">
+                  <span>📱</span> {isEn ? "Phone Number" : "Số điện thoại"}
+                </label>
+                <input
+                  type="tel"
+                  className="ml-user-form-input"
+                  placeholder="0987654321"
+                  value={createUserForm.phoneNumber}
+                  onChange={(e) =>
+                    setCreateUserForm({
+                      ...createUserForm,
+                      phoneNumber: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="ml-user-form-group">
+                <label className="ml-user-form-label">
+                  <span>🎭</span> {isEn ? "User Role" : "Vai trò tài khoản"}{" "}
+                  <span className="required">*</span>
+                </label>
+                <select
+                  className="ml-user-form-select"
+                  value={createUserForm.role}
+                  onChange={(e) =>
+                    setCreateUserForm({
+                      ...createUserForm,
+                      role: e.target.value,
+                    })
+                  }
+                >
+                  <option value="CUSTOMER">
+                    🛒 {isEn ? "Customer" : "Khách hàng mua sắm"}
+                  </option>
+                  <option value="FARMER">
+                    👨‍🌾 {isEn ? "Farmer / Producer" : "Nông dân / Nhà vườn"}
+                  </option>
+                  <option value="ADMIN">
+                    🛡️ {isEn ? "System Administrator" : "Quản trị viên hệ thống"}
+                  </option>
+                </select>
+              </div>
+
+              <div className="ml-user-form-group">
+                <label className="ml-user-form-label">
+                  <span>⚡</span> {isEn ? "Account Status" : "Trạng thái ban đầu"}
+                </label>
+                <select
+                  className="ml-user-form-select"
+                  value={createUserForm.status}
+                  onChange={(e) =>
+                    setCreateUserForm({
+                      ...createUserForm,
+                      status: e.target.value,
+                    })
+                  }
+                >
+                  <option value="ACTIVE">
+                    🟢 {isEn ? "Active" : "Đang hoạt động"}
+                  </option>
+                  <option value="SUSPENDED">
+                    🔴 {isEn ? "Suspended" : "Bị tạm khóa"}
+                  </option>
+                  <option value="PENDING">
+                    ⏳ {isEn ? "Pending" : "Chờ kích hoạt"}
+                  </option>
+                </select>
+              </div>
+
+              <div className="ml-user-form-group full-width">
+                <label className="ml-user-form-label">
+                  <span>📍</span> {isEn ? "Contact / Address" : "Địa chỉ liên hệ / Giao hàng"}
+                </label>
+                <input
+                  type="text"
+                  className="ml-user-form-input"
+                  placeholder={
+                    isEn
+                      ? "e.g.: 123 Cau Giay Street, Hanoi"
+                      : "VD: Số 123 Đường Cầu Giấy, Hà Nội"
+                  }
+                  value={createUserForm.address}
+                  onChange={(e) =>
+                    setCreateUserForm({
+                      ...createUserForm,
+                      address: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            {createUserForm.role === "FARMER" && (
+              <div className="ml-user-section-divider">
+                <div className="ml-user-section-title">
+                  👨‍🌾 {isEn ? "Farmer & Stall Details" : "Thông Tin Nông Hộ & Sạp Hàng"}
+                </div>
+                <div className="ml-user-form-grid">
+                  <div className="ml-user-form-group">
+                    <label className="ml-user-form-label">
+                      <span>🏡</span> {isEn ? "Farm / Stall Name" : "Tên Trang trại / Hợp tác xã"}
+                    </label>
+                    <input
+                      type="text"
+                      className="ml-user-form-input"
+                      placeholder={
+                        isEn
+                          ? "e.g.: Ba Vi Organic Farm"
+                          : "VD: Hợp tác xã Nông sản Hữu cơ Ba Vì"
+                      }
+                      value={createUserForm.farmName}
+                      onChange={(e) =>
+                        setCreateUserForm({
+                          ...createUserForm,
+                          farmName: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="ml-user-form-group">
+                    <label className="ml-user-form-label">
+                      <span>📜</span> {isEn ? "Initial KYC Status" : "Định danh KYC ban đầu"}
+                    </label>
+                    <select
+                      className="ml-user-form-select"
+                      value={createUserForm.kycStatus}
+                      onChange={(e) =>
+                        setCreateUserForm({
+                          ...createUserForm,
+                          kycStatus: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="UNVERIFIED">
+                        ⚪ {isEn ? "Unverified (UNVERIFIED)" : "Chưa nộp KYC (UNVERIFIED)"}
+                      </option>
+                      <option value="PENDING">
+                        ⏳ {isEn ? "Pending Review (PENDING)" : "Chờ thẩm định (PENDING)"}
+                      </option>
+                      <option value="VERIFIED">
+                        ✅ {isEn ? "Verified & Granted Stall (VERIFIED)" : "Đã xác thực & Cấp quyền sạp (VERIFIED)"}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div className="ml-user-form-group full-width">
+                    <label className="ml-user-form-label">
+                      <span>🌾</span> {isEn ? "Farm Production Address" : "Địa chỉ vùng canh tác / Vườn"}
+                    </label>
+                    <input
+                      type="text"
+                      className="ml-user-form-input"
+                      placeholder={
+                        isEn
+                          ? "e.g.: Hamlet 3, Van Hoa, Ba Vi, Hanoi"
+                          : "VD: Thôn 3, Xã Vân Hòa, Ba Vì, Hà Nội"
+                      }
+                      value={createUserForm.farmAddress}
+                      onChange={(e) =>
+                        setCreateUserForm({
+                          ...createUserForm,
+                          farmAddress: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="ml-user-modal-actions">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsCreateUserModalOpen(false)}
+              >
+                {isEn ? "Cancel" : "Hủy bỏ"}
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={savingCreateUser}
+                style={{
+                  backgroundColor: "#16a34a",
+                  borderColor: "#16a34a",
+                }}
+              >
+                {isEn ? "Create Account" : "Tạo tài khoản"}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ================= MODAL CHỈNH SỬA NGƯỜI DÙNG ================= */}
+      {isEditUserModalOpen && editingUser && (
+        <Modal
+          isOpen={isEditUserModalOpen}
+          onClose={() => setIsEditUserModalOpen(false)}
+          title={
+            isEn
+              ? `Edit User Account #${editingUser.userId}`
+              : `Chỉnh Sửa Tài Khoản #${editingUser.userId}`
+          }
+          subtitle={`${editingUser.fullName || (isEn ? "Unnamed" : "Chưa đặt tên")} (${editingUser.email})`}
+          maxWidth="640px"
+        >
+          <form onSubmit={handleSaveEditUser} className="ml-user-modal-form">
+            <div className="ml-user-info-summary">
+              <div className="ml-user-summary-avatar">
+                {editingUser.avatarUrl ? (
+                  <img
+                    src={editingUser.avatarUrl}
+                    alt="avatar"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : editingUser.fullName ? (
+                  editingUser.fullName.charAt(0).toUpperCase()
+                ) : (
+                  "U"
+                )}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, color: "#1e293b", fontSize: 14 }}>
+                  {editingUser.fullName || (isEn ? "Unnamed user" : "Chưa cập nhật tên")}
+                </div>
+                <div style={{ fontSize: 12, color: "#64748b" }}>
+                  {editingUser.email} • ID: #{editingUser.userId}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 4 }}>
+                {renderRoleBadges(editingUser.roles)}
+              </div>
+            </div>
+
+            <div className="ml-user-form-grid">
+              <div className="ml-user-form-group">
+                <label className="ml-user-form-label">
+                  <span>👤</span> {isEn ? "Full Name" : "Họ và tên"}{" "}
+                  <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="ml-user-form-input"
+                  value={editUserForm.fullName}
+                  onChange={(e) =>
+                    setEditUserForm({
+                      ...editUserForm,
+                      fullName: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="ml-user-form-group">
+                <label className="ml-user-form-label">
+                  <span>📱</span> {isEn ? "Phone Number" : "Số điện thoại"}
+                </label>
+                <input
+                  type="tel"
+                  className="ml-user-form-input"
+                  placeholder="0987654321"
+                  value={editUserForm.phoneNumber}
+                  onChange={(e) =>
+                    setEditUserForm({
+                      ...editUserForm,
+                      phoneNumber: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="ml-user-form-group">
+                <label className="ml-user-form-label">
+                  <span>🎭</span> {isEn ? "Account Role" : "Vai trò tài khoản"}
+                </label>
+                <select
+                  className="ml-user-form-select"
+                  value={editUserForm.role}
+                  onChange={(e) =>
+                    setEditUserForm({
+                      ...editUserForm,
+                      role: e.target.value,
+                    })
+                  }
+                >
+                  <option value="CUSTOMER">
+                    🛒 {isEn ? "Customer" : "Khách hàng"}
+                  </option>
+                  <option value="FARMER">
+                    👨‍🌾 {isEn ? "Farmer" : "Nông dân"}
+                  </option>
+                  <option value="ADMIN">
+                    🛡️ {isEn ? "Administrator" : "Quản trị viên"}
+                  </option>
+                </select>
+              </div>
+
+              <div className="ml-user-form-group">
+                <label className="ml-user-form-label">
+                  <span>⚡</span> {isEn ? "Account Status" : "Trạng thái hoạt động"}
+                </label>
+                <select
+                  className="ml-user-form-select"
+                  value={editUserForm.status}
+                  onChange={(e) =>
+                    setEditUserForm({
+                      ...editUserForm,
+                      status: e.target.value,
+                    })
+                  }
+                >
+                  <option value="ACTIVE">
+                    🟢 {isEn ? "Active (ACTIVE)" : "Đang hoạt động (ACTIVE)"}
+                  </option>
+                  <option value="SUSPENDED">
+                    🔴 {isEn ? "Suspended (SUSPENDED)" : "Bị tạm khóa (SUSPENDED)"}
+                  </option>
+                  <option value="PENDING">
+                    ⏳ {isEn ? "Pending (PENDING)" : "Chờ kích hoạt (PENDING)"}
+                  </option>
+                </select>
+              </div>
+
+              <div className="ml-user-form-group">
+                <label className="ml-user-form-label">
+                  <span>🛡️</span> {isEn ? "KYC Verification" : "Định danh KYC"}
+                </label>
+                <select
+                  className="ml-user-form-select"
+                  value={editUserForm.kycStatus}
+                  onChange={(e) =>
+                    setEditUserForm({
+                      ...editUserForm,
+                      kycStatus: e.target.value,
+                    })
+                  }
+                >
+                  <option value="UNVERIFIED">
+                    ⚪ {isEn ? "Unverified" : "Chưa định danh"}
+                  </option>
+                  <option value="PENDING">
+                    ⏳ {isEn ? "Pending Review" : "Chờ thẩm định"}
+                  </option>
+                  <option value="VERIFIED">
+                    ✅ {isEn ? "Verified" : "Đã xác thực"}
+                  </option>
+                  <option value="REJECTED">
+                    ❌ {isEn ? "Rejected" : "Bị từ chối"}
+                  </option>
+                </select>
+              </div>
+
+              <div className="ml-user-form-group">
+                <label className="ml-user-form-label">
+                  <span>📍</span> {isEn ? "Address" : "Địa chỉ liên hệ"}
+                </label>
+                <input
+                  type="text"
+                  className="ml-user-form-input"
+                  value={editUserForm.address}
+                  onChange={(e) =>
+                    setEditUserForm({
+                      ...editUserForm,
+                      address: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            {editUserForm.role === "FARMER" && (
+              <div className="ml-user-section-divider">
+                <div className="ml-user-section-title">
+                  👨‍🌾 {isEn ? "Farmer Stall Information" : "Thông Tin Gian Hàng Nông Hộ"}
+                </div>
+                <div className="ml-user-form-grid">
+                  <div className="ml-user-form-group">
+                    <label className="ml-user-form-label">
+                      <span>🏡</span> {isEn ? "Stall / Farm Name" : "Tên sạp / Trang trại"}
+                    </label>
+                    <input
+                      type="text"
+                      className="ml-user-form-input"
+                      value={editUserForm.farmName}
+                      onChange={(e) =>
+                        setEditUserForm({
+                          ...editUserForm,
+                          farmName: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="ml-user-form-group">
+                    <label className="ml-user-form-label">
+                      <span>🌾</span> {isEn ? "Farm Address" : "Địa chỉ vườn / Canh tác"}
+                    </label>
+                    <input
+                      type="text"
+                      className="ml-user-form-input"
+                      value={editUserForm.farmAddress}
+                      onChange={(e) =>
+                        setEditUserForm({
+                          ...editUserForm,
+                          farmAddress: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="ml-user-form-group full-width">
+              <label className="ml-user-form-label">
+                <span>📝</span> {isEn ? "Audit Note / Reason for update:" : "Lý do / Ghi chú kiểm duyệt cập nhật:"}
+              </label>
+              <textarea
+                className="ml-user-form-textarea"
+                rows={2}
+                placeholder={
+                  isEn
+                    ? "Enter reason or change note (saved in audit trail)..."
+                    : "Nhập lý do thay đổi hoặc ghi chú kiểm duyệt..."
+                }
+                value={editUserForm.note}
+                onChange={(e) =>
+                  setEditUserForm({
+                    ...editUserForm,
+                    note: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="ml-user-modal-actions">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsEditUserModalOpen(false)}
+              >
+                {isEn ? "Cancel" : "Hủy bỏ"}
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={savingEditUser}
+                style={{
+                  backgroundColor: "#0284c7",
+                  borderColor: "#0284c7",
+                }}
+              >
+                {isEn ? "Save Changes" : "Lưu thay đổi"}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ================= MODAL XÁC NHẬN XÓA NGƯỜI DÙNG ================= */}
+      {isDeleteUserModalOpen && userToDelete && (
+        <Modal
+          isOpen={isDeleteUserModalOpen}
+          onClose={() => {
+            setIsDeleteUserModalOpen(false);
+            setUserToDelete(null);
+          }}
+          title={
+            isEn
+              ? `Confirm Deletion of User #${userToDelete.userId}`
+              : `Xác Nhận Xóa Tài Khoản #${userToDelete.userId}`
+          }
+          subtitle={`${userToDelete.fullName || (isEn ? "Unnamed user" : "Chưa có tên")} (${userToDelete.email})`}
+          maxWidth="520px"
+        >
+          <div className="ml-user-modal-form">
+            <div className="ml-user-warning-card">
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}>
+                <span>⚠️</span>
+                <span>{isEn ? "Security & Integrity Notice:" : "Cảnh báo an toàn dữ liệu:"}</span>
+              </div>
+              <div>
+                {isEn
+                  ? `Are you sure you want to delete / deactivate user #${userToDelete.userId} (${userToDelete.fullName})? To protect transactional integrity (orders, reviews, financial settlement), the account will be safely deactivated and suspended from platform access.`
+                  : `Bạn có chắc chắn muốn xóa / vô hiệu hóa tài khoản #${userToDelete.userId} (${userToDelete.fullName})? Nhằm đảm bảo toàn vẹn dữ liệu hệ thống (lịch sử đơn hàng, đánh giá, kiểm toán doanh thu), tài khoản sẽ được chuyển sang trạng thái tạm khóa vô hiệu hóa an toàn.`}
+              </div>
+            </div>
+
+            <div className="ml-user-form-group">
+              <label className="ml-user-form-label">
+                <span>📝</span> {isEn ? "Deletion / Deactivation Reason:" : "Lý do xóa / vô hiệu hóa:"}
+              </label>
+              <textarea
+                className="ml-user-form-textarea"
+                rows={3}
+                placeholder={
+                  isEn
+                    ? "Enter reason for account deletion..."
+                    : "Nhập lý do xóa hoặc vô hiệu hóa tài khoản..."
+                }
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+              />
+            </div>
+
+            <div className="ml-user-modal-actions">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setIsDeleteUserModalOpen(false);
+                  setUserToDelete(null);
+                }}
+              >
+                {isEn ? "Cancel" : "Hủy bỏ"}
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                loading={deletingUser}
+                style={{
+                  backgroundColor: "#dc2626",
+                  borderColor: "#dc2626",
+                }}
+                onClick={handleConfirmDeleteUser}
+              >
+                🗑️ {isEn ? "Confirm Delete" : "Xác nhận xóa"}
               </Button>
             </div>
           </div>

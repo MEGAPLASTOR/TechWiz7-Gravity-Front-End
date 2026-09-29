@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import apiClient, { formatImageUrl } from "./apiClient";
 export const marketService = {
   async getMarkets({ search = "", city = "", dayOfWeek = "" } = {}) {
     try {
@@ -9,10 +9,14 @@ export const marketService = {
         params.append("dayOfWeek", dayOfWeek);
       const qs = params.toString() ? `?${params.toString()}` : "";
       const res = await apiClient.get(`/markets${qs}`);
-      if (Array.isArray(res)) return res;
-      if (res && Array.isArray(res.data)) return res.data;
-      if (res && Array.isArray(res.value)) return res.value;
-      return [];
+      let list = [];
+      if (Array.isArray(res)) list = res;
+      else if (res && Array.isArray(res.data)) list = res.data;
+      else if (res && Array.isArray(res.value)) list = res.value;
+      return list.map((m) => ({
+        ...m,
+        imageUrl: formatImageUrl(m.imageUrl),
+      }));
     } catch (err) {
       console.warn("Failed to fetch markets, returning fallback array", err);
       return [];
@@ -25,10 +29,14 @@ export const marketService = {
       if (marketId && marketId !== "all") params.append("marketId", marketId);
       const qs = params.toString() ? `?${params.toString()}` : "";
       const res = await apiClient.get(`/markets/stalls${qs}`);
-      if (Array.isArray(res)) return res;
-      if (res && Array.isArray(res.data)) return res.data;
-      if (res && Array.isArray(res.value)) return res.value;
-      return [];
+      let list = [];
+      if (Array.isArray(res)) list = res;
+      else if (res && Array.isArray(res.data)) list = res.data;
+      else if (res && Array.isArray(res.value)) list = res.value;
+      return list.map((s) => ({
+        ...s,
+        imageUrl: formatImageUrl(s.imageUrl),
+      }));
     } catch (err) {
       console.warn("Failed to fetch stalls from backend", err);
       return [];
@@ -36,7 +44,11 @@ export const marketService = {
   },
   async getMarketById(id) {
     const res = await apiClient.get(`/markets/${id}`);
-    return res.data || res;
+    const data = res.data || res;
+    if (data && data.imageUrl) {
+      data.imageUrl = formatImageUrl(data.imageUrl);
+    }
+    return data;
   },
   async getMarketFarmers(marketId) {
     try {

@@ -260,7 +260,7 @@
 
 .ml-op-item:hover {
   border-color: var(--color-primary-light);
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface-hover);
 }
 
 .ml-op-avatar {
@@ -369,3 +369,164 @@
   font-size: 11px;
   color: var(--color-text-muted);
 }
+
+.ml-admin-dash-banner .ml-btn--outline {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(4px);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ml-admin-dash-banner .ml-btn--outline:hover {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.8) !important;
+  color: #ffffff !important;
+}
+
+.ml-top-produce-card {
+  padding: var(--space-6);
+}
+
+.ml-produce-rank-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .ml-produce-rank-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ml-produce-rank-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ml-produce-rank-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.ml-produce-rank-item:hover {
+  border-color: var(--color-primary-light);
+  background-color: var(--color-bg-surface-hover);
+  transform: translateY(-1px);
+}
+
+.ml-produce-rank-item .ml-rank-num {
+  font-size: 13.5px;
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-primary-dark);
+  background-color: var(--color-primary-surface);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ml-rank-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ml-rank-name {
+  font-size: 13.5px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ml-rank-farmer {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ml-rank-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ml-rank-count {
+  font-size: 11.5px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent);
+}
+
+/* =====================================================================
+   DARK MODE OVERRIDES - ADMIN DASHBOARD
+   ===================================================================== */
+html[data-theme="dark"] .ml-admin-dash-banner {
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .ml-kpi-icon {
+  background-color: var(--color-bg-surface-hover);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-kpi-trend.warning,
+html[data-theme="dark"] .ml-trend-warning {
+  color: var(--color-accent-light, #fde68a);
+}
+
+html[data-theme="dark"] .ml-op-item {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-op-item:hover {
+  background-color: var(--color-bg-surface-hover);
+  border-color: var(--color-primary);
+}
+
+html[data-theme="dark"] .ml-occupancy-item {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-produce-rank-item {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-produce-rank-item:hover {
+  background-color: var(--color-bg-surface-hover);
+  border-color: var(--color-primary);
+}
+
+html[data-theme="dark"] .ml-produce-rank-item .ml-rank-num {
+  border: 1px solid var(--color-border);
+}
+
+html[data-theme="dark"] .ml-occ-bar-track {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="dark"] .ml-op-card-footer {
+  border-top-color: var(--color-border);
+}
+

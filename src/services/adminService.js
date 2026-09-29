@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import apiClient, { formatImageUrl } from "./apiClient";
 export const adminService = {
   async getPlatformMetrics() {
     try {
@@ -59,6 +59,35 @@ export const adminService = {
     const res = await apiClient.get(`/admin/users/${userId}`);
     return res.data || res;
   },
+  async createUser(userData) {
+    const res = await apiClient.post("/admin/users", userData);
+    return res.data || res;
+  },
+  async updateUser(userId, userData) {
+    try {
+      const res = await apiClient.put(`/admin/users/${userId}`, userData);
+      return res.data || res;
+    } catch (err) {
+      if (userData.status) {
+        return await adminService.updateUserStatus(
+          userId,
+          userData.status,
+          userData.note || "Quản trị viên cập nhật thông tin người dùng",
+        );
+      }
+      throw err;
+    }
+  },
+  async deleteUser(userId, note = "Tài khoản bị vô hiệu hóa/xóa bởi Quản trị viên") {
+    try {
+      const res = await apiClient.delete(`/admin/users/${userId}`);
+      return res.data || res;
+    } catch {
+      // Fallback: soft-delete by updating status to SUSPENDED
+      const res = await adminService.updateUserStatus(userId, "SUSPENDED", note);
+      return res;
+    }
+  },
   async updateUserStatus(userId, status, note = "") {
     const res = await apiClient.patch(`/admin/users/${userId}/status`, {
       status,
@@ -80,7 +109,14 @@ export const adminService = {
   },
   async getFarmerKycDetail(farmerId) {
     const res = await apiClient.get(`/admin/kyc/farmers/${farmerId}`);
-    return res.data || res;
+    const data = res.data || res;
+    if (data && Array.isArray(data.documents)) {
+      data.documents = data.documents.map((doc) => ({
+        ...doc,
+        documentUrl: formatImageUrl(doc.documentUrl),
+      }));
+    }
+    return data;
   },
   async reviewFarmerKyc(farmerId, action = "APPROVE", reason = "") {
     const payload = {

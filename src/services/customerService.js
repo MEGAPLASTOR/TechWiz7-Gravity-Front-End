@@ -3,7 +3,11 @@ export const customerService = {
   async getProfile() {
     try {
       const res = await apiClient.get("/users/profile");
-      return res.data || res;
+      const data = res.data || res;
+      if (data && data.avatarUrl) {
+        data.avatarUrl = formatImageUrl(data.avatarUrl);
+      }
+      return data;
     } catch (err) {
       console.warn("Failed to fetch profile", err);
       return null;

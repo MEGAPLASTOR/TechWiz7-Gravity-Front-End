@@ -6,6 +6,11 @@ import Pagination from "../../components/common/Pagination";
 import FarmerProductModal from "../../components/farmer/FarmerProductModal";
 import farmerService from "../../services/farmerService";
 import { useLanguage } from "../../context/LanguageContext";
+import {
+  isFarmerKycApproved,
+  getEffectiveKycStatus,
+  syncKycStatus,
+} from "../../utils/kycUtils";
 
 const getDayOfWeekName = (day, isEn) => {
   const viMap = {
@@ -30,16 +35,18 @@ const getDayOfWeekName = (day, isEn) => {
 };
 
 export default function FarmerInventoryPage({ onNavigate }) {
-  const { isEn, localizeProduceName, localizeCategoryName, localizeUnit, localizeMarketName } = useLanguage();
+  const { isEn, localizeProduceName, localizeUnit, localizeMarketName } = useLanguage();
   const [activeMainTab, setActiveMainTab] = useState("products");
   const [products, setProducts] = useState([]);
   const [stockTemplates, setStockTemplates] = useState([]);
   const [assignedMarkets, setAssignedMarkets] = useState([]);
+  const [farmerProfile, setFarmerProfile] = useState(null);
   const [kycStatus, setKycStatus] = useState(() => {
     return localStorage.getItem("ml_kyc_status") || "UNVERIFIED";
   });
   const [kycLoaded, setKycLoaded] = useState(false);
   const redirectedToKyc = useRef(false);
+  const isVerified = isFarmerKycApproved({ kycStatus }, farmerProfile);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStallFilter, setSelectedStallFilter] = useState("all");
@@ -101,7 +108,7 @@ export default function FarmerInventoryPage({ onNavigate }) {
   ) => {
     setLoading(true);
     try {
-      const [prods, templates, markets, kyc] = await Promise.all([
+      const [prods, templates, markets, kyc, prof] = await Promise.all([
         farmerService.getFarmerProducts({
           keyword: (kw || "").trim(),
           categoryId: cat !== "all" && !isNaN(cat) ? cat : "",
@@ -110,11 +117,13 @@ export default function FarmerInventoryPage({ onNavigate }) {
         farmerService.getFarmerStockTemplates((kw || "").trim()),
         farmerService.getMyMarketAssignments(),
         farmerService.getFarmerKycStatus(),
+        farmerService.getFarmerProfile(),
       ]);
-      const statusFromApi =
-        kyc?.kycStatus || (kyc?.isApproved ? "VERIFIED" : "UNVERIFIED");
-      const effectiveKyc = statusFromApi;
+      if (prof) setFarmerProfile(prof);
+      const isApprovedVal = isFarmerKycApproved(kyc, prof);
+      const effectiveKyc = isApprovedVal ? "VERIFIED" : getEffectiveKycStatus(kyc, prof);
       setKycStatus(effectiveKyc);
+      syncKycStatus(effectiveKyc);
       setKycLoaded(true);
       if (prods && prods.length > 0) {
         setProducts(
@@ -167,11 +176,11 @@ export default function FarmerInventoryPage({ onNavigate }) {
   }, [searchKeyword, selectedCategory, selectedStallFilter]);
 
   useEffect(() => {
-    if (kycLoaded && kycStatus !== "VERIFIED" && !redirectedToKyc.current) {
+    if (kycLoaded && !isVerified && !redirectedToKyc.current) {
       redirectedToKyc.current = true;
       onNavigate?.("farmer-stall", { tab: "kyc" });
     }
-  }, [kycLoaded, kycStatus, onNavigate]);
+  }, [kycLoaded, isVerified, onNavigate]);
 
   const formatCurrency = (val) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -182,7 +191,7 @@ export default function FarmerInventoryPage({ onNavigate }) {
 
   const handleToggleStock = async (p) => {
     const nextInStock = !p.inStock;
-    if (nextInStock && kycStatus !== "VERIFIED") {
+    if (nextInStock && !isVerified) {
       showSuccess(isEn ? "KYC profile must be approved before opening sales on stall." : "Hồ sơ KYC phải được quản trị viên duyệt trước khi mở bán trên sạp.");
       onNavigate?.("farmer-stall", { tab: "kyc" });
       return;
@@ -217,7 +226,7 @@ export default function FarmerInventoryPage({ onNavigate }) {
   };
 
   const handleAdjustQty = async (p, delta) => {
-    if (kycStatus !== "VERIFIED") {
+    if (!isVerified) {
       showSuccess(isEn ? "Please complete KYC verification before updating stock." : "Vui lòng hoàn tất và chờ duyệt KYC trước khi cập nhật tồn kho.");
       onNavigate?.("farmer-stall", { tab: "kyc" });
       return;
@@ -343,8 +352,6 @@ export default function FarmerInventoryPage({ onNavigate }) {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchKeyword, selectedCategory, selectedStallFilter]);
-
-  const isVerified = kycStatus === "VERIFIED";
 
   return (
     <div className="ml-farmer-inventory-page">
@@ -706,7 +713,7 @@ export default function FarmerInventoryPage({ onNavigate }) {
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              if (kycStatus !== "VERIFIED") {
+                              if (!isVerified) {
                                 showSuccess(isEn ? "Please complete KYC verification before editing produce." : "Vui lòng hoàn tất và chờ duyệt KYC trước khi chỉnh sửa sản phẩm.");
                                 onNavigate("farmer-stall", { tab: "kyc" });
                                 return;
@@ -904,6 +911,7 @@ export default function FarmerInventoryPage({ onNavigate }) {
           product={editingProduct}
           assignedMarkets={assignedMarkets}
           onSave={handleSaveProduct}
+          onNavigate={onNavigate}
         />
       )}
 

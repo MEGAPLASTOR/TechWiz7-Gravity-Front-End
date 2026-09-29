@@ -152,7 +152,7 @@ body::before {
 
 .ml-lang-toggle {
   height: 38px;
-  padding: 0 12px;
+  padding: 0 10px;
   border-radius: var(--radius-full);
   border: 1px solid var(--color-border);
   background: var(--color-bg-surface);
@@ -161,8 +161,8 @@ body::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 5px;
+  font-size: 12.5px;
   font-weight: var(--font-weight-bold);
   transition:
     transform var(--transition-fast),
@@ -180,13 +180,18 @@ body::before {
   color: var(--color-primary);
 }
 
+.ml-lang-icon,
 .ml-lang-flag {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 
 .ml-lang-code {
   letter-spacing: 0.5px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .ml-btn--loading {
@@ -489,21 +494,37 @@ html[data-theme="dark"] .ml-drawer {
 .ml-modal-body select,
 .ml-modal-form select,
 .ml-auth-modal-content .ml-form-input {
-  height: 36px !important;
+  height: 38px !important;
   padding: 6px 12px !important;
-  font-size: 13px !important;
+  font-size: 13.5px !important;
   border-radius: 8px !important;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-main);
+  box-sizing: border-box;
 }
 
 .ml-modal-body textarea,
 .ml-modal-form textarea,
 .ml-modal-body .ml-form-textarea,
 .ml-modal-form .ml-form-textarea {
-  font-size: 13px !important;
-  padding: 6px 10px !important;
+  font-size: 13.5px !important;
+  padding: 8px 12px !important;
   border-radius: 8px !important;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-main);
   min-height: 56px !important;
-  max-height: 120px !important;
+  max-height: 140px !important;
+  box-sizing: border-box;
+}
+
+input::placeholder,
+textarea::placeholder,
+.ml-form-input::placeholder,
+.ml-form-textarea::placeholder {
+  color: #64748b;
+  opacity: 1;
 }
 
 html[data-theme="dark"] .ml-dropdown-item,
@@ -523,9 +544,9 @@ html[data-theme="dark"] textarea,
 html[data-theme="dark"] .ml-form-input,
 html[data-theme="dark"] .ml-form-select,
 html[data-theme="dark"] .ml-form-textarea {
-  background-color: var(--color-bg-base);
-  color: var(--color-text-main);
-  border-color: var(--color-border);
+  background-color: #142218 !important;
+  color: #f3f7f4 !important;
+  border: 1px solid #3d5e47 !important;
 }
 
 html[data-theme="dark"] input:focus:not(.ml-markets-search-input):not(.ml-farmer-search-input):not(.ml-inv-search-input):not(.ml-filter-input):not(.ml-search-input),
@@ -534,13 +555,18 @@ html[data-theme="dark"] textarea:focus,
 html[data-theme="dark"] .ml-form-input:focus,
 html[data-theme="dark"] .ml-form-select:focus,
 html[data-theme="dark"] .ml-form-textarea:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-focus);
+  background-color: #1a2c21 !important;
+  border-color: #4ade80 !important;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25) !important;
 }
 
-html[data-theme="dark"] ::placeholder {
-  color: var(--color-text-muted);
-  opacity: 0.8;
+html[data-theme="dark"] ::placeholder,
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder,
+html[data-theme="dark"] .ml-form-input::placeholder,
+html[data-theme="dark"] .ml-form-textarea::placeholder {
+  color: #cbd5e1 !important;
+  opacity: 0.92 !important;
 }
 html[data-theme="dark"] .ml-filter-tab,
 html[data-theme="dark"] .ml-cat-chip,
@@ -614,13 +640,12 @@ html[data-theme="dark"] .ml-benefit-item {
 @media (min-width: 1024px) {
   .ml-header-inner {
     width: 100% !important;
-    max-width: none !important;
-    padding-inline: clamp(24px, 3.2vw, 64px) !important;
-  }
-  .ml-header-inner {
+    max-width: 100% !important;
+    padding-inline: clamp(16px, 2.5vw, 36px) !important;
     display: flex;
     justify-content: space-between;
-    gap: 16px;
+    align-items: center;
+    gap: 12px;
   }
   .ml-header-left {
     flex: 0 0 auto;
@@ -630,11 +655,18 @@ html[data-theme="dark"] .ml-benefit-item {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    padding: 0 16px;
-    border-inline: 1px solid var(--color-border-light);
-    margin-left: 8px;
+    padding: 0 8px;
+    margin-left: 4px;
     min-width: 0;
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .ml-nav-desktop::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
   .ml-nav-inner {
     width: auto;
@@ -642,20 +674,23 @@ html[data-theme="dark"] .ml-benefit-item {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 6px;
+    gap: 4px;
     flex-wrap: nowrap;
   }
   .ml-nav-link {
     flex: 0 0 auto;
     text-align: left;
     white-space: nowrap;
-    padding: 7px 14px;
-    font-size: 13.5px;
+    padding: 6px 10px;
+    font-size: 12.5px;
     font-weight: 600;
   }
   .ml-header-right {
     margin-left: auto;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 }
 h1,

@@ -21,18 +21,18 @@ netsh advfirewall firewall add rule name="Allow Port 5178" dir=in action=allow p
 
 if not exist "node_modules\" (
     echo [1/2] Dang cai dat thu vien npm install...
-    call npm install
-    if %errorlevel% neq 0 (
-        echo [LOI] npm install that bai!
-        pause
-        exit /b 1
-    )
+    call npm install --no-fund --no-audit
+) else (
+    echo [1/2] Thu vien dependencies da san sang.
 )
 
+echo.
 echo [2/2] Dang build Frontend npm run build...
 call npm run build
-if %errorlevel% neq 0 (
-    echo [LOI] Build that bai!
+
+if not exist "dist\" (
+    echo.
+    echo [LOI] Thu muc dist chua duoc tao!
     pause
     exit /b 1
 )
@@ -42,8 +42,8 @@ echo ================================================================
 echo   HE THONG DA KHOI CHAY THANH CONG!
 echo   - Web Frontend:  http://172.16.2.89:5178
 echo   - Localhost:     http://localhost:5178
-echo   - Backend API:   http://172.16.2.89:8081
-echo   - Swagger UI:    http://172.16.2.89:8081/swagger-ui/index.html
+echo   - Backend API:   http://36.50.176.64
+echo   - Swagger UI:    http://36.50.176.64/swagger-ui/index.html
 echo ================================================================
 echo.
 

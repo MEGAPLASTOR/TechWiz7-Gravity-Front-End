@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "@/assets/styles/components/farmer/FarmerProductModal.css";
 import Modal from "../common/Modal";
 import Button from "../common/Button";
@@ -13,6 +13,7 @@ export default function FarmerProductModal({
   product = null,
   assignedMarkets = [],
   onSave,
+  onNavigate,
 }) {
   const { isEn, localizeCategoryName, localizeMarketName } = useLanguage();
   const [name, setName] = useState("");
@@ -28,11 +29,15 @@ export default function FarmerProductModal({
   const [loadingStalls, setLoadingStalls] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const sellableStalls = product
-    ? stallsList
-    : stallsList.filter((stall) =>
-        ["ACTIVE", "APPROVED"].includes(String(stall.status || "").toUpperCase()),
-      );
+
+  const sellableStalls = useMemo(() => {
+    if (!Array.isArray(stallsList)) return [];
+    if (product) return stallsList;
+    return stallsList.filter((stall) => {
+      const st = String(stall?.status || "").toUpperCase();
+      return !st || ["ACTIVE", "APPROVED", "PENDING", "OPEN"].includes(st);
+    });
+  }, [product, stallsList]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -69,7 +74,9 @@ export default function FarmerProductModal({
     };
   }, [isOpen, assignedMarkets]);
 
+  // Reset or initialize form fields only when modal opens or editing product changes
   useEffect(() => {
+    if (!isOpen) return;
     setErrorMsg("");
     if (product) {
       setName(product.name || "");
@@ -94,14 +101,17 @@ export default function FarmerProductModal({
       setStockQuantity("");
       setDescription("");
       setImageUrl("");
-      if (sellableStalls.length > 0) {
-        const s = sellableStalls[0];
-        setSelectedStallKey(`${s.marketId}|${s.stallNumber || ""}`);
-      } else {
-        setSelectedStallKey("");
-      }
+      setSelectedStallKey("");
     }
-  }, [product, isOpen, sellableStalls]);
+  }, [product, isOpen]);
+
+  // Auto-select first available stall when creating a new product
+  useEffect(() => {
+    if (!product && !selectedStallKey && sellableStalls.length > 0) {
+      const s = sellableStalls[0];
+      setSelectedStallKey(`${s.marketId}|${s.stallNumber || ""}`);
+    }
+  }, [product, selectedStallKey, sellableStalls]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -178,49 +188,40 @@ export default function FarmerProductModal({
           </div>
         )}
 
-        <div
-          className="ml-form-group"
-          style={{
-            backgroundColor: "#f0fdf4",
-            border: "1px solid #bbf7d0",
-            borderRadius: "8px",
-            padding: "12px",
-          }}
-        >
-          <label
-            className="ml-form-label"
-            style={{
-              color: "#166534",
-              fontWeight: 600,
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              marginBottom: "6px",
-            }}
-          >
+        <div className="ml-stall-assignment-box">
+          <label className="ml-stall-assignment-label">
             <span>🏪</span> {isEn ? "Assigned Market & Stall (*):" : "Sạp & Phiên chợ bày bán chỉ định (*):"}
           </label>
           {loadingStalls ? (
-            <div
-              style={{
-                fontSize: "13px",
-                color: "#166534",
-              }}
-            >
+            <div className="ml-stall-tip-msg">
               {isEn ? "Loading registered stalls..." : "Đang tải danh sách sạp đã đăng ký..."}
             </div>
           ) : sellableStalls.length === 0 ? (
-            <div
-              style={{
-                fontSize: "13px",
-                color: "#b91c1c",
-                marginTop: "4px",
-                lineHeight: "1.4",
-              }}
-            >
-              ⚠️ {isEn
-                ? "You do not have any registered stalls yet. Please go to the 'Farmers' Markets' section to register a stall before listing produce."
-                : "Bạn chưa có sạp nào được đăng ký tại các phiên chợ. Vui lòng vào trang 'Chợ Nông Sản' để đăng ký tham gia chợ trước khi đăng bán sản phẩm."}
+            <div className="ml-stall-warning-msg">
+              <div style={{ fontWeight: 600, marginBottom: "4px" }}>
+                ⚠️ {isEn
+                  ? "You do not have any registered stalls yet."
+                  : "Bạn chưa có sạp nào được cấp tại các phiên chợ."}
+              </div>
+              <div style={{ fontSize: "12px", lineHeight: "1.45", opacity: 0.95 }}>
+                {isEn
+                  ? "Produce must be linked to a registered stall. Please verify KYC and register a stall in 'Stall & Market Profile'."
+                  : "Nông sản đăng bán cần được liên kết với một sạp chợ cụ thể. Vui lòng hoàn tất xác minh KYC và đăng ký sạp tại mục 'Hồ sơ sạp & Chợ phiên'."}
+              </div>
+              <button
+                type="button"
+                className="ml-stall-warning-link"
+                onClick={() => {
+                  onClose();
+                  if (onNavigate) {
+                    onNavigate("farmer-stall", { tab: "markets" });
+                  } else {
+                    window.location.href = "/farmer/profile?tab=markets";
+                  }
+                }}
+              >
+                🏪 {isEn ? "Go to Market Stall Registration →" : "Đến trang Đăng ký sạp chợ ngay →"}
+              </button>
             </div>
           ) : (
             <select
@@ -228,11 +229,6 @@ export default function FarmerProductModal({
               value={selectedStallKey}
               onChange={(e) => setSelectedStallKey(e.target.value)}
               required
-              style={{
-                backgroundColor: "#fff",
-                borderColor: "#86efac",
-                fontWeight: 500,
-              }}
             >
               <option value="">{isEn ? "-- Select designated market stall --" : "-- Chọn sạp chỉ định bày bán --"}</option>
               {sellableStalls.map((st, idx) => {
@@ -247,14 +243,7 @@ export default function FarmerProductModal({
               })}
             </select>
           )}
-          <small
-            style={{
-              display: "block",
-              marginTop: "6px",
-              fontSize: "11.5px",
-              color: "#15803d",
-            }}
-          >
+          <small className="ml-stall-tip-msg">
             ℹ️ {isEn
               ? "When shoppers browse this stall online or at the market, this exact item will be shown."
               : "Khi khách hàng ghé thăm sạp này trên sàn hoặc tại điểm chợ, hệ thống sẽ hiển thị đúng sản phẩm này."}
@@ -279,7 +268,7 @@ export default function FarmerProductModal({
             <select
               className="ml-form-select"
               value={categoryId}
-              onChange={(e) => setCategoryId(Number(e.target.value))}
+              onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : "")}
               required
             >
               <option value="">{isEn ? "-- Select category --" : "-- Chọn danh mục --"}</option>
@@ -354,6 +343,7 @@ export default function FarmerProductModal({
           <ImageUploadInput
             value={imageUrl}
             onChange={setImageUrl}
+            folder="products"
             placeholder={isEn ? "Paste image URL or upload produce photo" : "Dán link ảnh hoặc tải ảnh nông sản lên"}
           />
         </div>

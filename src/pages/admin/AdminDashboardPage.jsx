@@ -3,6 +3,7 @@ import "@/assets/styles/pages/admin/AdminDashboardPage.css";
 import Button from "../../components/common/Button";
 import Badge from "../../components/common/Badge";
 import adminService from "../../services/adminService";
+import { productService } from "../../services/productService";
 import { SWAGGER_DOCS_URL } from "../../services/apiClient";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -30,12 +31,13 @@ export default function AdminDashboardPage({ onNavigate }) {
     let isMounted = true;
     async function loadAdminData() {
       try {
-        const [realMetrics, realKyc, realMarkets, realActiveFarmers] =
+        const [realMetrics, realKyc, realMarkets, realActiveFarmers, prods] =
           await Promise.all([
             adminService.getPlatformMetrics(),
             adminService.getPendingKycList(),
             adminService.getMarketRevenueReports(),
             adminService.getMostActiveFarmers(5),
+            productService.getProducts(),
           ]);
         if (isMounted) {
           if (realMetrics) {
@@ -68,6 +70,19 @@ export default function AdminDashboardPage({ onNavigate }) {
             setActiveFarmers(realActiveFarmers);
           } else {
             setActiveFarmers([]);
+          }
+          if (prods && prods.length > 0) {
+            setTopProduce(
+              prods.slice(0, 6).map((p, idx) => ({
+                name: p.name,
+                farmer: p.farmerName,
+                market: p.marketName,
+                preorders: Math.max(12, 48 - idx * 7),
+                tag: p.origin || "VietGAP",
+              })),
+            );
+          } else {
+            setTopProduce([]);
           }
         }
       } catch (err) {

@@ -133,7 +133,7 @@ export default function AIChatbot({ token }) {
                 onClick={toggleLanguage}
                 title={isEn ? "Chuyển sang Tiếng Việt" : "Switch to English"}
               >
-                {isEn ? "🇻🇳 VI" : "🇬🇧 EN"}
+                {isEn ? "VI" : "EN"}
               </button>
               <button
                 type="button"

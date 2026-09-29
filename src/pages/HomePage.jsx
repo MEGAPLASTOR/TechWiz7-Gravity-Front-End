@@ -106,6 +106,8 @@ export default function HomePage({
                 id: m.marketId || m.id,
                 name: m.name,
                 address: m.address,
+                status: m.status || "ACTIVE",
+                schedules: m.schedules || [],
                 city:
                   m.address &&
                   (m.address.includes("Hồ Chí Minh") ||

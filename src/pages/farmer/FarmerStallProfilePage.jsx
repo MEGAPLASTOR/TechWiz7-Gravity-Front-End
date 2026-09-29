@@ -6,7 +6,13 @@ import Pagination from "../../components/common/Pagination";
 import ImageUploadInput from "../../components/ImageUploadInput";
 import farmerService from "../../services/farmerService";
 import marketService from "../../services/marketService";
+import { formatImageUrl } from "../../services/apiClient";
 import { useLanguage } from "../../context/LanguageContext";
+import {
+  isFarmerKycApproved,
+  getEffectiveKycStatus,
+  syncKycStatus,
+} from "../../utils/kycUtils";
 
 const getDayOfWeekName = (day, isEn) => {
   const viMap = {
@@ -47,6 +53,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
     latitude: "",
     longitude: "",
     isApproved: false,
+    kycStatus: "UNVERIFIED",
   });
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -122,8 +129,28 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
     setAlertError(msg);
     setTimeout(() => setAlertError(""), 4000);
   };
+  const isKycVerified = isFarmerKycApproved(kycData, profile);
+
+  useEffect(() => {
+    const handleKycChange = () => {
+      const stored = localStorage.getItem("ml_kyc_status");
+      if (stored === "VERIFIED" || stored === "APPROVED") {
+        setKycData((prev) => ({ ...(prev || {}), kycStatus: "VERIFIED", isApproved: true }));
+        setProfile((prev) => ({ ...prev, isApproved: true, kycStatus: "VERIFIED" }));
+      } else if (stored) {
+        setKycData((prev) => ({ ...(prev || {}), kycStatus: stored }));
+      }
+    };
+    window.addEventListener("ml_kyc_changed", handleKycChange);
+    window.addEventListener("storage", handleKycChange);
+    return () => {
+      window.removeEventListener("ml_kyc_changed", handleKycChange);
+      window.removeEventListener("storage", handleKycChange);
+    };
+  }, []);
+
   const requireVerifiedKyc = () => {
-    if (kycData?.kycStatus === "VERIFIED") return true;
+    if (isKycVerified) return true;
     notifyError(
       isEn
         ? "Please complete and wait for KYC verification before performing stall operations."
@@ -166,6 +193,10 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
           marketService.getMarkets(),
           farmerService.getFarmerKycStatus(),
         ]);
+      const isApprovedVal = isFarmerKycApproved(kyc, profRes);
+      const effectiveKycStatus = isApprovedVal ? "VERIFIED" : getEffectiveKycStatus(kyc, profRes);
+      syncKycStatus(effectiveKycStatus);
+
       if (profRes) {
         const details = profRes.profileDetails || {};
         const savedCover = localStorage.getItem("farmer_cover_url");
@@ -184,14 +215,27 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
             details.longitude != null
               ? String(details.longitude)
               : prev.longitude,
-          isApproved: details.isApproved ?? prev.isApproved,
+          isApproved: isApprovedVal,
+          kycStatus: effectiveKycStatus,
         }));
+        if (profRes.avatarUrl) {
+          localStorage.setItem("ml_avatar", profRes.avatarUrl);
+          window.dispatchEvent(
+            new CustomEvent("ml_avatar_changed", { detail: profRes.avatarUrl })
+          );
+        }
       }
       setCutoffSettings(cutoffs || []);
       setPickupSlots(slots || []);
       setAssignedMarkets(assignments || []);
       setAvailableMarkets(markets || []);
-      setKycData(kyc);
+      const mergedKyc = {
+        ...(kyc || {}),
+        kycStatus: effectiveKycStatus,
+        isApproved: isApprovedVal,
+        documents: kyc?.documents || [],
+      };
+      setKycData(mergedKyc);
       if (markets && markets.length > 0) {
         setRegisterMarketForm((f) => ({
           ...f,
@@ -251,6 +295,14 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
         editProfileForm.avatarUrl !== profile.avatarUrl
       ) {
         await farmerService.updateAvatar(editProfileForm.avatarUrl);
+      }
+      if (editProfileForm.avatarUrl) {
+        localStorage.setItem("ml_avatar", editProfileForm.avatarUrl);
+        window.dispatchEvent(
+          new CustomEvent("ml_avatar_changed", {
+            detail: editProfileForm.avatarUrl,
+          })
+        );
       }
       if (editProfileForm.coverUrl) {
         localStorage.setItem("farmer_cover_url", editProfileForm.coverUrl);
@@ -383,7 +435,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
   };
   const handleRegisterMarket = async (e) => {
     e.preventDefault();
-    if (kycData?.kycStatus !== "VERIFIED") {
+    if (!isKycVerified) {
       notifyError(
         isEn
           ? "You can only register for stall spaces after your KYC profile is verified."
@@ -464,6 +516,15 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
       setIsKycModalOpen(false);
       const updatedKyc = await farmerService.getFarmerKycStatus();
       setKycData(updatedKyc);
+      const newStatus =
+        updatedKyc?.kycStatus || (updatedKyc?.isApproved ? "VERIFIED" : "PENDING");
+      localStorage.setItem("ml_kyc_status", newStatus);
+      window.dispatchEvent(
+        new CustomEvent("ml_kyc_changed", { detail: newStatus })
+      );
+      if (newStatus === "VERIFIED") {
+        setActiveTab("profile");
+      }
     } catch (err) {
       notifyError(
         (isEn ? "Failed to submit KYC: " : "Nộp hồ sơ KYC thất bại: ") +
@@ -472,8 +533,10 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
     }
   };
   const getKycBadge = (status) => {
-    switch (status) {
+    const s = String(status || "").toUpperCase();
+    switch (s) {
       case "VERIFIED":
+      case "APPROVED":
         return (
           <Badge variant="ready" dot>
             {isEn ? "Verified Identity (VERIFIED)" : "Đã xác thực định danh (VERIFIED)"}
@@ -552,13 +615,15 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
           >
             🎪 {isEn ? `Registered Stalls (${assignedMarkets.length})` : `Sạp chợ đã đăng ký (${assignedMarkets.length})`}
           </button>
-          <button
-            type="button"
-            className={`ml-inv-main-tab ${activeTab === "kyc" ? "active" : ""}`}
-            onClick={() => setActiveTab("kyc")}
-          >
-            🛡️ {isEn ? "KYC & VietGAP Verification" : "Định danh KYC & VietGAP"}
-          </button>
+          {!isKycVerified && (
+            <button
+              type="button"
+              className={`ml-inv-main-tab ${activeTab === "kyc" ? "active" : ""}`}
+              onClick={() => setActiveTab("kyc")}
+            >
+              🛡️ {isEn ? "KYC & VietGAP Verification" : "Định danh KYC & VietGAP"}
+            </button>
+          )}
         </div>
 
         {loading && (
@@ -573,7 +638,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
               <div
                 className="ml-profile-hero-cover"
                 style={{
-                  backgroundImage: `url(${profile.coverUrl})`,
+                  backgroundImage: `url(${formatImageUrl(profile.coverUrl, "https://images.unsplash.com/photo-1500937386664-56d1dfef3854")})`,
                 }}
               >
                 <div className="ml-profile-cover-badge">
@@ -585,9 +650,14 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 <div className="ml-profile-avatar-row">
                   <div className="ml-profile-avatar-wrapper">
                     <img
-                      src={profile.avatarUrl}
+                      src={formatImageUrl(profile.avatarUrl)}
                       alt={profile.fullName}
                       className="ml-profile-avatar-img"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src =
+                          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80";
+                      }}
                     />
                     <div className="ml-profile-hero-text">
                       <div className="ml-profile-title-row">
@@ -693,11 +763,17 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
 
               <div
                 className="ml-profile-metric-card"
-                onClick={() => setActiveTab("kyc")}
-                style={{
-                  cursor: "pointer",
+                onClick={() => {
+                  if (!isKycVerified) setActiveTab("kyc");
                 }}
-                title={isEn ? "View KYC status" : "Xem trạng thái định danh"}
+                style={{
+                  cursor: !isKycVerified ? "pointer" : "default",
+                }}
+                title={
+                  !isKycVerified
+                    ? (isEn ? "View KYC status" : "Xem trạng thái định danh")
+                    : (isEn ? "KYC Verified" : "Đã duyệt KYC")
+                }
               >
                 <div className="ml-profile-metric-icon">🛡️</div>
                 <div>
@@ -705,7 +781,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                     {isEn ? "Farm KYC" : "Định danh nhà vườn"}
                   </div>
                   <div className="ml-profile-metric-val">
-                    {kycData?.kycStatus === "VERIFIED"
+                    {isKycVerified
                       ? (isEn ? "Verified" : "Đã duyệt KYC")
                       : (isEn ? "Processing" : "Đang xử lý")}
                   </div>
@@ -780,7 +856,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                         variant="primary"
                         size="sm"
                         onClick={() => {
-                          if (kycData?.kycStatus !== "VERIFIED") {
+                          if (!isKycVerified) {
                             notifyError(isEn ? "Please complete KYC verification before registering stalls." : "Vui lòng hoàn tất và chờ duyệt KYC trước khi đăng ký sạp.");
                             setActiveTab("kyc");
                             return;
@@ -913,7 +989,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                           marginTop: "4px",
                         }}
                       >
-                        {getKycBadge(kycData?.kycStatus || "PENDING")}
+                        {getKycBadge(isKycVerified ? "VERIFIED" : (kycData?.kycStatus || profile?.kycStatus || "PENDING"))}
                       </div>
                     </div>
                   </div>
@@ -946,14 +1022,16 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                       <span>🕒 {isEn ? "Configure shopper pickup time slots" : "Cấu hình ca đón khách nhận hàng"}</span>
                       <span>→</span>
                     </button>
-                    <button
-                      type="button"
-                      className="ml-profile-shortcut-btn"
-                      onClick={() => setActiveTab("kyc")}
-                    >
-                      <span>🛡️ {isEn ? "Upload VietGAP / Organic certificates" : "Cập nhật giấy tờ chứng nhận VietGAP"}</span>
-                      <span>→</span>
-                    </button>
+                    {!isKycVerified && (
+                      <button
+                        type="button"
+                        className="ml-profile-shortcut-btn"
+                        onClick={() => setActiveTab("kyc")}
+                      >
+                        <span>🛡️ {isEn ? "Upload VietGAP / Organic certificates" : "Cập nhật giấy tờ chứng nhận VietGAP"}</span>
+                        <span>→</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1179,7 +1257,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 variant="primary"
                 size="md"
                 onClick={() => {
-                  if (kycData?.kycStatus !== "VERIFIED") {
+                  if (!isKycVerified) {
                     notifyError(
                       isEn
                         ? "Please complete and wait for KYC verification before registering for stalls."
@@ -1208,7 +1286,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (kycData?.kycStatus !== "VERIFIED") {
+                    if (!isKycVerified) {
                       notifyError(
                         isEn
                           ? "Please complete and wait for KYC verification before registering for stalls."
@@ -1250,8 +1328,29 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                       <div className="ml-assigned-maddr">
                         {isEn ? "Market Code:" : "Mã chợ:"} #{m.marketId}
                       </div>
-                      <div className="ml-assigned-sched">
-                        🕒 {isEn ? "Operating Status:" : "Trạng thái hoạt động:"} {m.status}
+                      <div className="ml-assigned-sched" style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap", marginTop: "4px" }}>
+                        <span>🕒 {isEn ? "Operating Status:" : "Trạng thái hoạt động:"}</span>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            padding: "2px 8px",
+                            borderRadius: "12px",
+                            fontSize: "11.5px",
+                            fontWeight: "600",
+                            backgroundColor:
+                              m.status === "ACTIVE"
+                                ? "rgba(34, 197, 94, 0.12)"
+                                : "rgba(239, 68, 68, 0.12)",
+                            color: m.status === "ACTIVE" ? "#16a34a" : "#dc2626",
+                            border: `1px solid ${m.status === "ACTIVE" ? "rgba(34, 197, 94, 0.3)" : "rgba(239, 68, 68, 0.3)"}`,
+                          }}
+                        >
+                          {m.status === "ACTIVE"
+                            ? (isEn ? "🟢 Active" : "🟢 Đang hoạt động")
+                            : (isEn ? "🔴 Paused" : "🔴 Tạm dừng")}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -1267,7 +1366,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
           </div>
         )}
 
-        {activeTab === "kyc" && (
+        {!isKycVerified && activeTab === "kyc" && (
           <div className="ml-card ml-templates-section">
             <div className="ml-templates-header">
               <div>
@@ -1280,7 +1379,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                     : "MarketLink yêu cầu 100% nông dân và chủ sạp hoàn tất định danh và nộp chứng nhận canh tác sạch nhằm bảo vệ quyền lợi người tiêu dùng."}
                 </p>
               </div>
-              {(!kycData || kycData.kycStatus !== "VERIFIED") && (
+              {!isKycVerified && (
                 <Button
                   variant="primary"
                   size="md"
@@ -1296,9 +1395,9 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 <span className="ml-kyc-status-label">
                   {isEn ? "Current KYC Status:" : "Trạng thái định danh hiện tại:"}
                 </span>
-                <div>{getKycBadge(kycData?.kycStatus || "UNVERIFIED")}</div>
+                <div>{getKycBadge(isKycVerified ? "VERIFIED" : (kycData?.kycStatus || profile?.kycStatus || "UNVERIFIED"))}</div>
               </div>
-              {kycData?.isApproved && (
+              {isKycVerified && (
                 <div className="ml-kyc-approved-badge">
                   ✓ {isEn ? "Pre-order sales and stall privileges: GRANTED" : "Quyền mở bán và nhận đơn đặt trước: ĐÃ ĐƯỢC CẤP"}
                 </div>
@@ -1612,27 +1711,45 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                   <label className="ml-form-label">
                     {isEn ? "Select Market Session:" : "Chọn chợ phiên muốn mở sạp:"}
                   </label>
-                  <select
-                    className="ml-form-input"
-                    value={registerMarketForm.marketId}
-                    onChange={(e) =>
-                      setRegisterMarketForm({
-                        ...registerMarketForm,
-                        marketId: e.target.value,
-                      })
-                    }
-                    required
-                  >
-                    {availableMarkets.map((m) => (
-                      <option
-                        key={m.marketId || m.id}
-                        value={m.marketId || m.id}
-                      >
-                        {m.name || (isEn ? `Market #${m.marketId || m.id}` : `Chợ #${m.marketId || m.id}`)} -{" "}
-                        {m.address || "Hà Nội"}
-                      </option>
-                    ))}
-                  </select>
+                  {availableMarkets.length === 0 ? (
+                    <div
+                      style={{
+                        padding: "10px 12px",
+                        backgroundColor: "rgba(239, 68, 68, 0.1)",
+                        border: "1px solid rgba(239, 68, 68, 0.3)",
+                        borderRadius: "8px",
+                        color: "var(--color-danger, #ef4444)",
+                        fontSize: "13px",
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      ⚠️ {isEn
+                        ? "Currently there are no markets created in the system. An Administrator needs to create a Farmers' Market first."
+                        : "Hiện chưa có phiên chợ nào được tạo trên hệ thống. Quản trị viên (Admin) cần tạo phiên chợ nông sản trước."}
+                    </div>
+                  ) : (
+                    <select
+                      className="ml-form-input"
+                      value={registerMarketForm.marketId}
+                      onChange={(e) =>
+                        setRegisterMarketForm({
+                          ...registerMarketForm,
+                          marketId: e.target.value,
+                        })
+                      }
+                      required
+                    >
+                      {availableMarkets.map((m) => (
+                        <option
+                          key={m.marketId || m.id}
+                          value={m.marketId || m.id}
+                        >
+                          {m.name || (isEn ? `Market #${m.marketId || m.id}` : `Chợ #${m.marketId || m.id}`)} -{" "}
+                          {m.address || "Hà Nội"}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 <div className="ml-form-group">
@@ -1662,7 +1779,11 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
                 >
                   {isEn ? "Cancel" : "Hủy"}
                 </Button>
-                <Button type="submit" variant="primary">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={availableMarkets.length === 0}
+                >
                   {isEn ? "Submit Stall Application" : "Gửi đăng ký sạp"}
                 </Button>
               </div>
@@ -1671,7 +1792,7 @@ export default function FarmerStallProfilePage({ initialTab = "profile" }) {
         </div>
       )}
 
-      {isKycModalOpen && (
+      {!isKycVerified && isKycModalOpen && (
         <div className="ml-modal-overlay">
           <div className="ml-modal-box">
             <div className="ml-modal-header">

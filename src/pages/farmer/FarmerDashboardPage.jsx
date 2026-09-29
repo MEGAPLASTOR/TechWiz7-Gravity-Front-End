@@ -4,6 +4,11 @@ import Button from "../../components/common/Button";
 import Badge from "../../components/common/Badge";
 import farmerService from "../../services/farmerService";
 import { useLanguage } from "../../context/LanguageContext";
+import {
+  isFarmerKycApproved,
+  getEffectiveKycStatus,
+  syncKycStatus,
+} from "../../utils/kycUtils";
 
 export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
   const { isEn, localizeProduceName, localizeCategoryName, localizeUnit } = useLanguage();
@@ -51,7 +56,10 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
           farmerService.getFarmerKycStatus(),
         ]);
         if (isMounted) {
-          if (kycData?.kycStatus) setKycStatus(kycData.kycStatus);
+          const isVerifiedVal = isFarmerKycApproved(kycData, profData);
+          const effectiveKyc = isVerifiedVal ? "VERIFIED" : getEffectiveKycStatus(kycData, profData);
+          setKycStatus(effectiveKyc);
+          syncKycStatus(effectiveKyc);
           if (profData) setProfile(profData);
           if (sumData) setSummary(sumData);
           if (bestData && bestData.length > 0) {
@@ -80,6 +88,8 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
       isMounted = false;
     };
   }, []);
+
+  const isVerified = isFarmerKycApproved({ kycStatus }, profile);
 
   const formatCurrency = (val) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -110,16 +120,16 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
 
           <div className="ml-dash-quick-btns">
             <Button
-              variant={kycStatus === "VERIFIED" ? "accent" : "secondary"}
+              variant={isVerified ? "accent" : "secondary"}
               size="md"
-              className={kycStatus !== "VERIFIED" ? "ml-btn-unverified" : ""}
+              className={!isVerified ? "ml-btn-unverified" : ""}
               title={
-                kycStatus !== "VERIFIED"
+                !isVerified
                   ? (isEn ? "KYC approval required before listing produce" : "Cần duyệt KYC trước khi đăng món")
                   : ""
               }
               onClick={() => {
-                if (kycStatus !== "VERIFIED") {
+                if (!isVerified) {
                   if (onNavigate) onNavigate("farmer-stall", { tab: "kyc" });
                   return;
                 }
@@ -127,7 +137,7 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
               }}
               icon={<span>+</span>}
             >
-              {kycStatus === "VERIFIED"
+              {isVerified
                 ? (isEn ? "Post New Produce" : "Đăng nông sản mới")
                 : (isEn ? "🔒 Post Produce (Pending KYC)" : "🔒 Đăng nông sản (Chờ KYC)")}
             </Button>
@@ -315,8 +325,12 @@ export default function FarmerDashboardPage({ onNavigate, onOpenAddProduct }) {
                   </h4>
                   <p className="ml-qnav-desc">
                     {isEn
-                      ? "Configure cutoff hours, setup pickup time slots, and manage KYC documents."
-                      : "Cấu hình khung giờ chốt đơn trước phiên, tạo ca nhận hàng và hồ sơ KYC."}
+                      ? kycStatus === "VERIFIED"
+                        ? "Configure cutoff hours, setup pickup time slots, and manage registered stalls."
+                        : "Configure cutoff hours, setup pickup time slots, and manage KYC documents."
+                      : kycStatus === "VERIFIED"
+                        ? "Cấu hình khung giờ chốt đơn trước phiên, tạo ca nhận hàng và quản lý sạp chợ."
+                        : "Cấu hình khung giờ chốt đơn trước phiên, tạo ca nhận hàng và hồ sơ KYC."}
                   </p>
                 </div>
               </div>

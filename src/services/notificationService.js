@@ -1,26 +1,35 @@
 import { apiRequest } from "./apiClient";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+let sharedAudioCtx = null;
+
 export function playNotificationChime() {
   try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    if (!sharedAudioCtx || sharedAudioCtx.state === "closed") {
+      sharedAudioCtx = new AudioContextClass();
+    }
+    const ctx = sharedAudioCtx;
+    if (ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+    }
     const now = ctx.currentTime;
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     osc1.type = "sine";
     osc1.frequency.setValueAtTime(659.25, now);
-    gain1.gain.setValueAtTime(0.15, now);
+    gain1.gain.setValueAtTime(0.2, now);
     gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
     osc1.connect(gain1);
     gain1.connect(ctx.destination);
     osc1.start(now);
     osc1.stop(now + 0.35);
+
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     osc2.type = "sine";
     osc2.frequency.setValueAtTime(880, now + 0.12);
-    gain2.gain.setValueAtTime(0.18, now + 0.12);
+    gain2.gain.setValueAtTime(0.25, now + 0.12);
     gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
     osc2.connect(gain2);
     gain2.connect(ctx.destination);
@@ -30,18 +39,42 @@ export function playNotificationChime() {
     console.debug("Unable to play notification audio chime:", err);
   }
 }
+
 export const notificationService = {
   async getMyNotifications() {
-    const res = await apiRequest("/notifications", {
-      method: "GET",
-    });
-    return res?.data || [];
+    try {
+      const res = await apiRequest("/notifications", {
+        method: "GET",
+      });
+      if (Array.isArray(res?.data)) return res.data;
+      if (Array.isArray(res?.data?.content)) return res.data.content;
+      if (Array.isArray(res?.data?.items)) return res.data.items;
+      return [];
+    } catch (err) {
+      console.debug("getMyNotifications failed:", err.message);
+      return [];
+    }
   },
   async getUnreadCount() {
-    const res = await apiRequest("/notifications/unread-count", {
-      method: "GET",
-    });
-    return res?.data?.unreadCount || 0;
+    try {
+      const res = await apiRequest("/notifications/unread-count", {
+        method: "GET",
+      });
+      const data = res?.data;
+      if (typeof data === "number") return data;
+      if (data && typeof data === "object") {
+        return (
+          data.unreadCount ??
+          data.count ??
+          data.unread ??
+          data.totalUnread ??
+          0
+        );
+      }
+      return 0;
+    } catch {
+      return 0;
+    }
   },
   async markAsRead(notificationId) {
     const res = await apiRequest(`/notifications/${notificationId}/read`, {

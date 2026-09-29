@@ -9,15 +9,26 @@ export function formatImageUrl(
   fallback = "https://images.unsplash.com/photo-1540420773420-3366772f4999",
 ) {
   if (!url) return fallback;
-  if (
-    url.startsWith("http://") ||
-    url.startsWith("https://") ||
-    url.startsWith("data:")
-  ) {
-    return url;
+  let cleanUrl = String(url).trim();
+  if (!cleanUrl) return fallback;
+
+  if (cleanUrl.startsWith("data:") || cleanUrl.startsWith("blob:")) {
+    return cleanUrl;
   }
-  const cleanPath = url.startsWith("/") ? url : `/${url}`;
-  return `${IMAGE_BASE_URL}${cleanPath}`;
+
+  // Extract relative path if URL contains /uploads/ (handles localhost:8081, 172.16.2.89, nnquangdev.id.vn, etc.)
+  const uploadsIdx = cleanUrl.indexOf("/uploads/");
+  if (uploadsIdx !== -1) {
+    cleanUrl = cleanUrl.substring(uploadsIdx);
+    return IMAGE_BASE_URL ? `${IMAGE_BASE_URL}${cleanUrl}` : cleanUrl;
+  }
+
+  if (cleanUrl.startsWith("http://") || cleanUrl.startsWith("https://")) {
+    return cleanUrl;
+  }
+
+  const cleanPath = cleanUrl.startsWith("/") ? cleanUrl : `/${cleanUrl}`;
+  return IMAGE_BASE_URL ? `${IMAGE_BASE_URL}${cleanPath}` : cleanPath;
 }
 
 export async function apiRequest(

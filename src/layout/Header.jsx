@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "@/assets/styles/layout/Header.css";
 import NotificationBell from "./NotificationBell";
 import { useLanguage } from "@/context";
+import { formatImageUrl } from "@/services/apiClient";
 
 export default function Header({
   currentRole = "GUEST",
   userName = "Khách vãng lai",
+  userAvatar = "",
   onSwitchRole,
   cartCount = 0,
   onOpenCart,
@@ -23,6 +25,7 @@ export default function Header({
   isLiveConnected = true,
   theme = "light",
   onToggleTheme,
+  onTestPush,
 }) {
   const { language, isEn, toggleLanguage, t } = useLanguage();
   const [showLocationMenu, setShowLocationMenu] = useState(false);
@@ -66,6 +69,14 @@ export default function Header({
       .replace(/\?/g, "");
   };
   const displayName = formatName(userName);
+  const [avatarImgError, setAvatarImgError] = useState(false);
+
+  useEffect(() => {
+    setAvatarImgError(false);
+  }, [userAvatar]);
+
+  const hasAvatarImg = Boolean(userAvatar && !avatarImgError);
+
   const avatarLetter =
     displayName && displayName.trim().length > 0
       ? displayName.trim().charAt(0).toUpperCase()
@@ -277,9 +288,9 @@ export default function Header({
                 </button>
                 <button
                   type="button"
-                  className={`ml-nav-link ${activeNav === "markets" ? "active" : ""}`}
+                  className={`ml-nav-link ml-nav-link--view-market ${activeNav === "markets" ? "active" : ""}`}
                   onClick={() => onNavigate("markets")}
-                  title={isEn ? "View active markets" : "Xem các phiên chợ đang mở"}
+                  title={isEn ? "Explore marketplace & stalls" : "Khám phá các phiên chợ & gian hàng"}
                 >
                   🏪 {t("navViewMarket", "Xem chợ")}
                 </button>
@@ -346,9 +357,9 @@ export default function Header({
                 </button>
                 <button
                   type="button"
-                  className={`ml-nav-link ${activeNav === "home" ? "active" : ""}`}
+                  className={`ml-nav-link ml-nav-link--view-market ${activeNav === "home" ? "active" : ""}`}
                   onClick={() => onNavigate("home")}
-                  title={isEn ? "View customer homepage" : "Xem trang chủ góc nhìn người mua"}
+                  title={isEn ? "View customer homepage & marketplace" : "Xem trang chủ chợ (Góc nhìn người mua)"}
                 >
                   🏠 {t("navViewMarket", "Xem chợ")}
                 </button>
@@ -366,7 +377,7 @@ export default function Header({
             aria-label={t("languageToggle")}
             title={isEn ? "Chuyển sang Tiếng Việt (VI)" : "Switch to English (EN)"}
           >
-            <span className="ml-lang-flag">{isEn ? "🇬🇧" : "🇻🇳"}</span>
+            <span className="ml-lang-icon" aria-hidden="true">🌐</span>
             <span className="ml-lang-code">{isEn ? "EN" : "VI"}</span>
           </button>
 
@@ -416,17 +427,17 @@ export default function Header({
             </button>
           )}
 
-          {currentRole !== "GUEST" && (
-            <NotificationBell
-              notifications={notifications}
-              unreadCount={unreadCount}
-              onNotificationRead={onNotificationRead}
-              onMarkAllRead={onMarkAllRead}
-              isLiveConnected={isLiveConnected}
-              onNavigate={onNavigate}
-              currentRole={currentRole}
-            />
-          )}
+          <NotificationBell
+            notifications={notifications}
+            unreadCount={unreadCount}
+            onNotificationRead={onNotificationRead}
+            onMarkAllRead={onMarkAllRead}
+            isLiveConnected={isLiveConnected}
+            onNavigate={onNavigate}
+            currentRole={currentRole}
+            onOpenAuthModal={onOpenAuthModal}
+            onTestPush={onTestPush}
+          />
 
           {currentRole !== "GUEST" ? (
             <div className="ml-user-dropdown-wrap">
@@ -437,7 +448,18 @@ export default function Header({
                 title={isEn ? "Personal Account & Logout" : "Tài khoản cá nhân & Đăng xuất"}
                 aria-expanded={showUserMenu}
               >
-                <div className="ml-header-avatar">{avatarLetter}</div>
+                <div className={`ml-header-avatar ${hasAvatarImg ? "has-image" : ""}`}>
+                  {hasAvatarImg ? (
+                    <img
+                      src={formatImageUrl(userAvatar)}
+                      alt={displayName}
+                      className="ml-header-avatar-img"
+                      onError={() => setAvatarImgError(true)}
+                    />
+                  ) : (
+                    avatarLetter
+                  )}
+                </div>
                 <div className="ml-header-user-meta">
                   <span className="ml-header-user-name" title={displayName}>
                     {displayName}
@@ -458,8 +480,17 @@ export default function Header({
               {showUserMenu && (
                 <div className="ml-user-dropdown-menu">
                   <div className="ml-user-dropdown-header">
-                    <div className="ml-user-dropdown-avatar">
-                      {avatarLetter}
+                    <div className={`ml-user-dropdown-avatar ${hasAvatarImg ? "has-image" : ""}`}>
+                      {hasAvatarImg ? (
+                        <img
+                          src={formatImageUrl(userAvatar)}
+                          alt={displayName}
+                          className="ml-user-dropdown-avatar-img"
+                          onError={() => setAvatarImgError(true)}
+                        />
+                      ) : (
+                        avatarLetter
+                      )}
                     </div>
                     <div className="ml-user-dropdown-info">
                       <strong className="ml-user-dropdown-name">

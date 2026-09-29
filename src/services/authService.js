@@ -20,6 +20,9 @@ export const authService = {
       localStorage.setItem("ml_name", data.fullName || email.split("@")[0]);
       localStorage.setItem("ml_user_id", data.userId || "");
       localStorage.setItem("ml_email", data.email || email);
+      if (data.avatarUrl || data.avatar) {
+        localStorage.setItem("ml_avatar", data.avatarUrl || data.avatar);
+      }
     }
     return data;
   },
@@ -76,12 +79,14 @@ export const authService = {
     const name = localStorage.getItem("ml_name") || "Khách vãng lai";
     const email = localStorage.getItem("ml_email") || "";
     const userId = localStorage.getItem("ml_user_id") || "";
+    const avatar = localStorage.getItem("ml_avatar") || "";
     return {
       token,
       role,
       name,
       email,
       userId,
+      avatar,
       isLoggedIn: !!token && role !== "GUEST",
     };
   },
@@ -96,6 +101,7 @@ export const authService = {
       localStorage.removeItem("ml_name");
       localStorage.removeItem("ml_user_id");
       localStorage.removeItem("ml_email");
+      localStorage.removeItem("ml_avatar");
     }
   },
 };

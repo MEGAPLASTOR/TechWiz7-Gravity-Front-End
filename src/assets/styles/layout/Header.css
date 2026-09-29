@@ -218,12 +218,13 @@
   display: none;
   align-items: center;
   justify-content: flex-start;
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
-  overflow: visible !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
-  padding: 0 12px;
+  padding: 0 8px;
 }
 
 .ml-nav-desktop::-webkit-scrollbar {
@@ -242,7 +243,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
+  gap: 4px;
   margin: 0;
   flex-wrap: nowrap;
 }
@@ -250,8 +251,8 @@
 .ml-nav-link {
   background: none;
   border: none;
-  padding: 6px 11px;
-  font-size: 13px;
+  padding: 6px 10px;
+  font-size: 12.5px;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-body);
   border-radius: var(--radius-full);
@@ -274,6 +275,26 @@
   box-shadow: 0 1px 2px rgba(46, 125, 50, 0.08);
 }
 
+.ml-nav-link--view-market {
+  border: 1px solid var(--color-border);
+  background-color: rgba(46, 125, 50, 0.06);
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+.ml-nav-link--view-market:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-surface);
+}
+
+.ml-nav-link--view-market.active {
+  background-color: var(--color-primary-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+  font-weight: 700;
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
 .ml-nav-desktop-extra {
   display: none;
 }
@@ -289,7 +310,8 @@
   gap: 8px;
   flex-shrink: 0;
   position: relative;
-  z-index: 2;
+  z-index: 5;
+  margin-left: auto;
 }
 .ml-cart-trigger {
   display: inline-flex;
@@ -419,6 +441,21 @@
   padding: 0 !important;
 }
 
+.ml-header-avatar-img,
+.ml-user-dropdown-avatar-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 9999px !important;
+  display: block !important;
+}
+
+.ml-header-avatar.has-image,
+.ml-user-dropdown-avatar.has-image {
+  overflow: hidden !important;
+  background: none !important;
+}
+
 .ml-header-user-meta,
 .ml-header-user-btn .ml-user-meta,
 .ml-user-profile-btn .ml-user-meta {
@@ -432,6 +469,9 @@
   gap: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
+  min-width: 0 !important;
+  max-width: 140px;
+  overflow: hidden !important;
 }
 
 .ml-header-user-name,
@@ -469,6 +509,62 @@
   margin-top: 1px !important;
   margin-bottom: 0 !important;
   padding: 0 !important;
+  max-width: 130px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 1440px) {
+  .ml-brand-tagline {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1360px) {
+  .ml-nav-desktop {
+    padding: 0 4px !important;
+  }
+  .ml-nav-inner {
+    gap: 3px !important;
+  }
+  .ml-nav-link {
+    padding: 5px 8px !important;
+    font-size: 12px !important;
+  }
+  .ml-header-user-role,
+  .ml-header-user-btn .ml-user-role-badge,
+  .ml-user-profile-btn .ml-user-role-badge {
+    display: none !important;
+  }
+  .ml-header-user-name,
+  .ml-header-user-btn .ml-user-name,
+  .ml-user-profile-btn .ml-user-name {
+    max-width: 110px !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  .ml-nav-link {
+    padding: 4px 6px !important;
+    font-size: 11.5px !important;
+  }
+  .ml-location-picker {
+    display: none !important;
+  }
+  .ml-header-user-name,
+  .ml-header-user-btn .ml-user-name,
+  .ml-user-profile-btn .ml-user-name {
+    max-width: 90px !important;
+  }
+}
+
+@media (max-width: 1080px) {
+  .ml-header-user-meta,
+  .ml-header-user-btn .ml-user-meta,
+  .ml-user-profile-btn .ml-user-meta {
+    display: none !important;
+  }
 }
 
 .ml-header-dropdown-arrow,
@@ -874,7 +970,9 @@ html[data-theme="dark"] .ml-nav-link.active {
 
 html[data-theme="dark"] .ml-location-btn,
 html[data-theme="dark"] .ml-cart-trigger,
-html[data-theme="dark"] .ml-header-user-btn {
+html[data-theme="dark"] .ml-header-user-btn,
+html[data-theme="dark"] .ml-lang-toggle,
+html[data-theme="dark"] .ml-theme-toggle {
   background-color: var(--color-bg-surface);
   border-color: var(--color-border);
   color: var(--color-text-main);

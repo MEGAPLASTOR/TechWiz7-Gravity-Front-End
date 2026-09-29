@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "@/assets/styles/layout/NotificationBell.css";
-import notificationService from "@/services/notificationService";
+import notificationService, { playNotificationChime } from "@/services/notificationService";
 import { useLanguage } from "@/context";
 
 export default function NotificationBell({
@@ -11,6 +11,8 @@ export default function NotificationBell({
   isLiveConnected = true,
   onNavigate,
   currentRole,
+  onOpenAuthModal,
+  onTestPush,
 }) {
   const { isEn } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
@@ -38,6 +40,28 @@ export default function NotificationBell({
   const handleRequestPermission = async () => {
     const result = await notificationService.requestBrowserPermission();
     setBrowserPermission(result);
+  };
+
+  const handlePlaySoundOnly = () => {
+    playNotificationChime();
+  };
+
+  const handleTestChimeAndNotification = async () => {
+    handlePlaySoundOnly();
+    if (onTestPush) {
+      await onTestPush();
+    } else {
+      try {
+        await notificationService.sendTestPush({
+          title: isEn ? "Test Notification" : "Thông báo thử nghiệm",
+          message: isEn
+            ? "MarketLink notification bell is working perfectly!"
+            : "Chuông và hệ thống thông báo MarketLink đã hoạt động tốt! 🎉",
+        });
+      } catch (err) {
+        console.debug("Backend test push error, fallback handled:", err);
+      }
+    }
   };
   const handleItemClick = (item) => {
     if (!item.isRead && onNotificationRead) {
@@ -115,6 +139,24 @@ export default function NotificationBell({
       setIsOpen(false);
       return;
     }
+    const isStall =
+      notifType.startsWith("STALL") ||
+      notifType.includes("MARKET_ASSIGNMENT") ||
+      title.includes("sạp") ||
+      message.includes("sạp") ||
+      title.includes("gian hàng") ||
+      message.includes("gian hàng");
+    if (isStall) {
+      if (activeRole === "ADMIN") {
+        onNavigate("admin-markets", { marketId: item.referenceId });
+      } else if (activeRole === "FARMER") {
+        onNavigate("farmer-stall");
+      } else {
+        onNavigate("stalls");
+      }
+      setIsOpen(false);
+      return;
+    }
     const isKyc =
       notifType === "KYC_UPDATE" ||
       title.includes("kyc") ||
@@ -164,6 +206,13 @@ export default function NotificationBell({
         return {
           icon: "📦",
           class: "type-order",
+        };
+      case "STALL_REGISTRATION":
+      case "STALL_REQUEST":
+      case "MARKET_ASSIGNMENT":
+        return {
+          icon: "🏪",
+          class: "type-stall",
         };
       case "KYC_UPDATE":
         return {
@@ -244,6 +293,14 @@ export default function NotificationBell({
                 )}
               </div>
               <div className="ml-notif-header-actions">
+                <button
+                  type="button"
+                  className="ml-notif-btn-action ml-notif-btn-test"
+                  onClick={handleTestChimeAndNotification}
+                  title={isEn ? "Ring bell & send test notification" : "Thử reo chuông và nhận thông báo mẫu"}
+                >
+                  🔔 {isEn ? "Test Bell" : "Thử chuông"}
+                </button>
                 {unreadCount > 0 && (
                   <button
                     type="button"
@@ -251,7 +308,7 @@ export default function NotificationBell({
                     onClick={onMarkAllRead}
                     title={isEn ? "Mark all as read" : "Đánh dấu tất cả là đã đọc"}
                   >
-                    {isEn ? "✓ Mark all read" : "✓ Đọc hết"}
+                    {isEn ? "✓ Mark read" : "✓ Đọc hết"}
                   </button>
                 )}
               </div>
@@ -274,6 +331,25 @@ export default function NotificationBell({
               </button>
             </div>
           </div>
+
+          {currentRole === "GUEST" && (
+            <div className="ml-notif-guest-banner">
+              <div className="ml-notif-guest-text">
+                <strong>{isEn ? "Track orders in real time" : "Nhận thông báo đơn hàng trực tiếp"}</strong>
+                <p>{isEn ? "Sign in to receive instant order and stall updates." : "Đăng nhập để theo dõi đơn đặt trước, trạng thái duyệt sạp & phiên chợ."}</p>
+              </div>
+              <button
+                type="button"
+                className="ml-notif-guest-btn"
+                onClick={() => {
+                  setIsOpen(false);
+                  if (onOpenAuthModal) onOpenAuthModal("LOGIN");
+                }}
+              >
+                {isEn ? "Sign In" : "Đăng nhập"}
+              </button>
+            </div>
+          )}
 
           {browserPermission === "default" && (
             <div className="ml-notif-permission-banner">
@@ -304,6 +380,13 @@ export default function NotificationBell({
                     ? "Order updates, verification results, and replies will appear here in real time."
                     : "Các cập nhật đơn hàng, kết quả kiểm duyệt và phản hồi sẽ xuất hiện tại đây tức thời."}
                 </div>
+                <button
+                  type="button"
+                  className="ml-notif-empty-btn"
+                  onClick={handleTestChimeAndNotification}
+                >
+                  🔔 {isEn ? "Ring Bell & Send Test Alert" : "Thử reo chuông & nhận mẫu"}
+                </button>
               </div>
             ) : (
               filteredList.map((item) => {
@@ -338,13 +421,35 @@ export default function NotificationBell({
           </div>
 
           <div className="ml-notif-footer">
-            <span>MarketLink Real-time Push v2.0</span>
+            <button
+              type="button"
+              className="ml-notif-sound-btn"
+              onClick={handlePlaySoundOnly}
+              title={isEn ? "Test bell chime sound" : "Bấm để nghe âm thanh chuông reo"}
+            >
+              🔊 {isEn ? "Chime test" : "Thử tiếng chuông"}
+            </button>
             <span
               style={{
-                color: "#16a34a",
+                color: isLiveConnected ? "#16a34a" : "#64748b",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                fontSize: "0.72rem",
               }}
             >
-              {isEn ? "● Push stream connected" : "● Đã kết nối luồng đẩy"}
+              <span
+                style={{
+                  width: "7px",
+                  height: "7px",
+                  borderRadius: "50%",
+                  backgroundColor: isLiveConnected ? "#16a34a" : "#94a3b8",
+                  display: "inline-block",
+                }}
+              />
+              {isLiveConnected
+                ? (isEn ? "Push stream connected" : "Đã kết nối luồng đẩy")
+                : (isEn ? "Stream standby" : "Chế độ chờ đẩy")}
             </span>
           </div>
         </div>

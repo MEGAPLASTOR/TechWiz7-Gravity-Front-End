@@ -24,7 +24,7 @@
 }
 
 .ml-farmer-dash-banner {
-  background: linear-gradient(180deg, #f5f1e8 0%, var(--color-bg-base) 100%);
+  background: linear-gradient(180deg, var(--color-bg-muted) 0%, var(--color-bg-base) 100%);
   padding: var(--space-8) 0;
   border-bottom: 1px solid var(--color-border-light);
   margin-bottom: var(--space-8);
@@ -184,6 +184,12 @@
   border: 1px solid var(--color-border);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.ml-pack-item:hover {
+  border-color: var(--color-primary-light);
+  background-color: var(--color-bg-surface-hover);
 }
 
 .ml-pack-left {
@@ -334,10 +340,63 @@
 .ml-bestseller-footer {
   margin-top: var(--space-4);
   background-color: var(--color-accent-surface);
-  border: 1px solid #fde68a;
+  border: 1px solid var(--color-accent-light);
   border-radius: var(--radius-sm);
   padding: var(--space-3);
   font-size: 11.5px;
-  color: #78350f;
+  color: var(--color-accent-hover);
   line-height: 1.45;
 }
+
+.ml-btn-unverified {
+  border: 1px dashed var(--color-accent) !important;
+  background-color: var(--color-accent-surface) !important;
+  color: var(--color-accent-hover) !important;
+}
+
+html[data-theme="dark"] .ml-farmer-dash-banner {
+  background: linear-gradient(180deg, rgba(22, 56, 38, 0.5) 0%, var(--color-bg-base) 100%);
+  border-bottom-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-dash-greeting {
+  color: var(--color-primary-light);
+}
+
+html[data-theme="dark"] .ml-kpi-val.warning {
+  color: var(--color-accent-light, #fde68a);
+}
+
+html[data-theme="dark"] .ml-bestseller-footer {
+  background-color: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fde68a;
+}
+
+html[data-theme="dark"] .ml-rank-num {
+  border: 1px solid var(--color-border);
+}
+
+html[data-theme="dark"] .ml-qnav-card {
+  background-color: var(--color-bg-surface);
+}
+
+html[data-theme="dark"] .ml-qnav-card:hover {
+  background-color: var(--color-bg-surface-hover);
+  border-color: var(--color-primary);
+}
+
+html[data-theme="dark"] .ml-pack-badge.ready {
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+html[data-theme="dark"] .ml-pack-badge.in-progress {
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+html[data-theme="dark"] .ml-btn-unverified {
+  border-color: rgba(245, 158, 11, 0.4) !important;
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #fde68a !important;
+}
+

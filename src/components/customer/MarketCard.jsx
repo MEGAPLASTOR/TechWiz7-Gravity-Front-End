@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import "@/assets/styles/components/customer/MarketCard.css";
 import Badge from "../common/Badge";
 import Button from "../common/Button";
 import { useLanguage } from "@/context";
+import { getMarketOperatingStatus } from "@/utils/marketUtils";
 
 export default function MarketCard({
   market,
@@ -33,6 +34,10 @@ export default function MarketCard({
   const displayCity = isEn
     ? (city || "").replace(/TP\. Hồ Chí Minh/gi, "Ho Chi Minh City")
     : (city || "");
+
+  const opStatus = useMemo(() => {
+    return getMarketOperatingStatus(market, isEn);
+  }, [market, isEn]);
 
   const displayTag = isEn
     ? (tag || "")
@@ -81,16 +86,16 @@ export default function MarketCard({
           }}
         />
         <div className="ml-market-badge-top">
-          {distance && (
+          {distance ? (
             <Badge variant="organic" size="sm">
               📍 {distance}
             </Badge>
+          ) : (
+            <div />
           )}
-          {verified && (
-            <Badge variant="ready" size="sm">
-              ✓ {t("verifiedMarket", "Đã kiểm duyệt")}
-            </Badge>
-          )}
+          <Badge variant={opStatus.badgeVariant} size="sm" dot>
+            {opStatus.badgeText}
+          </Badge>
         </div>
         {(displayOperatingDays || operatingHours) && (
           <div className="ml-market-schedule-pill">
@@ -105,6 +110,16 @@ export default function MarketCard({
             {displayName}
           </h3>
           {displayCity && <span className="ml-market-city">{displayCity}</span>}
+        </div>
+
+        <div className={`ml-market-op-status ml-market-op-${opStatus.code.toLowerCase()}`}>
+          <span className="ml-op-status-icon">
+            {opStatus.isOpen ? "🟢" : opStatus.code === "OPENS_SOON" ? "🟡" : opStatus.code === "INACTIVE" ? "🔴" : "⚪"}
+          </span>
+          <span className="ml-op-status-label">{opStatus.statusLabel}</span>
+          {opStatus.detailText && (
+            <span className="ml-op-status-sub">• {opStatus.detailText}</span>
+          )}
         </div>
 
         <p className="ml-market-address">

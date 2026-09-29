@@ -1,5 +1,7 @@
 import React, { useState, useRef } from "react";
 import "@/assets/styles/components/ImageUploadInput.css";
+import { formatImageUrl } from "../services/apiClient";
+
 export default function ImageUploadInput({
   value,
   initialUrl,
@@ -17,12 +19,24 @@ export default function ImageUploadInput({
   const [fileDetails, setFileDetails] = useState(null);
   const fileInputRef = useRef(null);
   const currentValue = value !== undefined ? value : initialUrl || "";
+
+  const cleanUrl = (raw) => {
+    if (!raw || typeof raw !== "string") return "";
+    let trimmed = raw.trim();
+    const uploadsIdx = trimmed.indexOf("/uploads/");
+    if (uploadsIdx !== -1) {
+      return trimmed.substring(uploadsIdx);
+    }
+    return trimmed;
+  };
+
   const triggerChange = (newUrl) => {
+    const cleaned = cleanUrl(newUrl);
     if (typeof onChange === "function") {
-      onChange(newUrl);
+      onChange(cleaned);
     }
     if (typeof onUploadSuccess === "function") {
-      onUploadSuccess(newUrl);
+      onUploadSuccess(cleaned);
     }
   };
   const handleFileChange = async (e) => {
@@ -40,24 +54,65 @@ export default function ImageUploadInput({
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch(
-        `/api/upload/image?folder=${encodeURIComponent(folder)}`,
-        {
+
+      const token =
+        localStorage.getItem("ml_token") ||
+        localStorage.getItem("accessToken");
+      const headers = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const apiPrefix = import.meta.env.VITE_API_BASE_URL || "/api";
+      const cleanPrefix = apiPrefix.endsWith("/") ? apiPrefix.slice(0, -1) : apiPrefix;
+      const uploadUrl = `${cleanPrefix}/upload/image?folder=${encodeURIComponent(folder)}`;
+
+      let res;
+      try {
+        res = await fetch(uploadUrl, {
           method: "POST",
+          headers,
           body: formData,
-        },
-      );
-      const data = await res.json();
-      const uploadedUrl = data.data?.fullUrl || data.data?.url || data.url;
+        });
+      } catch (proxyErr) {
+        const backendTarget =
+          import.meta.env.VITE_BACKEND_TARGET || "http://172.16.2.89:8081";
+        const fallbackUrl = `${backendTarget.replace(/\/$/, "")}/api/upload/image?folder=${encodeURIComponent(folder)}`;
+        res = await fetch(fallbackUrl, {
+          method: "POST",
+          headers,
+          body: formData,
+        });
+      }
+
+      let data = null;
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { message: text };
+        }
+      }
+
+      const rawUrl = data?.data?.url || data?.url || data?.data?.fullUrl || data?.fullUrl;
+      const uploadedUrl = cleanUrl(rawUrl);
       if (res.ok && uploadedUrl) {
         triggerChange(uploadedUrl);
         setUploadSuccess(true);
         setFileDetails({
-          name: data.data?.originalFilename || file.name,
+          name: data?.data?.originalFilename || file.name,
           size: (file.size / 1024).toFixed(1) + " KB",
         });
       } else {
-        setUploadError(data.message || "Không thể tải ảnh lên máy chủ.");
+        setUploadError(
+          data?.message ||
+            data?.error ||
+            `Không thể tải ảnh lên máy chủ (${res.status}).`,
+        );
       }
     } catch (err) {
       setUploadError(
@@ -158,9 +213,10 @@ export default function ImageUploadInput({
         <div className="ml-upload-preview-card">
           <div className="ml-upload-preview-thumb">
             <img
-              src={currentValue}
+              src={formatImageUrl(currentValue)}
               alt="Preview"
               onError={(e) => {
+                e.target.onerror = null;
                 e.target.src =
                   "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&auto=format&fit=crop&q=80";
               }}

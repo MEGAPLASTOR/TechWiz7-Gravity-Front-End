@@ -180,11 +180,45 @@ export const farmerService = {
   async getFarmerKycStatus() {
     try {
       const res = await apiClient.get("/farmer/kyc/my-documents");
-      return res.data || res;
+      const data = res?.data || res;
+      if (data) {
+        if (data.isApproved) {
+          data.isApproved = true;
+          data.kycStatus = "VERIFIED";
+        } else if (data.kycStatus === "APPROVED") {
+          data.kycStatus = "VERIFIED";
+          data.isApproved = true;
+        }
+        return data;
+      }
     } catch (err) {
-      console.warn("Failed to fetch KYC status", err);
-      return null;
+      console.warn("Failed to fetch KYC status from my-documents, attempting fallback", err);
     }
+
+    // Fallback: check profile status if my-documents fails or returns empty
+    try {
+      const profRes = await apiClient.get("/users/profile");
+      const profData = profRes?.data || profRes;
+      if (profData) {
+        const details = profData.profileDetails || {};
+        const isApproved = Boolean(
+          details.isApproved ?? profData.isApproved ?? (profData.kycStatus === "VERIFIED" || profData.kycStatus === "APPROVED")
+        );
+        const kycStatus = isApproved
+          ? "VERIFIED"
+          : (profData.kycStatus === "APPROVED" ? "VERIFIED" : (profData.kycStatus || "UNVERIFIED"));
+        return {
+          farmerId: profData.userId,
+          kycStatus,
+          isApproved,
+          documents: [],
+          auditLogs: [],
+        };
+      }
+    } catch (profErr) {
+      console.warn("Fallback to profile failed", profErr);
+    }
+    return null;
   },
   async submitFarmerKyc(kycPayload) {
     const res = await apiClient.post("/farmer/kyc/submit", kycPayload);
@@ -211,7 +245,17 @@ export const farmerService = {
   async getFarmerProfile() {
     try {
       const res = await apiClient.get("/users/profile");
-      return res.data || res;
+      const data = res.data || res;
+      if (data) {
+        if (data.avatarUrl) data.avatarUrl = formatImageUrl(data.avatarUrl);
+        if (data.coverUrl) data.coverUrl = formatImageUrl(data.coverUrl);
+        const details = data.profileDetails || {};
+        if (details.isApproved || data.isApproved || data.kycStatus === "VERIFIED" || data.kycStatus === "APPROVED") {
+          data.isApproved = true;
+          data.kycStatus = "VERIFIED";
+        }
+      }
+      return data;
     } catch (err) {
       console.warn("Failed to fetch farmer profile", err);
       return null;
@@ -227,11 +271,13 @@ export const farmerService = {
     });
     return res.data || res;
   },
-  async uploadImage(file) {
+  async uploadImage(file, folder = "products") {
     const formData = new FormData();
     formData.append("file", file);
-    const res = await apiClient.post("/upload/image", formData);
-    return res.data || res;
+    const res = await apiClient.post(`/upload/image?folder=${encodeURIComponent(folder)}`, formData);
+    const data = res.data || res;
+    const rawUrl = data?.data?.url || data?.url || data?.data?.fullUrl || data?.fullUrl;
+    return formatImageUrl(rawUrl);
   },
 };
 export default farmerService;

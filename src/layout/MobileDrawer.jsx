@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "@/assets/styles/layout/MobileDrawer.css";
 import Button from "@/components/common/Button";
 import { useLanguage } from "@/context";
+import { formatImageUrl } from "@/services/apiClient";
 
 export default function MobileDrawer({
   isOpen,
   onClose,
   currentRole,
   userName = "Khách vãng lai",
+  userAvatar = "",
   onSwitchRole,
   selectedLocation,
   onSelectLocation,
@@ -36,6 +38,14 @@ export default function MobileDrawer({
       .replace(/\?/g, "");
   };
   const displayName = formatName(userName);
+  const [avatarImgError, setAvatarImgError] = useState(false);
+
+  useEffect(() => {
+    setAvatarImgError(false);
+  }, [userAvatar]);
+
+  const hasAvatarImg = Boolean(userAvatar && !avatarImgError);
+
   const avatarLetter =
     displayName && displayName.trim().length > 0
       ? displayName.trim().charAt(0).toUpperCase()
@@ -79,12 +89,12 @@ export default function MobileDrawer({
           <div className="ml-drawer-header-actions">
             <button
               type="button"
-              className="ml-drawer-theme-btn"
+              className="ml-drawer-lang-btn"
               onClick={toggleLanguage}
               title={isEn ? "Chuyển sang Tiếng Việt (VI)" : "Switch to English (EN)"}
               aria-label={t("languageToggle")}
             >
-              {isEn ? "🇻🇳 VI" : "🇬🇧 EN"}
+              {isEn ? "VI" : "EN"}
             </button>
             {onToggleTheme && (
               <button
@@ -115,7 +125,18 @@ export default function MobileDrawer({
         <div className="ml-drawer-body">
           {currentRole !== "GUEST" && (
             <div className="ml-drawer-user-card">
-              <div className="ml-drawer-user-avatar">{avatarLetter}</div>
+              <div className={`ml-drawer-user-avatar ${hasAvatarImg ? "has-image" : ""}`}>
+                {hasAvatarImg ? (
+                  <img
+                    src={formatImageUrl(userAvatar)}
+                    alt={displayName}
+                    className="ml-drawer-user-avatar-img"
+                    onError={() => setAvatarImgError(true)}
+                  />
+                ) : (
+                  avatarLetter
+                )}
+              </div>
               <div className="ml-drawer-user-info">
                 <div className="ml-drawer-user-name">{displayName}</div>
                 <div className="ml-drawer-user-role">

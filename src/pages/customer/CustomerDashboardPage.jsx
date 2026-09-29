@@ -5,7 +5,7 @@ import Button from "../../components/common/Button";
 import ImageUploadInput from "../../components/ImageUploadInput";
 import customerService from "../../services/customerService";
 import orderService from "../../services/orderService";
-import marketService from "../../services/marketService";
+import { formatImageUrl } from "../../services/apiClient";
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function CustomerDashboardPage({
@@ -14,9 +14,8 @@ export default function CustomerDashboardPage({
   onNavigate,
   onAddToCart,
 }) {
-  const { isEn, t, localizeProduceName, localizeMarketName, localizeStallName, localizeUnit } = useLanguage();
+  const { isEn, t, localizeProduceName, localizeMarketName, localizeStallName } = useLanguage();
   const [activeTab, setActiveTab] = useState("upcoming");
-  const [loading, setLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState("");
   const [profile, setProfile] = useState(null);
   const [fullName, setFullName] = useState(propUserName || "");
@@ -46,7 +45,6 @@ export default function CustomerDashboardPage({
   useEffect(() => {
     let isMounted = true;
     async function loadDashboardData() {
-      setLoading(true);
       try {
         const [profData, myOrders, favFarmers, favProds, famMembers, famInvs] =
           await Promise.all([
@@ -59,7 +57,18 @@ export default function CustomerDashboardPage({
           ]);
         if (!isMounted) return;
         if (profData) {
-          setProfile(profData);
+          const rawAvatar = profData.avatarUrl || "";
+          const cleanAvatar = formatImageUrl(rawAvatar);
+          setProfile({
+            ...profData,
+            avatarUrl: cleanAvatar,
+          });
+          if (cleanAvatar) {
+            localStorage.setItem("ml_avatar", cleanAvatar);
+            window.dispatchEvent(
+              new CustomEvent("ml_avatar_changed", { detail: cleanAvatar })
+            );
+          }
           setFullName(profData.fullName || propUserName || "");
           setPhone(profData.phoneNumber || "");
           setDefaultAddress(profData.defaultAddress || "");
@@ -67,7 +76,7 @@ export default function CustomerDashboardPage({
             fullName: profData.fullName || propUserName || "",
             phone: profData.phoneNumber || "",
             defaultAddress: profData.defaultAddress || "",
-            avatarUrl: profData.avatarUrl || "",
+            avatarUrl: cleanAvatar,
           });
         }
         if (myOrders && myOrders.length > 0) {
@@ -87,8 +96,6 @@ export default function CustomerDashboardPage({
         if (famInvs) setFamilyInvitations(famInvs);
       } catch (err) {
         console.warn("Dashboard data fetch warning", err);
-      } finally {
-        if (isMounted) setLoading(false);
       }
     }
     loadDashboardData();
@@ -101,11 +108,13 @@ export default function CustomerDashboardPage({
     setTimeout(() => setStatusMessage(""), 4500);
   };
   const handleOpenEditProfileModal = () => {
+    const rawAvatar = profile?.avatarUrl || "";
+    const cleanAvatar = formatImageUrl(rawAvatar);
     setEditForm({
       fullName: profile?.fullName || fullName || "",
       phone: profile?.phoneNumber || phone || "",
       defaultAddress: profile?.defaultAddress || defaultAddress || "",
-      avatarUrl: profile?.avatarUrl || "",
+      avatarUrl: cleanAvatar,
     });
     setIsEditProfileModalOpen(true);
   };
@@ -113,23 +122,27 @@ export default function CustomerDashboardPage({
     e.preventDefault();
     setSavingProfile(true);
     try {
+      const cleanAvatar = editForm.avatarUrl
+        ? formatImageUrl(editForm.avatarUrl.trim())
+        : null;
       const updatePayload = {
         fullName: editForm.fullName.trim(),
         phoneNumber: editForm.phone.trim(),
         defaultAddress: editForm.defaultAddress.trim(),
-        avatarUrl: editForm.avatarUrl ? editForm.avatarUrl.trim() : null,
+        avatarUrl: cleanAvatar,
       };
       const updated = await customerService.updateProfile(updatePayload);
-      if (editForm.avatarUrl && editForm.avatarUrl !== profile?.avatarUrl) {
+      if (cleanAvatar && cleanAvatar !== profile?.avatarUrl) {
         try {
-          await customerService.updateAvatar(editForm.avatarUrl.trim());
+          await customerService.updateAvatar(cleanAvatar);
         } catch (avErr) {
           console.warn("Avatar update fallback note:", avErr);
         }
       }
-      const nextAvatar = editForm.avatarUrl
-        ? editForm.avatarUrl.trim()
-        : updated?.avatarUrl || profile?.avatarUrl;
+      const rawReturnedAvatar = updated?.avatarUrl
+        ? formatImageUrl(updated.avatarUrl)
+        : "";
+      const nextAvatar = cleanAvatar || rawReturnedAvatar || profile?.avatarUrl;
       const nextFullName = editForm.fullName.trim();
       const nextPhone = editForm.phone.trim();
       const nextAddress = editForm.defaultAddress.trim();
@@ -149,6 +162,9 @@ export default function CustomerDashboardPage({
       }
       if (nextAvatar) {
         localStorage.setItem("ml_avatar", nextAvatar);
+        window.dispatchEvent(
+          new CustomEvent("ml_avatar_changed", { detail: nextAvatar })
+        );
       }
       setIsEditProfileModalOpen(false);
       showStatus(isEn ? "✓ Profile and avatar updated successfully!" : "✓ Đã cập nhật hồ sơ và ảnh đại diện thành công!");
@@ -163,16 +179,20 @@ export default function CustomerDashboardPage({
     e.preventDefault();
     setSavingProfile(true);
     try {
+      const cleanAvatar = profile?.avatarUrl
+        ? formatImageUrl(profile.avatarUrl)
+        : null;
       const updated = await customerService.updateProfile({
         fullName,
         phoneNumber: phone,
         defaultAddress,
-        avatarUrl: profile?.avatarUrl || null,
+        avatarUrl: cleanAvatar,
       });
       if (updated) {
         setProfile((prev) => ({
           ...prev,
           ...updated,
+          avatarUrl: cleanAvatar || prev?.avatarUrl,
           fullName: updated.fullName || fullName,
         }));
         localStorage.setItem("ml_name", updated.fullName || fullName);
@@ -310,9 +330,14 @@ export default function CustomerDashboardPage({
             >
               {profile?.avatarUrl ? (
                 <img
-                  src={profile.avatarUrl}
+                  src={formatImageUrl(profile.avatarUrl)}
                   alt={displayUserName}
                   className="ml-dashboard-avatar-img"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src =
+                      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80";
+                  }}
                 />
               ) : (
                 <span className="ml-dashboard-avatar-fallback">🛒</span>
@@ -376,9 +401,10 @@ export default function CustomerDashboardPage({
           <div
             className="ml-orders-loading"
             style={{
-              backgroundColor: "#ecfdf5",
-              borderColor: "#a7f3d0",
-              color: "#065f46",
+              backgroundColor: "var(--status-ready-bg)",
+              borderColor: "var(--color-primary-subtle)",
+              color: "var(--status-ready)",
+              fontWeight: 600,
             }}
           >
             {statusMessage}
@@ -455,7 +481,7 @@ export default function CustomerDashboardPage({
                   • {t("dashUpcomingStatus", "Trạng thái:")}{" "}
                   <span
                     style={{
-                      color: "#16a34a",
+                      color: "var(--color-primary)",
                       fontWeight: "bold",
                     }}
                   >
@@ -932,9 +958,14 @@ export default function CustomerDashboardPage({
                 >
                   {profile?.avatarUrl ? (
                     <img
-                      src={profile.avatarUrl}
+                      src={formatImageUrl(profile.avatarUrl)}
                       alt={displayUserName}
                       className="ml-overview-avatar-img"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src =
+                          "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80";
+                      }}
                     />
                   ) : (
                     <div className="ml-overview-avatar-placeholder">🛒</div>
@@ -1074,8 +1105,10 @@ export default function CustomerDashboardPage({
                       borderRadius: "6px",
                       fontSize: "13px",
                       marginBottom: "12px",
-                      backgroundColor: "#f0fdf4",
-                      color: "#166534",
+                      backgroundColor: "var(--status-ready-bg)",
+                      color: "var(--status-ready)",
+                      border: "1px solid var(--color-border)",
+                      fontWeight: 600,
                     }}
                   >
                     {passwordMessage}
@@ -1169,9 +1202,14 @@ export default function CustomerDashboardPage({
                   <div className="ml-customer-modal-avatar-preview">
                     {editForm.avatarUrl ? (
                       <img
-                        src={editForm.avatarUrl}
+                        src={formatImageUrl(editForm.avatarUrl)}
                         alt="Avatar Preview"
                         className="ml-customer-modal-avatar-img"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src =
+                            "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80";
+                        }}
                       />
                     ) : (
                       <div className="ml-customer-modal-avatar-placeholder">

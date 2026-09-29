@@ -269,6 +269,7 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   position: relative;
   z-index: 1;
+  background-color: #e2e8f0;
 }
 
 .ml-modal-map-view {
@@ -507,3 +508,73 @@ html[data-theme="dark"] .ml-farmer-alert-preview {
   border-color: rgba(245, 158, 11, 0.3);
   color: var(--color-accent-light);
 }
+
+html[data-theme="dark"] .ml-leaflet-container-wrap {
+  border-color: var(--color-border);
+  background-color: #1e293b;
+}
+
+html[data-theme="dark"] .ml-modal-tab-btn {
+  color: var(--color-text-muted);
+}
+
+html[data-theme="dark"] .ml-modal-tab-btn:hover {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-primary-light);
+}
+
+html[data-theme="dark"] .ml-modal-tab-btn.active {
+  color: var(--color-primary-light);
+  border-bottom-color: var(--color-primary-light);
+}
+
+html[data-theme="dark"] .ml-route-stat-box {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-route-stat-num {
+  color: var(--color-text-main);
+}
+
+html[data-theme="dark"] .ml-route-steps-section {
+  background-color: var(--color-bg-base);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .ml-steps-heading {
+  color: var(--color-text-main);
+}
+
+html[data-theme="dark"] .ml-steps-list {
+  color: var(--color-text-body);
+}
+
+html[data-theme="dark"] .ml-btn-gmaps {
+  background-color: var(--color-bg-base);
+  color: #38bdf8;
+  border-color: #0284c7;
+}
+
+html[data-theme="dark"] .ml-btn-gmaps:hover {
+  background-color: rgba(2, 132, 199, 0.15);
+}
+
+html[data-theme="dark"] .ml-gps-notice-banner.warning {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  color: #fbbf24 !important;
+}
+
+html[data-theme="dark"] .ml-gps-notice-banner.info {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  color: #93c5fd !important;
+}
+
+html[data-theme="dark"] .ml-gps-notice-banner.success {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  color: #6ee7b7 !important;
+}
+

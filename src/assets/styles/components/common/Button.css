@@ -100,6 +100,17 @@
 .ml-btn--danger:hover {
   background-color: #b91c1c;
 }
+
+.btn-danger-text,
+.ml-btn.btn-danger-text {
+  color: var(--color-danger) !important;
+}
+
+.btn-danger-text:hover,
+.ml-btn.btn-danger-text:hover {
+  background-color: var(--color-danger-surface) !important;
+  color: var(--color-danger) !important;
+}
 .ml-btn-spinner {
   width: 14px;
   height: 14px;

@@ -267,6 +267,11 @@
   font-weight: var(--font-weight-medium);
 }
 
+.ml-form-input.ml-input--invalid {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15) !important;
+}
+
 .ml-auth-submit-btn {
   margin-top: 8px;
 }

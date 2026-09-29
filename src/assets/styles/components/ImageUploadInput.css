@@ -242,3 +242,71 @@
   background-color: #fecaca;
   color: #991b1b;
 }
+
+html[data-theme="dark"] .ml-upload-mode-switcher {
+  background-color: #142218;
+  border-color: #3d5e47;
+}
+
+html[data-theme="dark"] .ml-upload-mode-btn {
+  color: var(--color-text-muted);
+}
+
+html[data-theme="dark"] .ml-upload-mode-btn:hover {
+  color: #4ade80;
+}
+
+html[data-theme="dark"] .ml-upload-mode-btn.active {
+  background-color: #2e7d32;
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .ml-upload-dropzone {
+  border-color: #3d5e47;
+  background-color: #142218;
+}
+
+html[data-theme="dark"] .ml-upload-dropzone:hover {
+  border-color: #4ade80;
+  background-color: #1a2e21;
+}
+
+html[data-theme="dark"] .ml-upload-camera-badge {
+  background-color: #1e3325;
+  border-color: #3d5e47;
+  color: var(--color-text-main);
+}
+
+html[data-theme="dark"] .ml-upload-title {
+  color: #f3f7f4;
+}
+
+html[data-theme="dark"] .ml-upload-hint {
+  color: #9cb0a1;
+}
+
+html[data-theme="dark"] .ml-upload-url-input {
+  background-color: #142218;
+  border-color: #3d5e47;
+  color: #f3f7f4;
+}
+
+html[data-theme="dark"] .ml-upload-url-input:focus {
+  border-color: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+}
+
+html[data-theme="dark"] .ml-upload-preview-card {
+  background-color: #142218;
+  border-color: #3d5e47;
+}
+
+html[data-theme="dark"] .ml-upload-preview-thumb {
+  border-color: #3d5e47;
+  background-color: #111c15;
+}
+
+html[data-theme="dark"] .ml-upload-preview-url {
+  color: #d2ded5;
+}
+

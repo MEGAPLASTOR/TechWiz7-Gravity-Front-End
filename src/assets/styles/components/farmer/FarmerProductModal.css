@@ -1,13 +1,14 @@
+.ml-prod-form,
 .ml-farmer-prod-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .ml-form-grid-2 {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 @media (min-width: 640px) {
@@ -19,7 +20,7 @@
 .ml-form-grid-3 {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 @media (min-width: 640px) {
@@ -28,21 +29,163 @@
   }
 }
 
-.ml-form-textarea {
-  width: 100%;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
+.ml-form-label {
+  display: block;
   font-size: 13px;
-  background-color: var(--color-bg-base);
-  resize: vertical;
-  min-height: 56px;
-  max-height: 120px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-bottom: 5px;
 }
 
-.ml-form-textarea:focus {
+.ml-form-input,
+.ml-form-select,
+.ml-form-textarea {
+  width: 100%;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--color-border);
+  font-size: 13.5px;
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-main);
   outline: none;
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.ml-form-input,
+.ml-form-select {
+  height: 38px;
+  padding: 0 12px;
+}
+
+.ml-form-textarea {
+  padding: 8px 12px;
+  resize: vertical;
+  min-height: 64px;
+  max-height: 140px;
+  line-height: 1.45;
+}
+
+.ml-form-input:focus,
+.ml-form-select:focus,
+.ml-form-textarea:focus {
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-focus);
+}
+
+.ml-form-input::placeholder,
+.ml-form-textarea::placeholder {
+  color: #64748b;
+  opacity: 1;
+}
+
+html[data-theme="dark"] .ml-form-input,
+html[data-theme="dark"] .ml-form-select,
+html[data-theme="dark"] .ml-form-textarea {
+  background-color: #142218;
+  border-color: #3d5e47;
+  color: #f3f7f4;
+}
+
+html[data-theme="dark"] .ml-form-input:focus,
+html[data-theme="dark"] .ml-form-select:focus,
+html[data-theme="dark"] .ml-form-textarea:focus {
+  background-color: #1a2c21;
+  border-color: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+}
+
+html[data-theme="dark"] .ml-form-input::placeholder,
+html[data-theme="dark"] .ml-form-textarea::placeholder {
+  color: #cbd5e1 !important;
+  opacity: 0.92 !important;
+}
+
+/* Assigned stall box styling */
+.ml-stall-assignment-box {
+  background-color: var(--color-primary-surface, #e8f5e9);
+  border: 1px solid var(--color-primary-light, #81c784);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: all var(--transition-fast);
+}
+
+html[data-theme="dark"] .ml-stall-assignment-box {
+  background-color: rgba(74, 222, 128, 0.08);
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.ml-stall-assignment-label {
+  color: var(--color-primary-dark, #166534);
+  font-weight: 600;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+html[data-theme="dark"] .ml-stall-assignment-label {
+  color: #4ade80;
+}
+
+.ml-stall-warning-msg {
+  font-size: 13px;
+  color: #b91c1c;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+html[data-theme="dark"] .ml-stall-warning-msg {
+  color: #fca5a5;
+  background-color: rgba(220, 38, 38, 0.15);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.ml-stall-warning-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-primary-dark, #15803d);
+  background: rgba(46, 125, 50, 0.1);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(46, 125, 50, 0.25);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ml-stall-warning-link:hover {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .ml-stall-warning-link {
+  color: #86efac;
+  background: rgba(74, 222, 128, 0.15);
+  border-color: rgba(74, 222, 128, 0.35);
+}
+
+html[data-theme="dark"] .ml-stall-warning-link:hover {
+  background: #4ade80;
+  color: #111c15;
+}
+
+.ml-stall-tip-msg {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-primary-dark, #15803d);
+}
+
+html[data-theme="dark"] .ml-stall-tip-msg {
+  color: #86efac;
 }
 
 .ml-form-checkbox-row {
@@ -82,11 +225,12 @@
   border: 1px solid var(--color-border);
 }
 
+.ml-prod-actions,
 .ml-prod-form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 6px;
-  padding-top: 8px;
+  padding-top: 10px;
   border-top: 1px solid var(--color-border-light);
 }

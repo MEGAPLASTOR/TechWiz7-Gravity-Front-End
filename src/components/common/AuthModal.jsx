@@ -4,6 +4,11 @@ import Modal from "./Modal";
 import Button from "./Button";
 import authService from "../../services/authService";
 import { useLanguage } from "../../context/LanguageContext";
+import {
+  isValidVietnamesePhone,
+  normalizeVietnamesePhone,
+  isValidEmail,
+} from "../../utils/validationUtils";
 
 export default function AuthModal({
   isOpen,
@@ -19,6 +24,7 @@ export default function AuthModal({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneTouched, setPhoneTouched] = useState(false);
   const [farmName, setFarmName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
@@ -40,6 +46,7 @@ export default function AuthModal({
       setConfirmPassword("");
       setFullName("");
       setPhone("");
+      setPhoneTouched(false);
       setFarmName("");
       setShowPassword(false);
     }
@@ -66,8 +73,9 @@ export default function AuthModal({
         userRole = data.roles[0].replace("ROLE_", "");
       }
       const userName = data.fullName || email.split("@")[0];
+      const userAvatar = data.avatarUrl || data.avatar || "";
       if (onLoginSuccess) {
-        onLoginSuccess(token, userRole, userName);
+        onLoginSuccess(token, userRole, userName, userAvatar);
       }
       onClose();
     } catch (err) {
@@ -82,6 +90,41 @@ export default function AuthModal({
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
+    setPhoneTouched(true);
+
+    if (!fullName.trim()) {
+      setErrorMsg(
+        isEn ? "Please enter your full name." : "Vui lòng nhập họ và tên của bạn.",
+      );
+      return;
+    }
+
+    const cleanPhone = phone.trim().replace(/[\s.\-()]/g, "");
+    if (!cleanPhone) {
+      setErrorMsg(
+        isEn ? "Please enter your phone number." : "Vui lòng nhập số điện thoại.",
+      );
+      return;
+    }
+
+    if (!isValidVietnamesePhone(phone)) {
+      setErrorMsg(
+        isEn
+          ? "Invalid phone number format. Please enter a 10-digit Vietnamese phone number starting with 03, 05, 07, 08, or 09 (e.g. 0912345678)."
+          : "Số điện thoại không đúng định dạng. Vui lòng nhập số điện thoại Việt Nam gồm 10 số (đầu số 03, 05, 07, 08, 09 - VD: 0912345678).",
+      );
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setErrorMsg(
+        isEn
+          ? "Invalid email format. Please enter a valid email address."
+          : "Định dạng email không hợp lệ. Vui lòng kiểm tra lại email.",
+      );
+      return;
+    }
+
     if (password.length < 6) {
       setErrorMsg(isEn ? "Password must be at least 6 characters." : "Mật khẩu phải có tối thiểu 6 ký tự.");
       return;
@@ -96,15 +139,19 @@ export default function AuthModal({
         email: email.trim(),
         password,
         fullName: fullName.trim(),
-        phoneNumber: phone.trim(),
+        phoneNumber: normalizeVietnamesePhone(phone),
         role: role === "FARMER" ? "FARMER" : "CUSTOMER",
       };
+      if (role === "FARMER" && farmName.trim()) {
+        payload.farmName = farmName.trim();
+      }
       const res = await authService.register(payload);
       const token = res.accessToken || res.token || "reg_token_" + Date.now();
       const userRole = res.role?.replace("ROLE_", "") || role;
       const userName = res.fullName || fullName;
+      const userAvatar = res.avatarUrl || res.avatar || "";
       if (onLoginSuccess) {
-        onLoginSuccess(token, userRole, userName);
+        onLoginSuccess(token, userRole, userName, userAvatar);
       }
       onClose();
     } catch (err) {
@@ -361,13 +408,28 @@ export default function AuthModal({
                     <span className="ml-input-icon">📱</span>
                     <input
                       type="tel"
-                      className="ml-form-input ml-form-input--icon"
-                      placeholder="0912345678"
+                      className={`ml-form-input ml-form-input--icon ${
+                        phoneTouched && phone.trim() && !isValidVietnamesePhone(phone)
+                          ? "ml-input--invalid"
+                          : ""
+                      }`}
+                      placeholder={isEn ? "0912345678" : "0912345678"}
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => {
+                        setPhone(e.target.value);
+                        if (errorMsg) setErrorMsg("");
+                      }}
+                      onBlur={() => setPhoneTouched(true)}
                       required
                     />
                   </div>
+                  {phoneTouched && phone.trim() && !isValidVietnamesePhone(phone) && (
+                    <div className="ml-field-hint ml-field-hint--error">
+                      {isEn
+                        ? "⚠️ Invalid phone format (10 digits, prefix 03, 05, 07, 08, 09)"
+                        : "⚠️ Số điện thoại không hợp lệ (10 số, đầu số 03, 05, 07, 08, 09)"}
+                    </div>
+                  )}
                 </div>
 
                 <div className="ml-form-group">

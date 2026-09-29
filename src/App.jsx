@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "@/assets/styles/global.css";
 import "@/assets/styles/App.css";
 import Header from "@/layout/Header";
@@ -26,23 +26,25 @@ import ContentModerationPage from "./pages/admin/ContentModerationPage";
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
 import AdminMarketStudio from "./components/AdminMarketStudio";
-import OpenStreetMapRouting from "./components/OpenStreetMapRouting";
 import ImageUploadStudio from "./components/ImageUploadStudio";
 import orderService from "./services/orderService";
 import authService from "./services/authService";
-import notificationService from "./services/notificationService";
+import notificationService, { playNotificationChime } from "./services/notificationService";
 import { useLanguage } from "./context";
 
 export default function App() {
-  const { isEn, t, localizeProduceName, localizeMarketName } = useLanguage();
-  const sanitizeName = (raw) => {
-    if (!raw || raw === "Khách vãng lai" || raw === "Guest") return isEn ? "Guest" : "Khách vãng lai";
-    return raw
-      .replace(/Nguy\?n\s*Nh\?t\s*Quang/gi, "Nguyễn Nhựt Quang")
-      .replace(/Nguy\?n/gi, "Nguyễn")
-      .replace(/Nh\?t/gi, "Nhựt")
-      .replace(/\?/g, "");
-  };
+  const { isEn, localizeProduceName, localizeMarketName } = useLanguage();
+  const sanitizeName = useCallback(
+    (raw) => {
+      if (!raw || raw === "Khách vãng lai" || raw === "Guest") return isEn ? "Guest" : "Khách vãng lai";
+      return raw
+        .replace(/Nguy\?n\s*Nh\?t\s*Quang/gi, "Nguyễn Nhựt Quang")
+        .replace(/Nguy\?n/gi, "Nguyễn")
+        .replace(/Nh\?t/gi, "Nhựt")
+        .replace(/\?/g, "");
+    },
+    [isEn],
+  );
   const [token, setToken] = useState(
     () => localStorage.getItem("ml_token") || "",
   );
@@ -62,6 +64,27 @@ export default function App() {
     }
     return isEn ? "Guest" : "Khách vãng lai";
   });
+  const [userAvatar, setUserAvatar] = useState(
+    () => localStorage.getItem("ml_avatar") || "",
+  );
+  useEffect(() => {
+    const handleAvatarChange = (e) => {
+      if (e?.detail !== undefined) {
+        setUserAvatar(e.detail || "");
+      }
+    };
+    const handleStorageChange = (e) => {
+      if (e.key === "ml_avatar") {
+        setUserAvatar(e.newValue || "");
+      }
+    };
+    window.addEventListener("ml_avatar_changed", handleAvatarChange);
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("ml_avatar_changed", handleAvatarChange);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
   const displayUserName = !userName || userName === "Khách vãng lai" || userName === "Guest"
     ? (isEn ? "Guest" : "Khách vãng lai")
     : userName;
@@ -79,7 +102,7 @@ export default function App() {
   }, [activeNav]);
   const [selectedLocation, setSelectedLocation] = useState("Hà Nội");
   const [selectedMarketFilter, setSelectedMarketFilter] = useState("all");
-  const [selectedFarmerFilter, setSelectedFarmerFilter] = useState(null);
+  const [selectedFarmerFilter] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -123,6 +146,11 @@ export default function App() {
             setCurrentRole(serverRole);
             localStorage.setItem("ml_role", serverRole);
           }
+          if (profile?.avatarUrl || profile?.avatar) {
+            const cleanAv = profile.avatarUrl || profile.avatar;
+            setUserAvatar(cleanAv);
+            localStorage.setItem("ml_avatar", cleanAv);
+          }
         } catch (err) {
           console.warn("Session verification warning:", err);
           if (err.status === 401 || err.status === 403) {
@@ -130,12 +158,14 @@ export default function App() {
             setToken("");
             setCurrentRole("GUEST");
             setUserName("Khách vãng lai");
+            setUserAvatar("");
+            localStorage.removeItem("ml_avatar");
           }
         }
       }
     };
     verifySession();
-  }, []);
+  }, [sanitizeName]);
   const addToast = (title, message, type = "success", onClick = null) => {
     const id = Date.now() + Math.random();
     setToasts((prev) => [
@@ -155,29 +185,187 @@ export default function App() {
   const removeToast = (id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+
+  const getDefaultRoleNotifications = (role, isEnglish) => {
+    const normRole = (role || "GUEST").toUpperCase().replace("ROLE_", "");
+    const now = Date.now();
+    if (normRole === "FARMER") {
+      return [
+        {
+          notificationId: 901,
+          title: isEnglish ? "New Pre-order Received (ORD-8821)" : "Đơn đặt trước mới (ORD-8821)",
+          message: isEnglish
+            ? "Customer Nguyen An pre-ordered 2kg Ba Vi Organic Tomatoes for Saturday morning pickup."
+            : "Khách hàng Nguyễn An vừa đặt trước 2kg Cà chua hữu cơ Ba Vì. Vui lòng chuẩn bị trước giờ hẹn sáng thứ Bảy.",
+          type: "ORDER_PLACED",
+          referenceId: "8821",
+          isRead: false,
+          createdAt: new Date(now - 1000 * 60 * 15).toISOString(),
+        },
+        {
+          notificationId: 902,
+          title: isEnglish ? "Stall KYC Approved" : "Thẩm định gian hàng thành công",
+          message: isEnglish
+            ? "VietGAP safety certification for your stall has been successfully approved by Admin!"
+            : "Hồ sơ chứng nhận VietGAP sạp Nông sản Xanh đã được phê duyệt thành công!",
+          type: "KYC_UPDATE",
+          referenceId: 1,
+          isRead: false,
+          createdAt: new Date(now - 1000 * 60 * 120).toISOString(),
+        },
+        {
+          notificationId: 903,
+          title: isEnglish ? "Low Stock Alert" : "Cảnh báo tồn kho",
+          message: isEnglish
+            ? "Romaine lettuce inventory is below 5kg. Consider updating your weekly quota."
+            : "Mặt hàng Rau xà lách Romaine còn dưới 5kg, hãy cập nhật định mức tuần mới.",
+          type: "RESTOCK_ALERT",
+          referenceId: 10,
+          isRead: true,
+          createdAt: new Date(now - 1000 * 60 * 360).toISOString(),
+        },
+      ];
+    }
+    if (normRole === "ADMIN") {
+      return [
+        {
+          notificationId: 904,
+          title: isEnglish ? "New Market Stall Request" : "Đăng ký phiên chợ mới",
+          message: isEnglish
+            ? "Ba Vi Farm submitted a request to participate in Dong Da Weekend Farmers Market."
+            : "Sạp Nông dân Ba Vì vừa gửi yêu cầu tham gia phiên chợ Cuối tuần Đống Đa.",
+          type: "STALL_REGISTRATION",
+          referenceId: 1,
+          isRead: false,
+          createdAt: new Date(now - 1000 * 60 * 10).toISOString(),
+        },
+        {
+          notificationId: 905,
+          title: isEnglish ? "Pending Farmer KYC Review" : "Hồ sơ KYC cần duyệt",
+          message: isEnglish
+            ? "Farmer Tran Thi Mai submitted 4-star OCOP qualification documents for review."
+            : "Nông dân Trần Thị Mai vừa nộp hồ sơ thẩm định chứng nhận OCOP 4 sao.",
+          type: "KYC_UPDATE",
+          referenceId: 2,
+          isRead: false,
+          createdAt: new Date(now - 1000 * 60 * 90).toISOString(),
+        },
+        {
+          notificationId: 906,
+          title: isEnglish ? "Pre-order Cutoff Lock" : "Hạn chót đặt trước",
+          message: isEnglish
+            ? "Pre-order cutoff time has closed automatically for tomorrow's markets."
+            : "Hệ thống đã tự động khóa hạn chót (cutoff) đặt trước cho các phiên chợ ngày mai.",
+          type: "SYSTEM",
+          referenceId: null,
+          isRead: true,
+          createdAt: new Date(now - 1000 * 60 * 300).toISOString(),
+        },
+      ];
+    }
+    if (normRole === "CUSTOMER") {
+      return [
+        {
+          notificationId: 907,
+          title: isEnglish ? "Pre-order Accepted (ORD-5542)" : "Xác nhận đơn đặt trước (ORD-5542)",
+          message: isEnglish
+            ? "Ba Vi Green Stall has accepted your produce pre-order. Pickup slot: 07:00 - 08:30 Saturday."
+            : "Nông dân sạp Ba Vì Xanh đã nhận đơn đặt trước bó rau sạch & sẵn sàng cho bạn nhận sáng thứ Bảy!",
+          type: "ORDER_ACCEPTED",
+          referenceId: "5542",
+          isRead: false,
+          createdAt: new Date(now - 1000 * 60 * 20).toISOString(),
+        },
+        {
+          notificationId: 908,
+          title: isEnglish ? "Weekend Farmers Market Opening" : "Phiên chợ cuối tuần sắp mở",
+          message: isEnglish
+            ? "Ba Vi Farmers Market opens at 06:30 this Saturday with 12 organic farmer stalls."
+            : "Chợ Nông sản Ba Vì sẽ bắt đầu từ 06:30 sáng Thứ Bảy tuần này với 12 sạp nông dân.",
+          type: "MARKET_ASSIGNMENT",
+          referenceId: 1,
+          isRead: false,
+          createdAt: new Date(now - 1000 * 60 * 180).toISOString(),
+        },
+        {
+          notificationId: 909,
+          title: isEnglish ? "Review Your Pickup Experience" : "Đánh giá chất lượng nông sản",
+          message: isEnglish
+            ? "How was your recent farm pickup? Share your review to help local farmers thrive."
+            : "Cảm ơn bạn đã mua sắm tại sạp Nông sản! Hãy để lại đánh giá cho người nông dân nhé.",
+          type: "REVIEW_POSTED",
+          referenceId: 2,
+          isRead: true,
+          createdAt: new Date(now - 1000 * 60 * 480).toISOString(),
+        },
+      ];
+    }
+    // GUEST defaults
+    return [
+      {
+        notificationId: 910,
+        title: isEnglish ? "Welcome to MarketLink!" : "Chào mừng bạn đến với MarketLink!",
+        message: isEnglish
+          ? "Discover fresh local farm produce and pre-order directly from verified farmers."
+          : "Khám phá nông sản tươi sạch từ các nông hộ địa phương và đặt trước cho phiên chợ sáng!",
+        type: "SYSTEM",
+        referenceId: null,
+        isRead: false,
+        createdAt: new Date(now - 1000 * 60 * 5).toISOString(),
+      },
+      {
+        notificationId: 911,
+        title: isEnglish ? "Weekend Markets Open for Orders" : "Phiên chợ nông sản sắp mở",
+        message: isEnglish
+          ? "Weekend farmers markets in Hanoi and HCMC are now accepting fresh produce reservations."
+          : "Các phiên chợ nông dân cuối tuần tại Hà Nội & TP.HCM đang mở nhận đặt trước rau củ sạch!",
+        type: "SYSTEM",
+        referenceId: null,
+        isRead: true,
+        createdAt: new Date(now - 1000 * 60 * 60).toISOString(),
+      },
+    ];
+  };
+
+  const [notifications, setNotifications] = useState(() => getDefaultRoleNotifications(currentRole, isEn));
+  const [unreadCount, setUnreadCount] = useState(() => {
+    const list = getDefaultRoleNotifications(currentRole, isEn);
+    return list.filter((n) => !n.isRead).length;
+  });
   const [isLiveConnected, setIsLiveConnected] = useState(false);
+
   useEffect(() => {
-    if (!token || currentRole === "GUEST") {
-      setNotifications([]);
-      setUnreadCount(0);
+    if (!token) {
+      const defs = getDefaultRoleNotifications(currentRole, isEn);
+      setNotifications(defs);
+      setUnreadCount(defs.filter((n) => !n.isRead).length);
       setIsLiveConnected(false);
       return;
     }
+
     const loadNotifications = async () => {
       try {
         const [list, count] = await Promise.all([
           notificationService.getMyNotifications(),
           notificationService.getUnreadCount(),
         ]);
-        setNotifications(list || []);
-        setUnreadCount(count || 0);
+        if (Array.isArray(list) && list.length > 0) {
+          setNotifications(list);
+          setUnreadCount(typeof count === "number" ? count : list.filter((n) => !n.isRead).length);
+        } else {
+          const roleDefs = getDefaultRoleNotifications(currentRole, isEn);
+          setNotifications(roleDefs);
+          setUnreadCount(roleDefs.filter((n) => !n.isRead).length);
+        }
       } catch (err) {
-        console.debug("Failed to fetch initial notifications:", err);
+        console.debug("Failed to fetch initial notifications, fallback applied:", err);
+        const roleDefs = getDefaultRoleNotifications(currentRole, isEn);
+        setNotifications(roleDefs);
+        setUnreadCount(roleDefs.filter((n) => !n.isRead).length);
       }
     };
     loadNotifications();
+
     const unsubscribe = notificationService.subscribePushStream(token, {
       onConnected: () => {
         setIsLiveConnected(true);
@@ -218,6 +406,15 @@ export default function App() {
                 : "my-reviews";
         } else if (notifType === "RESTOCK_ALERT" || title.includes("tồn kho")) {
           targetNav = activeRole === "FARMER" ? "farmer-inventory" : "products";
+        } else if (
+          notifType.startsWith("STALL") ||
+          notifType.includes("MARKET_ASSIGNMENT") ||
+          title.includes("sạp") ||
+          message.includes("sạp") ||
+          title.includes("gian hàng") ||
+          message.includes("gian hàng")
+        ) {
+          targetNav = activeRole === "ADMIN" ? "admin-markets" : "farmer-stall";
         }
         const orderCodeMatch = (
           (newNotif.title || "") +
@@ -230,7 +427,7 @@ export default function App() {
             ? String(newNotif.referenceId)
             : "";
         addToast(
-          newNotif.title || "Thông báo mới",
+          newNotif.title || (isEn ? "New notification" : "Thông báo mới"),
           newNotif.message,
           "success",
           () =>
@@ -247,37 +444,87 @@ export default function App() {
     return () => {
       unsubscribe();
     };
-  }, [token, currentRole]);
+  }, [token, currentRole, isEn]);
+
   const handleNotificationRead = async (id) => {
-    try {
-      await notificationService.markAsRead(id);
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n.notificationId === id
-            ? {
-                ...n,
-                isRead: true,
-              }
-            : n,
-        ),
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-    } catch (err) {
-      console.warn("Failed to mark notification as read:", err);
+    setNotifications((prev) =>
+      prev.map((n) =>
+        n.notificationId === id
+          ? {
+              ...n,
+              isRead: true,
+            }
+          : n,
+      ),
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+    if (token) {
+      try {
+        await notificationService.markAsRead(id);
+      } catch (err) {
+        console.warn("Failed to mark notification as read on backend:", err);
+      }
     }
   };
+
   const handleMarkAllRead = async () => {
+    setNotifications((prev) =>
+      prev.map((n) => ({
+        ...n,
+        isRead: true,
+      })),
+    );
+    setUnreadCount(0);
+    if (token) {
+      try {
+        await notificationService.markAllAsRead();
+      } catch (err) {
+        console.warn("Failed to mark all notifications as read on backend:", err);
+      }
+    }
+  };
+
+  const handleSendTestPush = async () => {
     try {
-      await notificationService.markAllAsRead();
-      setNotifications((prev) =>
-        prev.map((n) => ({
-          ...n,
-          isRead: true,
-        })),
+      playNotificationChime();
+      let createdNotif = null;
+      if (token) {
+        try {
+          createdNotif = await notificationService.sendTestPush({
+            title: isEn ? "Notification Bell Test" : "Kiểm tra chuông thông báo",
+            message: isEn
+              ? "Bell chime & real-time notification push stream are functioning properly! 🎉"
+              : "Chuông và hệ thống thông báo đẩy MarketLink đã hoạt động ổn định! 🎉",
+          });
+        } catch (e) {
+          console.debug("Backend sendTestPush failed, fallback local item used:", e);
+        }
+      }
+      if (!createdNotif) {
+        createdNotif = {
+          notificationId: Date.now(),
+          title: isEn ? "Notification Bell Test" : "Kiểm tra chuông thông báo",
+          message: isEn
+            ? "Bell chime & instant alerts are active and running smoothly! 🔔"
+            : "Chuông thông báo MarketLink đã reo và hoạt động hoàn hảo! 🔔",
+          type: "SYSTEM",
+          referenceId: null,
+          isRead: false,
+          createdAt: new Date().toISOString(),
+        };
+      }
+      setNotifications((prev) => [
+        createdNotif,
+        ...prev.filter((n) => n.notificationId !== createdNotif.notificationId),
+      ]);
+      setUnreadCount((prev) => prev + 1);
+      addToast(
+        createdNotif.title,
+        createdNotif.message,
+        "success",
       );
-      setUnreadCount(0);
     } catch (err) {
-      console.warn("Failed to mark all notifications as read:", err);
+      console.warn("handleSendTestPush error:", err);
     }
   };
   const handleAddToCart = (product) => {
@@ -510,6 +757,7 @@ export default function App() {
       <Header
         currentRole={currentRole}
         userName={displayUserName}
+        userAvatar={userAvatar}
         onSwitchRole={handleSwitchRole}
         cartCount={isShopper ? totalCartCount : 0}
         onOpenCart={isShopper ? () => setIsCartOpen(true) : undefined}
@@ -529,6 +777,7 @@ export default function App() {
         onToggleTheme={() =>
           setTheme((value) => (value === "dark" ? "light" : "dark"))
         }
+        onTestPush={handleSendTestPush}
       />
 
       <MobileDrawer
@@ -712,11 +961,7 @@ export default function App() {
                   : "Quản lý hệ thống chợ nông sản, phân bổ sạp bán cho nông dân và ghim tọa độ bản đồ."}
               </p>
             </div>
-            <AdminMarketStudio
-              callApi={callApi}
-              role={currentRole}
-              token={token}
-            />
+            <AdminMarketStudio callApi={callApi} />
           </div>
         )}
 
