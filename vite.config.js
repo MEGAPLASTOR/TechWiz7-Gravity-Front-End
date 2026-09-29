@@ -37,6 +37,7 @@ export default defineConfig(({ mode }) => {
       port: 5178,
       host: '0.0.0.0',
       strictPort: true,
+      allowedHosts: ['gravity-techwiz7.cusc.vn', 'localhost'],
       proxy: {
         '/api': {
           target: backendTarget,
